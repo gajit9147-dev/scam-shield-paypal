@@ -420,6 +420,7 @@ export default function App() {
   const urgencyIndicatorVal = barValueFor(/urgency|pressure/i);
   const topSignalPills = [...verdictSignals]
     .sort((a, b) => (SEV_BAR[b?.severity] || 0) - (SEV_BAR[a?.severity] || 0))
+    .filter((sig, i, arr) => arr.findIndex((s) => (s?.category || s?.type) === (sig?.category || sig?.type)) === i)
     .slice(0, 4);
 
   // Translated category & evidence
