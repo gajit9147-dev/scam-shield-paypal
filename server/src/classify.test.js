@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { classify, spamScore } from './classify.js';
 import { combineEvidence } from './fusion.js';
 import { aiChat } from './ai.js';
+import { readFileSync } from 'node:fs';
+import * as rules from './rules.js';
 
 test('1. OTP scam is flagged as HIGH_RISK and scam', () => {
   const text = 'Dear customer, share OTP to verify your account';
@@ -174,4 +176,72 @@ test('threat plus payment destination legacy test passes', () => {
 
 test('UCI baseline is a finite general-spam signal', () => {
   assert.ok(spamScore('WIN FREE CASH NOW! Reply to claim your prize') > spamScore('Are we meeting for lunch tomorrow?'));
+});
+
+test('21. Lookalike bank domain is flagged as HIGH_RISK with masked domain', () => {
+  const result = classify('HDFC Bank alert: Verify your KYC immediately at https://hdfc-secure-verify.com/kyc to avoid account suspension');
+  assert.equal(result.label, 'scam');
+  assert.equal(result.riskLevel, 'HIGH_RISK');
+  assert.ok(result.signals.some(sig => sig.type === 'lookalike_domain'));
+  assert.ok(!JSON.stringify(result).includes('hdfc-secure-verify.com'), 'full lookalike domain must not be echoed');
+});
+
+test('22. Official bank-style domain is not flagged as a lookalike', () => {
+  const { detectLocalSignals } = rules;
+  const signals = detectLocalSignals('Check your statement at https://www.hdfcbank.com/ today').signals;
+  assert.ok(!signals.some(sig => sig.type === 'lookalike_domain'));
+});
+
+test('23. Link coupled with refund urgency is flagged', () => {
+  const result = classify('Refund of INR 999 approved. Claim within 24 hours: https://bit.ly/refund-claim');
+  assert.ok(result.signals.some(sig => sig.type === 'link_with_pressure'));
+  assert.equal(result.label, 'scam');
+});
+
+test('24. Enter PIN to receive money trick is flagged as HIGH_RISK', () => {
+  const result = classify('Enter your UPI PIN to receive Rs 4,500 in your account');
+  assert.equal(result.label, 'scam');
+  assert.equal(result.riskLevel, 'HIGH_RISK');
+});
+
+test('25. Response carries bilingual evidence and recommendations', () => {
+  const result = classify('प्रिय ग्राहक, अपना खाता चालू रखने के लिए तुरंत OTP भेजो');
+  assert.ok(Array.isArray(result.evidenceHi) && result.evidenceHi.length > 0);
+  assert.ok(/[\u0900-\u097F]/.test(result.evidenceHi.join(' ')));
+  assert.ok(Array.isArray(result.recommendationsHi) && result.recommendationsHi.length > 0);
+  assert.ok(/[\u0900-\u097F]/.test(result.recommendationsHi.join(' ')));
+});
+
+test('26. UPI IDs are masked in the response', () => {
+  const result = classify('Pay Rs 50 to receive.money@fakescheme to claim your cashback prize');
+  assert.ok(!JSON.stringify(result).includes('receive.money@fakescheme'));
+  assert.ok(result.maskedEntities.upiIds.every(id => id.includes('***')));
+});
+
+test('27. Recovery focus follows the message type', () => {
+  const receipt = classify('Your payment of ₹120 to Chai Point was received successfully. UPI Ref 123456789012.');
+  assert.equal(receipt.recoveryFocus, 'money_sent');
+  const scam = classify('Share OTP to claim your refund');
+  assert.equal(scam.recoveryFocus, 'money_not_sent');
+});
+
+test('28. Shortened URL evidence is masked, not echoed in full', () => {
+  const result = classify('Your cashback is ready, claim at https://bit.ly/cash-now quickly');
+  const sig = result.signals.find(item => item.type === 'shortened_url');
+  assert.ok(sig, 'shortened url signal expected');
+  assert.ok(!sig.evidence.includes('bit.ly/cash-now'));
+  assert.ok(sig.evidence.includes('***'));
+});
+
+test('29. UPI pilot dataset holds its measured floor (recall >= 90%, zero false positives)', () => {
+  const dataset = JSON.parse(readFileSync(new URL('../eval/upi-pilot-dataset.json', import.meta.url)));
+  let tp = 0, fp = 0, fn = 0;
+  for (const item of dataset) {
+    const result = classify(item.text);
+    const flagged = result.label === 'scam' || result.label === 'suspicious';
+    if (item.expect === 'scam') flagged ? tp++ : fn++;
+    else if (flagged) fp++;
+  }
+  assert.equal(fp, 0, `false positives on benign pilot cases: ${fp}`);
+  assert.ok(tp / (tp + fn) >= 0.9, `scam recall ${tp}/${tp + fn} below 0.9 floor`);
 });
