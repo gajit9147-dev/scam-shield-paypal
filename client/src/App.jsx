@@ -1634,7 +1634,11 @@ export default function App() {
                         <span>{t.detailContainsLink}</span>
                       </div>
                       <div className="flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-200">
-                        <span>{latestVerdict?.maskedEntities?.urls?.length > 0 ? t.yes : t.no}</span>
+                        <span>
+                          {latestVerdict?.maskedEntities?.urls?.length > 0 || /https?:\/\/|www\./i.test(activeSourceText)
+                            ? t.yes
+                            : t.no}
+                        </span>
                         <span className="text-slate-400 text-sm">›</span>
                       </div>
                     </div>
@@ -1645,7 +1649,11 @@ export default function App() {
                         <span>{t.detailUrgency}</span>
                       </div>
                       <div className="flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-200">
-                        <span>{urgencyIndicatorVal > 0 ? t.yes : t.no}</span>
+                        <span>
+                          {isHighRisk || isSuspicious || /urgent|block|immediately|expire|24 hours/i.test(activeSourceText)
+                            ? t.yes
+                            : t.no}
+                        </span>
                         <span className="text-slate-400 text-sm">›</span>
                       </div>
                     </div>
@@ -1656,13 +1664,16 @@ export default function App() {
                         <span>{t.detailAccountThreat}</span>
                       </div>
                       <div className="flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-200">
-                        <span>{threatIndicatorVal > 0 ? t.yes : t.no}</span>
+                        <span>
+                          {isHighRisk && /block|threat|suspend/i.test(latestVerdict?.category || activeSourceText)
+                            ? t.yes
+                            : t.no}
+                        </span>
                         <span className="text-slate-400 text-sm">›</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                )}
 
                 {/* Card 3: Safety Tips (Exact reference list) */}
                 <div className="p-5 rounded-[28px] glass-panel flex flex-col gap-2.5">
