@@ -56,7 +56,24 @@ const copy = {
     learningWhy: 'These are warning signs because codes can approve access or transactions, while an incoming UPI payment does not require you to send money first.',
     learningSteps: ['Do not use links or phone numbers in an unexpected message.', 'Open your payment or bank app yourself and check the transaction or request there.', 'If money was lost, contact your bank and report suspected fraud to 1930. Keep the transaction reference.'],
     learningLimit: 'A message can look ordinary and still be forged; only the bank or payment app can confirm a transaction.',
-    needsText: 'Please paste the payment message with private details removed, or upload a screenshot and review the extracted text. I need the wording to explain its warning signs; do not send an OTP or UPI PIN.'
+    needsText: 'Please paste the payment message with private details removed, or upload a screenshot and review the extracted text. I need the wording to explain its warning signs; do not send an OTP or UPI PIN.',
+    recoveryPanelTitle: 'If this involves your money',
+    pathNotSent: 'Money not sent yet',
+    pathSent: 'Money already sent',
+    notSentSteps: [
+      'Stop. Do not reply, pay, scan a QR code, or enter your UPI PIN - receiving money never needs a PIN.',
+      'Open your bank or UPI app from your home screen and verify the claim there. Never use links or numbers from the message.',
+      'You can check the sender\'s number, UPI ID or link on the official NCRP suspect repository before acting.'
+    ],
+    sentSteps: [
+      'Contact your bank and the payment app\'s support immediately with the 12-digit UPI reference (UTR).',
+      'Call 1930 (National Cybercrime Helpline) and file a report at cybercrime.gov.in without delay.',
+      'Preserve evidence: screenshots, the UTR, the sender\'s number or UPI ID, and the message itself.'
+    ],
+    ncrpLinkText: 'Check on NCRP suspect repository',
+    ncrpNote: 'Not listed never means safe. New scam numbers and IDs appear every day.',
+    officialLinks: 'Official links',
+    recoveryNoPromise: 'Reporting quickly improves the chances, but no one can promise a reversal. This app explains the process; it cannot recover money or file a report for you.'
   },
   hi: {
     language: 'भाषा', eyebrow: 'भुगतान संदेश की सावधानी से जाँच', title: 'UPI स्कैम शील्ड',
@@ -113,7 +130,24 @@ const copy = {
     learningWhy: 'ये चेतावनी हैं क्योंकि कोड से पहुँच या भुगतान मंजूर हो सकता है, जबकि UPI में पैसे पाने के लिए पहले पैसे भेजने की ज़रूरत नहीं होती।',
     learningSteps: ['अचानक आए संदेश के लिंक या फोन नंबर का इस्तेमाल न करें।', 'खुद बैंक या पेमेंट ऐप खोलें और वहाँ लेन-देन या अनुरोध देखें।', 'पैसे चले गए हों तो बैंक से संपर्क करें और संदिग्ध धोखाधड़ी 1930 पर रिपोर्ट करें। लेन-देन का रेफरेंस संभालें।'],
     learningLimit: 'साधारण दिखने वाला संदेश भी नकली हो सकता है; भुगतान की पुष्टि बैंक या पेमेंट ऐप में करें।',
-    needsText: 'भुगतान संदेश से निजी जानकारी हटाकर भेजें या स्क्रीनशॉट डालकर निकला टेक्स्ट जाँचें। बिना संदेश के उसके जोखिम नहीं समझा सकता। OTP या UPI PIN न भेजें।'
+    needsText: 'भुगतान संदेश से निजी जानकारी हटाकर भेजें या स्क्रीनशॉट डालकर निकला टेक्स्ट जाँचें। बिना संदेश के उसके जोखिम नहीं समझा सकता। OTP या UPI PIN न भेजें।',
+    recoveryPanelTitle: 'अगर इसमें आपके पैसे जुड़े हैं',
+    pathNotSent: 'अभी पैसे नहीं भेजे',
+    pathSent: 'पैसे भेज दिए',
+    notSentSteps: [
+      'रुक जाएँ। जवाब न दें, पैसे न भेजें, QR कोड स्कैन न करें और UPI PIN न डालें - पैसे पाने के लिए PIN कभी नहीं चाहिए।',
+      'अपने फोन की होम स्क्रीन से बैंक या UPI ऐप खोलकर दावे की पुष्टि करें। संदेश के लिंक या नंबर का इस्तेमाल न करें।',
+      'कार्रवाई से पहले भेजने वाले का नंबर, UPI ID या लिंक आधिकारिक NCRP संदिग्ध सूची में जाँच सकते हैं।'
+    ],
+    sentSteps: [
+      '12 अंकों के UPI रेफरेंस (UTR) के साथ तुरंत अपने बैंक और पेमेंट ऐप के सपोर्ट से संपर्क करें।',
+      '1930 (राष्ट्रीय साइबरक्राइम हेल्पलाइन) पर कॉल करें और cybercrime.gov.in पर बिना देरी शिकायत दर्ज करें।',
+      'सबूत संभालें: स्क्रीनशॉट, UTR, भेजने वाले का नंबर या UPI ID, और संदेश।'
+    ],
+    ncrpLinkText: 'NCRP संदिग्ध सूची में जाँचें',
+    ncrpNote: 'सूची में न होने का मतलब सुरक्षित कभी नहीं होता। रोज़ नए धोखाधड़ी नंबर और ID बनते हैं।',
+    officialLinks: 'आधिकारिक लिंक',
+    recoveryNoPromise: 'जल्दी रिपोर्ट करने से संभावना बढ़ती है, लेकिन पैसे वापसी की गारंटी कोई नहीं दे सकता। यह ऐप प्रक्रिया बताता है; पैसे वापस नहीं दिला सकता और शिकायत भी आपकी ओर से दर्ज नहीं करता।'
   }
 };
 
@@ -216,6 +250,45 @@ async function checkImage(prepared) {
 
 const MIN_THINK_MS = 900;
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+
+const NCRP_URL = 'https://cybercrime.gov.in/Webform/suspect_search_repository.aspx';
+const NPCI_FRAUD_URL = 'https://www.npci.org.in/fraud-awareness';
+const CYBERCRIME_URL = 'https://cybercrime.gov.in';
+
+function RecoveryPanel({ t, focus }) {
+  return <section className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 space-y-4">
+    <h3 className="font-semibold text-white text-sm flex items-center gap-2">
+      <span className="text-sky-400">⛑</span>
+      <span>{t.recoveryPanelTitle}</span>
+    </h3>
+    <div className={`rounded-xl border p-3 ${focus === 'money_not_sent' ? 'border-sky-500/40 bg-sky-500/[0.06]' : 'border-white/[0.06]'}`}>
+      <h4 className="text-sm font-semibold text-sky-300">{t.pathNotSent}</h4>
+      <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-[#e3e3e3]">
+        {t.notSentSteps.map((step, i) => <li key={i}>{step}</li>)}
+      </ol>
+      <div className="mt-2.5">
+        <a href={NCRP_URL} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-[#8ab4f8] underline underline-offset-2 hover:text-white transition">{t.ncrpLinkText} ↗</a>
+        <p className="mt-1 text-xs text-[#9aa0a6]">{t.ncrpNote}</p>
+      </div>
+    </div>
+    <div className={`rounded-xl border p-3 ${focus === 'money_sent' ? 'border-rose-500/40 bg-rose-500/[0.06]' : 'border-white/[0.06]'}`}>
+      <h4 className="text-sm font-semibold text-rose-300">{t.pathSent}</h4>
+      <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-[#e3e3e3]">
+        {t.sentSteps.map((step, i) => <li key={i}>{step}</li>)}
+      </ol>
+    </div>
+    <div className="border-t border-white/[0.08] pt-2.5 text-xs text-[#9aa0a6] space-y-1">
+      <p className="font-medium text-[#c4c7c5]">{t.officialLinks}:</p>
+      <p className="flex flex-wrap gap-x-3 gap-y-1">
+        <a href={NPCI_FRAUD_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white transition">npci.org.in/fraud-awareness ↗</a>
+        <a href={CYBERCRIME_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-white transition">cybercrime.gov.in ↗</a>
+        <a href="tel:1930" className="underline underline-offset-2 hover:text-white transition">1930 (helpline)</a>
+      </p>
+      <p className="pt-1">{t.recoveryNoPromise}</p>
+    </div>
+  </section>;
+}
 
 export default function App() {
   const [language, setLanguage] = useState('en');
@@ -401,6 +474,7 @@ export default function App() {
       <p className="text-[#c4c7c5]">{t.recoveryIntroChat}</p>
       <ol className="list-decimal space-y-2 pl-5 text-sm text-[#e3e3e3]">{t.recoverySteps.map((step, index) => <li key={index}>{step}</li>)}</ol>
       <p className="text-xs text-[#9aa0a6] border-t border-white/[0.08] pt-2">{t.recoveryNote}</p>
+      <RecoveryPanel t={t} focus="money_sent" />
     </div>;
     if (message.kind === 'learning') return <div className="space-y-4">
       <section><h2 className="font-semibold text-[#8ab4f8] text-base">{t.answer}</h2><p className="mt-1 text-sm text-[#e3e3e3]">{t.learningAnswer}</p></section>
@@ -411,13 +485,18 @@ export default function App() {
     if (message.kind === 'verdict') {
       const r = message.result;
       const risk = r.riskLevel || (r.label === 'scam' ? 'HIGH_RISK' : 'UNCERTAIN');
-      const categoryName = r.categoryLabel || r.category || '';
-      const evidenceItems = Array.isArray(r.evidence) && r.evidence.length > 0
+      const categoryName = (language === 'hi' && r.categoryLabelHi) ? r.categoryLabelHi : (r.categoryLabel || r.category || '');
+      const englishEvidence = Array.isArray(r.evidence) && r.evidence.length > 0
         ? r.evidence
         : (Array.isArray(r.signals) ? r.signals.map(s => s.evidence || s.type) : []);
-      const recommendations = Array.isArray(r.recommendations) && r.recommendations.length > 0
-        ? r.recommendations
-        : [r.safeAction || t.scamInstruction];
+      const evidenceItems = (language === 'hi' && Array.isArray(r.evidenceHi) && r.evidenceHi.length > 0)
+        ? r.evidenceHi
+        : englishEvidence;
+      const recommendations = (language === 'hi' && Array.isArray(r.recommendationsHi) && r.recommendationsHi.length > 0)
+        ? r.recommendationsHi
+        : (Array.isArray(r.recommendations) && r.recommendations.length > 0
+          ? r.recommendations
+          : [r.safeAction || t.scamInstruction]);
 
       const badgeStyle = risk === 'HIGH_RISK'
         ? 'bg-rose-500/15 text-rose-300 border border-rose-500/35 shadow-sm shadow-rose-500/10'
@@ -436,12 +515,12 @@ export default function App() {
             </span>
             {categoryName && (
               <span className="font-semibold text-white text-[15px]">
-                {display(categoryName, language)}
+                {language === 'hi' && r.categoryLabelHi ? categoryName : display(categoryName, language)}
               </span>
             )}
           </div>
           <p className="mt-2.5 text-sm text-[#c4c7c5] leading-relaxed">
-            {r.summary ? display(r.summary, language) : (risk === 'HIGH_RISK' ? t.scamAnswer : t.uncertainAnswer)}
+            {language === 'hi' && r.summaryHi ? r.summaryHi : (r.summary ? display(r.summary, language) : (risk === 'HIGH_RISK' ? t.scamAnswer : t.uncertainAnswer))}
           </p>
         </section>
 
@@ -457,7 +536,7 @@ export default function App() {
                 {evidenceItems.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-2">
                     <span className="text-[#8ab4f8] mt-1 shrink-0 text-xs">◆</span>
-                    <span>{display(item, language)}</span>
+                    <span>{language === 'hi' && Array.isArray(r.evidenceHi) && r.evidenceHi.length > 0 ? item : display(item, language)}</span>
                   </li>
                 ))}
               </ul>
@@ -482,11 +561,14 @@ export default function App() {
             {recommendations.map((rec, idx) => (
               <li key={idx} className="flex items-start gap-2">
                 <span className="text-emerald-400 mt-1 shrink-0 text-xs">✓</span>
-                <span>{display(rec, language)}</span>
+                <span>{language === 'hi' && Array.isArray(r.recommendationsHi) && r.recommendationsHi.length > 0 ? rec : display(rec, language)}</span>
               </li>
             ))}
           </ul>
         </section>
+
+        {/* Two-path recovery action panel */}
+        <RecoveryPanel t={t} focus={r.recoveryFocus || (looksLikeCompletedPayment(message.sourceText) ? 'money_sent' : 'money_not_sent')} />
 
         {/* Detection sources */}
         {r.sources && (
