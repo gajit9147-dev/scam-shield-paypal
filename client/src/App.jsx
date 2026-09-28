@@ -191,12 +191,13 @@ const apiCopy = {
   'Could not check the message.': 'संदेश की जाँच नहीं हो सकी।'
 };
 
-const debitPattern = /(debited|deducted|payment successful|paid successfully|txn\.?\s?id|upi ref(erence)?|utr)/i;
-const amountPattern = /(rs\.?|inr|\u20B9)\s*[\d,]+/i;
+const actualDebitPattern = /\b(?:debited\s+(?:by|from)|credited\s+(?:to|with)|paid\s+successfully\s+to|payment\s+(?:of\s+.*?\s+)?(?:was\s+)?received\s+successfully|txn\s+id\b|utr\s*:?\s*\d{12})\b/i;
+const amountPattern = /(?:rs\.?|inr|\u20B9)\s*[\d,]+/i;
 
-function looksLikeCompletedPayment(text) {
+function looksLikeCompletedPayment(text, isFraud = false) {
+  if (isFraud) return false;
   if (typeof text !== 'string' || !text) return false;
-  return debitPattern.test(text) && amountPattern.test(text);
+  return actualDebitPattern.test(text) && amountPattern.test(text);
 }
 
 function display(value, language) {
@@ -206,7 +207,7 @@ function display(value, language) {
 let nextId = 0;
 const makeMessage = (role, kind, content = {}) => ({ id: ++nextId, role, kind, type: kind, ...content });
 const greetingIntent = /^(?:hi+|hello+|hey+|heya+|namaste+|pranam+|hola|good\s*(?:morning|afternoon|evening))\b[!?.\s]*$/i;
-const wrongPaymentIntent = /\b(wrong|mistak(?:e|en)|galat|galt|galti)\b.{0,70}\b(payment|paid|transfer|upi|paisa|paise|money|bhej|send|sent)\b|\b(payment|paid|transfer|paisa|paise|money|bhej|sent)\b.{0,70}\b(wrong|mistak(?:e|en)|galat|galt|galti)\b|गलत.{0,50}(भुगतान|पैसे|भेज)|(?:भुगतान|पैसे).{0,50}गलत/i;
+const paymentIssueIntent = /\b(wrong|mistak(?:e|en)|galat|galt|galti|issue|problem|failed|dispute|reverse|reversal|stuck|atak|fas|refund)\b.{0,70}\b(payment|paid|transfer|upi|paisa|paise|money|bhej|send|sent)\b|\b(payment|paid|transfer|paisa|paise|money|bhej|sent)\b.{0,70}\b(wrong|mistak(?:e|en)|galat|galt|galti|issue|problem|failed|dispute|reverse|reversal|stuck|atak|fas|refund)\b|गलत.{0,50}(भुगतान|पैसे|भेज)|(?:भुगतान|पैसे).{0,50}(गलत|समस्या|अटक|रिफंड)/i;
 const fraudIntent = /\b(fraud|frauds|froud|fruad|fraaud|frod|scam|scams|scame|scamm|scem|skam|fake|faek|genuine|safe|saef|real|suspicious|dhokha|dhoka|dhokadhadi)\b|धोखाधड़ी|फ़्रॉड|फ्रॉड|स्कैम|नकली|सुरक्षित/i;
 const learningIntent = /\b(how (?:can|do|to)|what (?:are|is)|ways to|tips|explain|understand|spot|identify|recogniz(?:e|ing))\b.{0,100}\b(upi|fraud|scam|payment)\b|\b(upi|fraud|scam|payment)\b.{0,100}\b(how|spot|identify|tips|work|happens)\b|(?:कैसे|क्या|समझा).{0,60}(?:धोखाधड़ी|स्कैम|UPI)|(?:धोखाधड़ी|स्कैम|UPI).{0,60}(?:कैसे|पहचान|बचाव)|\b(?:kaise|pehchan|bachne)\b.{0,60}\b(?:fraud|scam|upi)\b/i;
 const inquiry = /[?？]|\b(is|check|tell|help|how|kya|kaise|hai|hoga|please|can|what)\b|क्या|कैसे|मदद/i;
@@ -215,8 +216,8 @@ const ocrQuery = /\b(?:what\s+(?:text|words?)\s+(?:did\s+you\s+read|was\s+read|e
 
 function intentOf(text) {
   if (typeof text !== 'string' || !text) return '';
-  if (wrongPaymentIntent.test(text)) return 'recovery';
   if (fraudIntent.test(text) && (inquiry.test(text) || text.trim().split(/\s+/).length <= 5)) return 'fraud';
+  if (paymentIssueIntent.test(text)) return 'recovery';
   return '';
 }
 
@@ -567,6 +568,8 @@ export default function App() {
     if (message.kind === 'verdict') {
       const r = message.result;
       const risk = r.riskLevel || (r.label === 'scam' ? 'HIGH_RISK' : 'UNCERTAIN');
+      const isFraud = risk === 'HIGH_RISK' || risk === 'SUSPICIOUS' || r.label === 'scam';
+      const isPaymentIssue = !isFraud && (r.recoveryFocus === 'money_sent' || r.category === 'Legitimate Transaction' || looksLikeCompletedPayment(message.sourceText, false));
       const categoryName = (language === 'hi' && r.categoryLabelHi) ? r.categoryLabelHi : (r.categoryLabel || r.category || '');
       const englishEvidence = Array.isArray(r.evidence) && r.evidence.length > 0
         ? r.evidence
@@ -580,16 +583,24 @@ export default function App() {
           ? r.recommendations
           : [r.safeAction || t.scamInstruction]);
 
-      const badgeStyle = risk === 'HIGH_RISK'
-        ? 'bg-rose-500/15 text-rose-300 border border-rose-500/35 shadow-sm shadow-rose-500/10'
-        : (risk === 'SUSPICIOUS' ? 'bg-amber-500/15 text-amber-300 border border-amber-500/35 shadow-sm shadow-amber-500/10' : 'bg-sky-500/15 text-sky-300 border border-sky-500/35 shadow-sm shadow-sky-500/10');
+      const badgeStyle = isFraud
+        ? (risk === 'HIGH_RISK'
+          ? 'bg-rose-500/15 text-rose-300 border border-rose-500/35 shadow-sm shadow-rose-500/10'
+          : 'bg-amber-500/15 text-amber-300 border border-amber-500/35 shadow-sm shadow-amber-500/10')
+        : (isPaymentIssue
+          ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/35 shadow-sm shadow-emerald-500/10'
+          : 'bg-sky-500/15 text-sky-300 border border-sky-500/35 shadow-sm shadow-sky-500/10');
 
-      const badgeText = risk === 'HIGH_RISK'
-        ? (language === 'hi' ? '🔴 उच्च जोखिम (HIGH RISK)' : '🔴 HIGH RISK')
-        : (risk === 'SUSPICIOUS' ? (language === 'hi' ? '🟠 संदिग्ध (SUSPICIOUS)' : '🟠 SUSPICIOUS') : (language === 'hi' ? '🟡 पक्का नहीं (UNCERTAIN)' : '🟡 UNCERTAIN'));
+      const badgeText = isFraud
+        ? (risk === 'HIGH_RISK'
+          ? (language === 'hi' ? '🔴 उच्च जोखिम (HIGH RISK)' : '🔴 HIGH RISK')
+          : (language === 'hi' ? '🟠 संदिग्ध (SUSPICIOUS)' : '🟠 SUSPICIOUS'))
+        : (isPaymentIssue
+          ? (language === 'hi' ? '💳 पूर्ण भुगतान (PAYMENT RECEIPT)' : '💳 COMPLETED PAYMENT')
+          : (language === 'hi' ? '🟡 पक्का नहीं (UNCERTAIN)' : '🟡 UNCERTAIN'));
 
       return <div className="space-y-4">
-        {/* Risk Level and Category */}
+        {/* Risk Level / Status and Category */}
         <section>
           <div className="flex flex-wrap items-center gap-2.5">
             <span className={`rounded-full px-3.5 py-1 text-xs font-semibold tracking-wide ${badgeStyle}`}>
@@ -602,12 +613,20 @@ export default function App() {
             )}
           </div>
           <p className="mt-2.5 text-sm text-[#c4c7c5] leading-relaxed">
-            {language === 'hi' && r.summaryHi ? r.summaryHi : (r.summary ? display(r.summary, language) : (risk === 'HIGH_RISK' ? t.scamAnswer : t.uncertainAnswer))}
+            {language === 'hi' && r.summaryHi
+              ? r.summaryHi
+              : (r.summary
+                ? display(r.summary, language)
+                : (isFraud
+                  ? t.scamAnswer
+                  : (isPaymentIssue
+                    ? (language === 'hi' ? 'यह संदेश एक पूरा हुआ भुगतान या बैंक डेबिट लगता है। इसमें धोखाधड़ी के संकेत नहीं मिले हैं।' : 'This message looks like a completed payment receipt or bank debit. No fraud patterns were detected.')
+                    : t.uncertainAnswer)))}
           </p>
         </section>
 
-        {/* Why we flagged it / Warning Signs */}
-        {risk !== 'UNCERTAIN' ? (
+        {/* Why we flagged it / Warning Signs (For fraud or suspicious messages) */}
+        {isFraud ? (
           <section className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4">
             <h3 className="font-semibold text-white text-sm flex items-center gap-2">
               <span className="text-amber-400">⚠</span>
@@ -626,12 +645,12 @@ export default function App() {
               <p className="mt-2 text-sm text-[#c4c7c5]">{display(r.reason, language)}</p>
             )}
           </section>
-        ) : (
+        ) : (!isPaymentIssue && (
           <section className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4">
             <h3 className="font-semibold text-white text-sm">{t.explanation}</h3>
             <p className="mt-1.5 whitespace-pre-line text-sm text-[#c4c7c5] leading-relaxed">{t.uncertainNotice || t.noPattern}</p>
           </section>
-        )}
+        ))}
 
         {/* Recommended action / What to do */}
         <section className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4">
@@ -649,8 +668,57 @@ export default function App() {
           </ul>
         </section>
 
-        {/* Two-path recovery action panel */}
-        <RecoveryPanel t={t} focus={r.recoveryFocus || (looksLikeCompletedPayment(message.sourceText) ? 'money_sent' : 'money_not_sent')} />
+        {/* 🚨 FRAUD SCENARIO: Emergency Cybercrime Reporting */}
+        {isFraud && (
+          <section className="bg-rose-500/[0.06] border border-rose-500/25 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🚨</span>
+              <h3 className="font-semibold text-rose-300 text-sm">
+                {language === 'hi' ? 'धोखाधड़ी में पैसे चले गए या जानकारी दी है?' : 'Defrauded or sent money to this scam?'}
+              </h3>
+            </div>
+            <p className="text-xs text-[#c4c7c5] leading-relaxed">
+              {language === 'hi'
+                ? 'यदि आपने इस धोखाधड़ी के झांसे में आकर पैसे ट्रांसफर कर दिए हैं या UPI PIN दर्ज कर दिया है, तो बिना देरी किए राष्ट्रीय हेल्पलाइन 1930 पर कॉल करें और बैंक को सूचित करें।'
+                : 'If you already sent money or entered your UPI PIN for this fraudulent message, act immediately to freeze transactions before money leaves the banking network.'}
+            </p>
+            <div className="rounded-xl bg-black/30 border border-white/[0.06] p-3 space-y-2 text-xs text-[#e3e3e3]">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="font-medium text-rose-300">📞 {language === 'hi' ? 'राष्ट्रीय साइबर हेल्पलाइन' : 'National Cyber Helpline'}:</span>
+                <a href="tel:1930" className="font-bold text-rose-400 text-sm hover:underline">1930</a>
+              </div>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="font-medium text-[#c4c7c5]">🌐 {language === 'hi' ? 'साइबर अपराध रिपोर्ट पोर्टल' : 'Official Portal'}:</span>
+                <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="text-[#8ab4f8] underline hover:text-white transition">cybercrime.gov.in ↗</a>
+              </div>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="font-medium text-[#c4c7c5]">🔍 {language === 'hi' ? 'संदिग्ध नंबर/UPI रिपॉजिटरी' : 'NCRP Suspect Checker'}:</span>
+                <a href={NCRP_URL} target="_blank" rel="noopener noreferrer" className="text-[#8ab4f8] underline hover:text-white transition">{t.ncrpLinkText} ↗</a>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* 💳 PAYMENT SCENARIO: Wrong payment / Completed payment recovery */}
+        {isPaymentIssue && (
+          <div className="space-y-3">
+            <section className="bg-sky-500/[0.06] border border-sky-500/25 rounded-2xl p-4 space-y-2">
+              <h3 className="font-semibold text-sky-300 text-sm flex items-center gap-2">
+                <span>💸</span>
+                <span>{language === 'hi' ? 'गलत खाते में भुगतान हुआ है?' : 'Wrong Transfer or Payment Issue?'}</span>
+              </h3>
+              <p className="text-xs text-[#c4c7c5] leading-relaxed">
+                {t.recoveryIntro}
+              </p>
+            </section>
+            <RecoveryPanel t={t} focus="money_sent" />
+          </div>
+        )}
+
+        {/* Ambiguous non-fraud, non-payment: standard cautious panel */}
+        {!isFraud && !isPaymentIssue && (
+          <RecoveryPanel t={t} focus="money_not_sent" />
+        )}
 
         {/* Detection sources */}
         {r.sources && (
@@ -665,10 +733,6 @@ export default function App() {
               ].filter(Boolean).join(' • ') || r.method || 'Standard checks'}
             </span>
           </section>
-        )}
-
-        {looksLikeCompletedPayment(message.sourceText) && (
-          <p className="text-xs text-[#9aa0a6] border-t border-white/[0.08] pt-2">{t.recoveryIntro}</p>
         )}
       </div>;
     }

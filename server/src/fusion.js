@@ -384,10 +384,10 @@ export function combineEvidence({
     ? CATEGORY_RECOMMENDATIONS_HI[primaryCategory]
     : defaultRecommendationsHi;
 
-  // Recovery guidance focus: a completed-payment notice points to the
-  // "money already sent" path, everything else to the "money not sent" path.
-  const looksLikeDebit = /\b(?:debited|deducted|payment\s+successful|paid\s+successfully|money\s+sent|transferred)\b/i.test(rawText);
-  const recoveryFocus = (isLegitReceipt || looksLikeDebit) ? 'money_sent' : 'money_not_sent';
+  // Recovery guidance focus: only a genuine completed-payment receipt points to the
+  // "money already sent" path. Scams and suspicious requests always point to prevention ("money not sent").
+  const looksLikeDebit = /\b(?:debited\s+(?:by|from)|credited\s+(?:to|with)|paid\s+successfully\s+to|payment\s+(?:of\s+.*?\s+)?(?:was\s+)?received\s+successfully)\b/i.test(rawText);
+  const recoveryFocus = (riskLevel === 'UNCERTAIN' && (isLegitReceipt || looksLikeDebit)) ? 'money_sent' : 'money_not_sent';
 
   // Masked identifiers only: the API never echoes full links or UPI IDs.
   const maskedEntities = localResult?.entities ? {
