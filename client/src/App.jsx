@@ -14,7 +14,9 @@ const copy = {
     message: 'Message to check', placeholder: 'Paste a sample message here (no private details)',
     characters: 'characters', checking: 'Checking...', check: 'Check message', verdict: 'Verdict',
     upload: 'Upload screenshot', reading: 'Reading text from the screenshot...',
-    ocrDone: 'Text extracted from your screenshot. Check it, then run the check.',
+    ocrDone: 'Text extracted. Review or edit it, then choose what you need below.',
+    chooseAction: 'What would you like to do?', fraudChoice: 'Check if this message is fraud', recoveryChoice: 'Wrong payment - how to get money back',
+    recoveryChosenIntro: 'If you sent money to the wrong person, act fast. Follow these steps; getting it back is not guaranteed.',
     ocrError: 'Could not read text from that image. Try a clearer screenshot or paste the message instead.',
     recoveryTitle: 'Sent money to the wrong person?',
     recoveryIntro: 'This message looks like a completed payment. If the money went to the wrong person, act fast. These are the real steps; recovery is not guaranteed.',
@@ -37,7 +39,9 @@ const copy = {
     message: 'जाँचने के लिए संदेश', placeholder: 'नमूना संदेश यहाँ डालें (निजी जानकारी न डालें)',
     characters: 'अक्षर', checking: 'जाँच जारी है...', check: 'संदेश जाँचें', verdict: 'नतीजा',
     upload: 'स्क्रीनशॉट अपलोड करें', reading: 'स्क्रीनशॉट से टेक्स्ट पढ़ा जा रहा है...',
-    ocrDone: 'स्क्रीनशॉट से टेक्स्ट मिल गया। इसे देखें, फिर जाँच चलाएँ।',
+    ocrDone: 'स्क्रीनशॉट से टेक्स्ट मिल गया। इसे देखें या सुधारें, फिर नीचे अपना विकल्प चुनें।',
+    chooseAction: 'आप क्या करना चाहते हैं?', fraudChoice: 'क्या यह संदेश धोखाधड़ी है, जाँचें', recoveryChoice: 'गलत भुगतान - पैसे वापस कैसे पाएं',
+    recoveryChosenIntro: 'अगर आपने गलत व्यक्ति को पैसे भेजे हैं तो जल्दी करें। ये कदम अपनाएँ; पैसे वापसी की गारंटी नहीं है।',
     ocrError: 'उस तस्वीर से टेक्स्ट नहीं पढ़ा जा सका। साफ़ स्क्रीनशॉट डालें या संदेश चिपकाएँ।',
     recoveryTitle: 'गलत व्यक्ति को पैसे चले गए?',
     recoveryIntro: 'यह संदेश पूरा हुआ भुगतान लगता है। अगर पैसे गलत व्यक्ति को चले गए हैं तो जल्दी करें। असली तरीका यह है; पैसे वापस मिलने की गारंटी नहीं है।',
@@ -95,6 +99,8 @@ export default function App() {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrState, setOcrState] = useState('');
   const [checkedText, setCheckedText] = useState('');
+  const [screenshotReady, setScreenshotReady] = useState(false);
+  const [selectedAction, setSelectedAction] = useState('');
   const fileInput = useRef(null);
   const t = copy[language];
 
@@ -104,6 +110,10 @@ export default function App() {
     if (!file) return;
     setOcrLoading(true);
     setOcrState('');
+    setScreenshotReady(false);
+    setSelectedAction('');
+    setResult(null);
+    setError('');
     try {
       const tesseract = (await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.esm.min.js')).default;
       const { recognize } = tesseract;
@@ -112,7 +122,7 @@ export default function App() {
       const meaningful = (extracted.match(/[\p{L}\p{N}]/gu) || []).length;
       if (meaningful < 3) throw new Error('no text found');
       setText(extracted);
-      setResult(null);
+      setScreenshotReady(true);
       setOcrState('done');
     } catch (err) {
       setOcrState('error');
@@ -122,7 +132,9 @@ export default function App() {
   }
 
   async function check(event) {
-    event.preventDefault();
+    event?.preventDefault();
+    if (!text.trim()) return;
+    if (screenshotReady) setSelectedAction('fraud');
     setResult(null);
     setError('');
     setLoading(true);
@@ -171,26 +183,33 @@ export default function App() {
             <input ref={fileInput} type="file" accept="image/*" onChange={readScreenshot} className="hidden" aria-hidden="true" tabIndex={-1} />
             <button type="button" disabled={ocrLoading || loading} onClick={() => fileInput.current && fileInput.current.click()} className="rounded-xl border border-white/60 bg-white/60 px-4 py-2 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur-md transition hover:bg-white/80 disabled:opacity-60">{t.upload}</button>
           </div>
-          <textarea id="message" maxLength={1000} required rows={6} value={text} onChange={e => setText(e.target.value)} placeholder={t.placeholder} className="mt-3 w-full rounded-xl border border-slate-300/80 bg-white/70 p-3 backdrop-blur-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+          <textarea id="message" maxLength={1000} required rows={6} value={text} onChange={e => { setText(e.target.value); setResult(null); setError(''); setCheckedText(''); }} placeholder={t.placeholder} className="mt-3 w-full rounded-xl border border-slate-300/80 bg-white/70 p-3 backdrop-blur-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
           {ocrLoading && <p className="mt-3 text-sm text-indigo-700" role="status">{t.reading}</p>}
           {ocrState === 'done' && <p className="mt-3 text-sm text-emerald-700" role="status">{t.ocrDone}</p>}
           {ocrState === 'error' && <p className="mt-3 text-sm text-red-700" role="alert">{t.ocrError}</p>}
+          {screenshotReady && <fieldset className="mt-5 rounded-2xl border border-indigo-200/70 bg-indigo-50/70 p-4">
+            <legend className="px-1 text-base font-semibold text-indigo-950">{t.chooseAction}</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button type="submit" aria-pressed={selectedAction === 'fraud'} disabled={loading || !text.trim()} className={`min-h-16 rounded-xl border px-4 py-3 text-left font-semibold shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:opacity-60 ${selectedAction === 'fraud' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-indigo-200 bg-white/80 text-indigo-900 hover:bg-white'}`}>{loading ? t.checking : t.fraudChoice}</button>
+              <button type="button" aria-pressed={selectedAction === 'recovery'} disabled={loading || !text.trim()} onClick={() => { setSelectedAction('recovery'); setResult(null); setError(''); }} className={`min-h-16 rounded-xl border px-4 py-3 text-left font-semibold shadow-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:opacity-60 ${selectedAction === 'recovery' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-indigo-200 bg-white/80 text-indigo-900 hover:bg-white'}`}>{t.recoveryChoice}</button>
+            </div>
+          </fieldset>}
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <span className="text-sm text-slate-500">{text.length}/1000 {t.characters}</span>
-            <button disabled={loading} className="rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 px-5 py-2.5 font-medium text-white shadow-lg shadow-indigo-600/25 transition hover:from-indigo-700 hover:to-sky-700 disabled:opacity-60">{loading ? t.checking : t.check}</button>
+            {!screenshotReady && <button disabled={loading || ocrLoading} className="rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 px-5 py-2.5 font-medium text-white shadow-lg shadow-indigo-600/25 transition hover:from-indigo-700 hover:to-sky-700 disabled:opacity-60">{loading ? t.checking : t.check}</button>}
           </div>
         </form>
         {error && <p role="alert" className="mt-5 rounded-2xl border border-red-200/70 bg-red-50/80 p-4 text-red-800 backdrop-blur-md">{display(error, language) === error && language === 'hi' ? t.error : display(error, language)}</p>}
-        {result && <section aria-live="polite" className={`mt-6 min-w-0 break-words p-6 ${glassCard}`}>
+        {result && (!screenshotReady || selectedAction === 'fraud') && <section aria-live="polite" className={`mt-6 min-w-0 break-words p-6 ${glassCard}`}>
           <div className="flex flex-wrap items-center gap-3"><h2 className="text-xl font-semibold">{t.verdict}</h2><span className={`rounded-full px-3 py-1 text-sm font-semibold ${labelStyles[result.label] || labelStyles.uncertain}`}>{display(result.label, language)}</span></div>
           <p className="mt-4"><strong>{t.reason}:</strong> {display(result.reason, language)}</p>
           <p className="mt-3"><strong>{t.action}:</strong> {display(result.safeAction, language)}</p>
           <p className="mt-3 text-sm text-slate-600">{t.method}: {display(result.method, language)}. {t.signal}: {display(result.generalSpamSignal, language)}. {t.confidence}</p>
           {result.evidence?.length > 0 && <p className="mt-3 text-sm"><strong>{t.evidence}:</strong> {result.evidence.map(item => display(item, language)).join(', ')}</p>}
         </section>}
-        {result && looksLikeCompletedPayment(checkedText) && <section className={`mt-6 p-6 ${glassCard}`}>
+        {((screenshotReady && selectedAction === 'recovery') || (!screenshotReady && result && looksLikeCompletedPayment(checkedText))) && <section className={`mt-6 p-6 ${glassCard}`}>
           <h2 className="text-xl font-semibold">{t.recoveryTitle}</h2>
-          <p className="mt-2 text-slate-600">{t.recoveryIntro}</p>
+          <p className="mt-2 text-slate-600">{screenshotReady ? t.recoveryChosenIntro : t.recoveryIntro}</p>
           <ol className="mt-4 list-decimal space-y-2 pl-5">
             {t.recoverySteps.map(step => <li key={step}>{step}</li>)}
           </ol>
