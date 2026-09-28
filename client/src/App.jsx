@@ -36,9 +36,9 @@ export default function App() {
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-12 text-slate-900">
       <div className="mx-auto max-w-2xl">
-        <p className="text-sm font-semibold uppercase tracking-widest text-indigo-700">Day 1 prototype</p>
+        <p className="text-sm font-semibold uppercase tracking-widest text-indigo-700">Day 3 cautious detector</p>
         <h1 className="mt-2 text-4xl font-bold">UPI Scam Shield</h1>
-        <p className="mt-3 text-slate-600">Paste a payment message to see the API's structured response. The classifier is not built yet, so this is not a real safety verdict.</p>
+        <p className="mt-3 text-slate-600">Paste a redacted payment message. High-risk requests may be flagged, but the English general-spam model is not a UPI scam test. This tool cannot certify a message as safe.</p>
         <form onSubmit={check} className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <label htmlFor="message" className="block font-semibold">Message to check</label>
           <textarea id="message" maxLength={1000} required rows={6} value={text} onChange={e => setText(e.target.value)} placeholder="Paste a sample message here (no private details)" className="mt-3 w-full rounded-lg border border-slate-300 p-3 focus:border-indigo-600 focus:outline-none" />
@@ -52,10 +52,10 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-3"><h2 className="text-xl font-semibold">Verdict</h2><span className={`rounded-full px-3 py-1 text-sm font-semibold ${labelStyles[result.label] || labelStyles.uncertain}`}>{result.label}</span></div>
           <p className="mt-4"><strong>Reason:</strong> {result.reason}</p>
           <p className="mt-3"><strong>Safe action:</strong> {result.safeAction}</p>
-          <p className="mt-3 text-sm text-slate-600">Confidence: {result.confidence == null ? 'Not available' : result.confidence} · Method: {result.method}</p>
+          <p className="mt-3 text-sm text-slate-600">Method: {result.method}. General spam signal: {result.generalSpamSignal}. Confidence in a UPI scam verdict: not established.</p>
           {result.evidence?.length > 0 && <p className="mt-3 text-sm">Evidence: {result.evidence.join(', ')}</p>}
         </section>}
-        <p className="mt-8 text-sm text-slate-500">No sender, link, payment or identity is verified here. Do not paste real private SMS into a public demo.</p>
+        <p className="mt-8 text-sm text-slate-500">A safe verdict is deliberately withheld until genuine, consented payment-message data can be evaluated. No sender, link, payment or identity is verified here. Do not paste real private SMS into a public demo.</p>
       </div>
     </main>
   );
