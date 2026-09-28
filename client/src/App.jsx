@@ -36,7 +36,24 @@ const copy = {
     clarification: 'Tell me what you need in your own words: ask whether the message is fraud, or say you sent money to the wrong person. No buttons needed.',
     askAfterText: 'Got your message. Ask me in chat what you want to know about it, for example whether it looks like fraud or what to do about a wrong payment.',
     resultIntro: 'Here is a cautious check of the text you sent:',
-    recoveryIntroChat: 'If you sent money to the wrong person, act quickly. Recovery is not guaranteed.'
+    recoveryIntroChat: 'If you sent money to the wrong person, act quickly. Recovery is not guaranteed.',
+    answer: 'Short answer', why: 'Why this answer', signals: 'What I noticed', explanation: 'What it means', nextSteps: 'What to do now', limits: 'Limits of this check',
+    scamAnswer: 'This message has scam warning signs. Do not follow its instructions.',
+    uncertainAnswer: 'I cannot confirm this message is genuine or safe from its text alone.',
+    noPattern: 'I did not find a strong fraud-request pattern in this text. That is not evidence that the sender or payment is real.',
+    spamCaution: 'A general English spam model flagged the wording, but spam and UPI fraud are different things.',
+    secretWhy: 'It asks you to give a private code or credential. OTPs and UPI PINs authorize access or payments; a sender asking for them is a serious warning sign.',
+    demandWhy: 'It ties a payment demand to a promised credit or a threat to your account. You do not need to pay someone to receive a UPI payment.',
+    genericRisk: 'The wording needs independent verification. A text message can copy a familiar bank name or make an urgent claim without proving who sent it.',
+    scamInstruction: 'Do not reply, share an OTP or PIN, open the message link, or send money. Open your bank or UPI app yourself using its saved icon and check there. If you already paid, contact the bank immediately and report suspected fraud to 1930.',
+    uncertainInstruction: 'Do not treat the lack of a warning as clearance. Open the bank or payment app yourself to check the transaction; avoid message links and never give anyone your OTP or UPI PIN.',
+    noSafeReason: 'This is a warning-sign check, not identity, link, account or payment verification. The general spam model was not validated as a UPI scam detector.',
+    aiDetail: 'Additional model note (English)',
+    learningAnswer: 'To spot a possible UPI scam, look for requests for OTPs or PINs, pressure to pay to receive money, and urgent account-blocking claims.',
+    learningWhy: 'These are warning signs because codes can approve access or transactions, while an incoming UPI payment does not require you to send money first.',
+    learningSteps: ['Do not use links or phone numbers in an unexpected message.', 'Open your payment or bank app yourself and check the transaction or request there.', 'If money was lost, contact your bank and report suspected fraud to 1930. Keep the transaction reference.'],
+    learningLimit: 'A message can look ordinary and still be forged; only the bank or payment app can confirm a transaction.',
+    needsText: 'Please paste the payment message with private details removed, or upload a screenshot and review the extracted text. I need the wording to explain its warning signs; do not send an OTP or UPI PIN.'
   },
   hi: {
     language: 'भाषा', eyebrow: 'भुगतान संदेश की सावधानी से जाँच', title: 'UPI स्कैम शील्ड',
@@ -71,7 +88,24 @@ const copy = {
     clarification: 'अपने शब्दों में बताएं: क्या संदेश धोखाधड़ी है, या गलत व्यक्ति को पैसे चले गए? कोई बटन नहीं चाहिए।',
     askAfterText: 'आपका संदेश मिल गया। चैट में पूछें कि यह धोखाधड़ी है या गलत भुगतान के बाद क्या करें।',
     resultIntro: 'आपके भेजे टेक्स्ट की सावधानी से जाँच:',
-    recoveryIntroChat: 'अगर गलत व्यक्ति को पैसे भेजे हैं तो जल्दी करें। पैसे वापसी की गारंटी नहीं है।'
+    recoveryIntroChat: 'अगर गलत व्यक्ति को पैसे भेजे हैं तो जल्दी करें। पैसे वापसी की गारंटी नहीं है।',
+    answer: 'सीधा जवाब', why: 'क्यों', signals: 'कौन से संकेत मिले', explanation: 'इसका मतलब', nextSteps: 'अब क्या करें', limits: 'जाँच की सीमा',
+    scamAnswer: 'इस संदेश में धोखाधड़ी के चेतावनी संकेत हैं। इसकी बात मानकर कोई कदम न उठाएँ।',
+    uncertainAnswer: 'सिर्फ इस संदेश के आधार पर इसे असली या सुरक्षित नहीं कह सकता।',
+    noPattern: 'इस टेक्स्ट में धोखाधड़ी का स्पष्ट अनुरोध नहीं मिला। इसका मतलब यह नहीं कि भेजने वाला या भुगतान असली है।',
+    spamCaution: 'अंग्रेज़ी सामान्य स्पैम मॉडल ने टेक्स्ट पर चेतावनी दी है, लेकिन स्पैम और UPI धोखाधड़ी अलग बातें हैं।',
+    secretWhy: 'संदेश निजी कोड या पहचान की जानकारी माँगता है। OTP और UPI PIN से खाते या भुगतान पर असर पड़ सकता है; इन्हें माँगना गंभीर चेतावनी है।',
+    demandWhy: 'संदेश पैसे मिलने का वादा या खाते की धमकी देकर पहले भुगतान माँगता है। UPI पर पैसे पाने के लिए किसी को पैसे भेजने की ज़रूरत नहीं होती।',
+    genericRisk: 'दावे की स्वतंत्र पुष्टि ज़रूरी है। संदेश में बैंक का नाम या जल्दी करने का दबाव हो सकता है, लेकिन इससे भेजने वाले की पहचान साबित नहीं होती।',
+    scamInstruction: 'जवाब न दें, OTP या PIN न बताएँ, संदेश का लिंक न खोलें और पैसे न भेजें। खुद बैंक या UPI ऐप खोलकर जाँचें। पहले ही पैसे भेज दिए हैं तो तुरंत बैंक से संपर्क करें और संदिग्ध धोखाधड़ी 1930 पर रिपोर्ट करें।',
+    uncertainInstruction: 'चेतावनी न मिलने को सुरक्षित होने का प्रमाण न मानें। खुद बैंक या पेमेंट ऐप में लेन-देन देखें; संदेश के लिंक से बचें और OTP या UPI PIN किसी को न दें।',
+    noSafeReason: 'यह केवल जोखिम के संकेत जाँचता है; पहचान, लिंक, खाता या भुगतान की पुष्टि नहीं करता। सामान्य स्पैम मॉडल की UPI धोखाधड़ी जाँच के लिए पुष्टि नहीं हुई है।',
+    aiDetail: 'मॉडल की अतिरिक्त टिप्पणी (अंग्रेज़ी)',
+    learningAnswer: 'UPI धोखाधड़ी के संकेत हैं: OTP या PIN माँगना, पैसे पाने के लिए पहले भुगतान का दबाव, और खाता बंद होने की तत्काल धमकी।',
+    learningWhy: 'ये चेतावनी हैं क्योंकि कोड से पहुँच या भुगतान मंजूर हो सकता है, जबकि UPI में पैसे पाने के लिए पहले पैसे भेजने की ज़रूरत नहीं होती।',
+    learningSteps: ['अचानक आए संदेश के लिंक या फोन नंबर का इस्तेमाल न करें।', 'खुद बैंक या पेमेंट ऐप खोलें और वहाँ लेन-देन या अनुरोध देखें।', 'पैसे चले गए हों तो बैंक से संपर्क करें और संदिग्ध धोखाधड़ी 1930 पर रिपोर्ट करें। लेन-देन का रेफरेंस संभालें।'],
+    learningLimit: 'साधारण दिखने वाला संदेश भी नकली हो सकता है; भुगतान की पुष्टि बैंक या पेमेंट ऐप में करें।',
+    needsText: 'भुगतान संदेश से निजी जानकारी हटाकर भेजें या स्क्रीनशॉट डालकर निकला टेक्स्ट जाँचें। बिना संदेश के उसके जोखिम नहीं समझा सकता। OTP या UPI PIN न भेजें।'
   }
 };
 
@@ -110,6 +144,7 @@ let nextId = 0;
 const makeMessage = (role, kind, content = {}) => ({ id: ++nextId, role, kind, ...content });
 const wrongPaymentIntent = /\b(wrong|mistak(?:e|en)|galat|galt|galti)\b.{0,70}\b(payment|paid|transfer|upi|paisa|paise|money|bhej|send|sent)\b|\b(payment|paid|transfer|paisa|paise|money|bhej|sent)\b.{0,70}\b(wrong|mistak(?:e|en)|galat|galt|galti)\b|गलत.{0,50}(भुगतान|पैसे|भेज)|(?:भुगतान|पैसे).{0,50}गलत/i;
 const fraudIntent = /\b(fraud|scam|fake|genuine|safe|real|suspicious|dhokha|dhokadhadi)\b|धोखाधड़ी|फ़्रॉड|स्कैम|नकली|सुरक्षित/i;
+const learningIntent = /\b(how (?:can|do|to)|what (?:are|is)|ways to|tips|explain|understand|spot|identify|recogniz(?:e|ing))\b.{0,100}\b(upi|fraud|scam|payment)\b|\b(upi|fraud|scam|payment)\b.{0,100}\b(how|spot|identify|tips|work|happens)\b|(?:कैसे|क्या|समझा).{0,60}(?:धोखाधड़ी|स्कैम|UPI)|(?:धोखाधड़ी|स्कैम|UPI).{0,60}(?:कैसे|पहचान|बचाव)|\b(?:kaise|pehchan|bachne)\b.{0,60}\b(?:fraud|scam|upi)\b/i;
 const inquiry = /[?？]|\b(is|check|tell|help|how|kya|kaise|hai|hoga|please|can|what)\b|क्या|कैसे|मदद/i;
 function intentOf(text) {
   if (wrongPaymentIntent.test(text)) return 'recovery';
@@ -159,14 +194,17 @@ export default function App() {
     setDraft('');
     setOcrState('');
     const action = intentOf(text);
+    const learning = !looksLikeCompletedPayment(text) && learningIntent.test(text) && !/(otp|pin|https?:|\u20b9|inr|rs\.?|account.*(?:pay|send))/i.test(text);
     const user = makeMessage('user', 'text', { text });
     // A short question after a shared message refers to the earlier text.
     const refersToEarlier = !!activeText && action && text.length < 130 && inquiry.test(text) && !looksLikeCompletedPayment(text) && !/(otp|pin|https?:|\u20b9|inr|rs\.?|account|refund)/i.test(text);
     const sourceText = refersToEarlier ? activeText : text;
-    if (!refersToEarlier && (!action || looksLikeCompletedPayment(text))) setActiveText(text);
+    if (!refersToEarlier && !learning && (!action || looksLikeCompletedPayment(text))) setActiveText(text);
     setMessages(previous => [...previous, user]);
-    if (action === 'fraud' && !refersToEarlier && text.length < 80 && !/(otp|pin|https?:|\u20b9|inr|rs\.?|account|bank|upi|refund)/i.test(text)) {
-      setMessages(previous => [...previous, makeMessage('assistant', 'question', { text: 'askAfterText' })]);
+    if (learning) {
+      setMessages(previous => [...previous, makeMessage('assistant', 'learning')]);
+    } else if (action === 'fraud' && !refersToEarlier && text.length < 80 && !/(otp|pin|https?:|\u20b9|inr|rs\.?|account|refund)/i.test(text)) {
+      setMessages(previous => [...previous, makeMessage('assistant', 'question', { text: 'needsText' })]);
     } else if (action === 'recovery') {
       setMessages(previous => [...previous, makeMessage('assistant', 'recovery', { sourceText })]);
     } else if (action === 'fraud') {
@@ -205,18 +243,31 @@ export default function App() {
       <ol className="mt-3 list-decimal space-y-2 pl-5">{t.recoverySteps.map((step, index) => <li key={index}>{step}</li>)}</ol>
       <p className="mt-3 text-sm text-slate-700">{t.recoveryNote}</p>
     </>;
+    if (message.kind === 'learning') return <div className="space-y-3">
+      <section><h2 className="font-semibold text-indigo-900">{t.answer}</h2><p>{t.learningAnswer}</p></section>
+      <section><h3 className="font-semibold text-slate-900">{t.why}</h3><p>{t.learningWhy}</p></section>
+      <section><h3 className="font-semibold text-slate-900">{t.nextSteps}</h3><ol className="list-decimal space-y-1 pl-5">{t.learningSteps.map((step, i) => <li key={i}>{step}</li>)}</ol></section>
+      <section className="border-t border-slate-300/70 pt-2 text-sm text-slate-700"><h3 className="font-semibold">{t.limits}</h3><p>{t.learningLimit}</p></section>
+    </div>;
     if (message.kind === 'verdict') {
       const r = message.result;
-      return <>
-        <p>{t.resultIntro}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2"><strong>{t.verdict}:</strong><span className={`rounded-full px-3 py-1 text-sm font-semibold ${labelStyles[r.label] || labelStyles.uncertain}`}>{display(r.label, language)}</span></div>
-        <p className="mt-3"><strong>{t.reason}:</strong> {display(r.reason, language)}</p>
-        <p className="mt-3"><strong>{t.action}:</strong> {display(r.safeAction, language)}</p>
-        {r.evidence?.length > 0 && <p className="mt-3 text-sm"><strong>{t.evidence}:</strong> {r.evidence.map(item => display(item, language)).join(', ')}</p>}
-        <p className="mt-3 text-sm text-slate-700">{t.method}: {display(r.method, language)}. {t.signal}: {display(r.generalSpamSignal, language)}. {t.confidence}</p>
-        <p className="mt-3 text-sm font-medium text-sky-900">{t.noSafe}</p>
-        {looksLikeCompletedPayment(message.sourceText) && <p className="mt-2 text-sm text-slate-700">{t.recoveryIntro}</p>}
-      </>;
+      const clues = [
+        ...(r.evidence || []).filter(item => item === 'Message asks for a sensitive code or credential').map(() => t.secretWhy),
+        ...(r.evidence || []).filter(item => item === 'Message links a payment demand to a promised credit or account threat').map(() => t.demandWhy),
+        ...(r.generalSpamSignal === 'flagged' ? [t.spamCaution] : [])
+      ];
+      if (!clues.length) clues.push(t.noPattern);
+      const knownReason = Object.prototype.hasOwnProperty.call(apiCopy, r.reason);
+      return <div className="space-y-3">
+        <section><h2 className="font-semibold text-indigo-900">{t.answer}</h2><div className="mt-1 flex flex-wrap items-center gap-2"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${labelStyles[r.label] || labelStyles.uncertain}`}>{display(r.label, language)}</span><strong>{r.label === 'scam' ? t.scamAnswer : t.uncertainAnswer}</strong></div></section>
+        <section><h3 className="font-semibold text-slate-900">{t.why}</h3><p>{knownReason ? display(r.reason, language) : t.genericRisk}</p></section>
+        <section><h3 className="font-semibold text-slate-900">{t.signals}</h3><ul className="list-disc space-y-1 pl-5">{clues.map((clue, i) => <li key={i}>{clue}</li>)}</ul></section>
+        <section><h3 className="font-semibold text-slate-900">{t.explanation}</h3><p>{r.label === 'scam' ? t.genericRisk : t.noPattern}</p></section>
+        <section><h3 className="font-semibold text-slate-900">{t.nextSteps}</h3><p>{r.label === 'scam' ? t.scamInstruction : t.uncertainInstruction}</p></section>
+        {looksLikeCompletedPayment(message.sourceText) && <p className="text-sm text-slate-700">{t.recoveryIntro}</p>}
+        {!knownReason && r.reason && <section className="text-sm text-slate-700"><h3 className="font-semibold">{t.aiDetail}</h3><p>{r.reason}</p></section>}
+        <section className="border-t border-slate-300/70 pt-2 text-sm text-slate-700"><h3 className="font-semibold">{t.limits}</h3><p>{t.noSafeReason}</p></section>
+      </div>;
     }
     return null;
   }
