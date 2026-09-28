@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 const labelStyles = {
   scam: 'bg-red-100 text-red-800',
-  safe: 'bg-green-100 text-green-800',
   uncertain: 'bg-amber-100 text-amber-900'
 };
 
@@ -36,13 +35,13 @@ export default function App() {
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-12 text-slate-900">
       <div className="mx-auto max-w-2xl">
-        <p className="text-sm font-semibold uppercase tracking-widest text-indigo-700">Day 3 cautious detector</p>
+        <p className="text-sm font-semibold uppercase tracking-widest text-indigo-700">Cautious payment-message check</p>
         <h1 className="mt-2 text-4xl font-bold">UPI Scam Shield</h1>
         <p className="mt-3 text-slate-600">Paste a redacted payment message. High-risk requests may be flagged, but the English general-spam model is not a UPI scam test. This tool cannot certify a message as safe.</p>
         <form onSubmit={check} className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <label htmlFor="message" className="block font-semibold">Message to check</label>
           <textarea id="message" maxLength={1000} required rows={6} value={text} onChange={e => setText(e.target.value)} placeholder="Paste a sample message here (no private details)" className="mt-3 w-full rounded-lg border border-slate-300 p-3 focus:border-indigo-600 focus:outline-none" />
-          <div className="mt-3 flex items-center justify-between gap-4">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <span className="text-sm text-slate-500">{text.length}/1000 characters</span>
             <button disabled={loading} className="rounded-lg bg-indigo-700 px-5 py-2.5 font-medium text-white hover:bg-indigo-800 disabled:opacity-60">{loading ? 'Checking...' : 'Check message'}</button>
           </div>
