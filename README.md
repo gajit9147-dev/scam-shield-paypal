@@ -1,6 +1,6 @@
 # UPI Scam Shield
 
-A defensive student prototype for merchant-support triage of suspicious UPI/payment messages, built for the Razorpay AI Buildathon. **Day 3 adds a measured English general-spam model and cautious payment-warning rules, not a validated UPI scam detector.** No output proves a payment message is safe.
+A defensive student prototype for merchant-support triage of suspicious UPI/payment messages, built for the Razorpay AI Buildathon. **The prototype uses a measured English general-spam model and cautious payment-warning rules, not a validated UPI scam detector.** No output proves a payment message is safe.
 
 ## Run locally
 
@@ -10,7 +10,7 @@ Install Node.js 20.19+ or 22.12+ and npm. Clone this repo and open two terminal 
 git clone https://github.com/gajit9147-dev/upi-scam-shield.git
 cd upi-scam-shield
 cd server
-npm install
+npm ci
 npm run dev
 ```
 
@@ -18,7 +18,7 @@ In the second terminal, from `upi-scam-shield`:
 
 ```bash
 cd client
-npm install
+npm ci
 npm run dev
 ```
 
@@ -31,6 +31,17 @@ curl -X POST http://localhost:3001/api/check -H 'Content-Type: application/json'
 ```
 
 If `curl` isn't available on Windows, use the browser UI. If the frontend says it cannot reach the API, check that the server terminal still shows `API ready`.
+
+## Local checks
+
+Run these in separate terminals after `npm ci` in each folder:
+
+```bash
+cd server && npm test
+cd client && npm run build
+```
+
+For a local UI check, leave the server and Vite running, then try **made-up** messages: `Share OTP 123456 to claim your refund` and `Pay a fee via https://example.invalid to receive your cashback` should show a `scam` warning. `Your payment of INR 300 was completed` should show `uncertain`, not `safe`. Submitting an empty form is blocked by browser validation; the API separately rejects blank input with HTTP 400. A standalone link without a matching suspicious request may be `uncertain`: the tool does not check whether links are safe. These are synthetic integration cases, not UPI performance measurements.
 
 ## Current response contract
 
@@ -61,6 +72,6 @@ Labels are `scam` (suspicious request pattern) and `uncertain` (including appare
 
 ## Build plan and limitations
 
-Day 2: UCI data preparation (done). Day 3: measured English general-spam baseline and cautious payment-warning rules (done). Next: consented, redacted UPI examples and a held-out UPI evaluation; only then consider model changes, demo and application. The detailed 7-day plan is private to the project owner.
+Day 2: UCI data preparation (done). Day 3: measured English general-spam baseline and cautious payment-warning rules (done). Day 4: fresh-clone installation, server tests, client build and local end-to-end UI checks (done). Next: consented, redacted UPI examples and a held-out UPI evaluation; only then consider model changes, demo and application. The detailed 7-day plan is private to the project owner.
 
 UCI's [SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms%2Bspam%2Bcollection) is English general spam, not an Indian UPI benchmark. It will be used to learn the pipeline, with separate results. The UCI general-spam results are reported in [Day 3 evaluation](docs/day3-evaluation.md), with no UPI accuracy, precision, recall or loss-prevention claim. The app does not verify senders, links or payments; it does not automatically block anything. Never upload personal messages, OTPs or payment identifiers into this public repository.
