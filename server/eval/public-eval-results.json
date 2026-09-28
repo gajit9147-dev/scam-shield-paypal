@@ -1,0 +1,1183 @@
+{
+  "datasetSize": 129,
+  "positives": 69,
+  "negatives": 60,
+  "confusion": {
+    "tp": 68,
+    "fp": 1,
+    "tn": 59,
+    "fn": 1
+  },
+  "precision": "98.55%",
+  "recall": "98.55%",
+  "accuracy": "98.45%",
+  "falsePositives": [
+    "pub-benign-pay-09"
+  ],
+  "falseNegatives": [
+    "pub-hing-scam-31"
+  ],
+  "rows": [
+    {
+      "id": "pub-india-scam-01",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-02",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "kyc_phishing",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-03",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-04",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-05",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "kyc_phishing",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-06",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "otp_pin_theft",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-07",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "suspicious",
+      "riskLevel": "SUSPICIOUS",
+      "predictedCategory": "malicious_link",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-08",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-09",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-10",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "upi_payment_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-11",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "credential_theft",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-12",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "kyc_phishing",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-13",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "upi_payment_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-14",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-15",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "otp_pin_theft",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-16",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-17",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "credential_theft",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-18",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "credential_theft",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-19",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "account_block_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-20",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "account_block_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-21",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "otp_pin_theft",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-22",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-23",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "otp_pin_theft",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-24",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "otp_pin_theft",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-25",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "suspicious",
+      "riskLevel": "SUSPICIOUS",
+      "predictedCategory": "cashback_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-26",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "suspicious",
+      "riskLevel": "SUSPICIOUS",
+      "predictedCategory": "account_block_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-27",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "otp_pin_theft",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-28",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-29",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "upi_payment_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-30",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-31",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-32",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "credential_theft",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-33",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "suspicious",
+      "riskLevel": "SUSPICIOUS",
+      "predictedCategory": "job_fee_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-34",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "otp_pin_theft",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-india-scam-35",
+      "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-01",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "otp_pin_theft",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-02",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-03",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-04",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-06",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-07",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-08",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-09",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-10",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "kyc_phishing",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-11",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-12",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-13",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "upi_payment_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-14",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-15",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-16",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-17",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-18",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "kyc_phishing",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-19",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "account_block_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-20",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-21",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-22",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-23",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-24",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "account_block_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-25",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-26",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-27",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-28",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-29",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-30",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-31",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "FN"
+    },
+    {
+      "id": "pub-hing-scam-32",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-33",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-34",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-hing-scam-35",
+      "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "scam",
+      "label": "scam",
+      "riskLevel": "HIGH_RISK",
+      "predictedCategory": "prize_lottery_scam",
+      "outcome": "TP"
+    },
+    {
+      "id": "pub-benign-pay-01",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-02",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-03",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-04",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-05",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-06",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-07",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-08",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-09",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "suspicious",
+      "riskLevel": "SUSPICIOUS",
+      "predictedCategory": "account_block_scam",
+      "outcome": "FP"
+    },
+    {
+      "id": "pub-benign-pay-10",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-11",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-12",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-13",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-14",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-15",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-16",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-17",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-18",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-19",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-20",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-21",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-22",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-23",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-24",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-25",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-26",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-27",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-28",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-29",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-pay-30",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-01",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-02",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-03",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-04",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-05",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-06",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-07",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-08",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-09",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-10",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-11",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-12",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-13",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-14",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-15",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-16",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-17",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-18",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-19",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-20",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-21",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-22",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-23",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-24",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-25",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-26",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-27",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-28",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-29",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    },
+    {
+      "id": "pub-benign-gen-30",
+      "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+      "expect": "uncertain",
+      "label": "uncertain",
+      "riskLevel": "UNCERTAIN",
+      "predictedCategory": "unknown_suspicious",
+      "outcome": "TN"
+    }
+  ]
+}

@@ -191,7 +191,7 @@
       "expect": "scam",
       "label": "scam",
       "riskLevel": "HIGH_RISK",
-      "predictedCategory": "malicious_link",
+      "predictedCategory": "account_block_scam",
       "flagged": true,
       "correct": true,
       "outcome": "TP"

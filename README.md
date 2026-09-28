@@ -38,11 +38,18 @@ Run these in separate terminals after `npm ci` in each folder:
 
 ```bash
 cd server && npm test
-cd server && npm run eval:upi   # UPI pilot evaluation on a small synthetic set
+cd server && npm run eval:upi      # synthetic UPI pilot (hand-written, frozen)
+cd server && npm run eval:public   # public downloaded Indian scam datasets
 cd client && npm run build
 ```
 
-The UPI pilot run scores 42 frozen, hand-written Hindi/Hinglish/English cases through the real verdict path and reports TP/FP/TN/FN, precision/recall, uncertain coverage and false-positive examples. Current pilot: precision 100%, recall 100%, zero false positives - see [Day 5 evaluation](docs/day5-upi-pilot-evaluation.md) for the method and the honest limits. **These are synthetic regression numbers, not validated real-world UPI accuracy.**
+The synthetic pilot scores 42 frozen, hand-written Hindi/Hinglish/English cases through the real verdict path: precision 100%, recall 100%, zero false positives - see [Day 5 evaluation](docs/day5-upi-pilot-evaluation.md). The public-source run scores 129 frozen cases sampled from two downloaded, publicly available Indian scam datasets (Hugging Face, keyword-labeled by their authors): precision 98.55%, recall 98.55%, with one kept and documented false positive and one false negative - see [Day 6 public evaluation](docs/day6-public-evaluation.md). **Neither is validated real-world UPI accuracy;** both docs say exactly why.
+
+## Screenshots
+
+| English verdict | Hindi verdict | Recovery paths | Mobile (390px) |
+| --- | --- | --- | --- |
+| ![HIGH RISK verdict with masked lookalike-domain evidence](docs/screenshots/en-high-risk-verdict.png) | ![Fully Hindi HIGH RISK verdict](docs/screenshots/hi-high-risk-verdict.png) | ![Two-path recovery panel, money-sent path highlighted](docs/screenshots/recovery-money-sent-path.png) | ![Mobile verdict for the PIN-to-receive trick](docs/screenshots/mobile-pin-to-receive-verdict.png) |
 
 For a local UI check, leave the server and Vite running, then try **made-up** messages: `Share OTP 123456 to claim your refund` and `Pay a fee via https://example.invalid to receive your cashback` should show a `scam` warning. `Your payment of INR 300 was completed` should show `uncertain`, not `safe`. Submitting an empty chat message is blocked in the UI; the API separately rejects blank input with HTTP 400. A standalone link without a matching suspicious request may be `uncertain`: the tool does not check whether links are safe. These are synthetic integration cases, not UPI performance measurements.
 
@@ -92,7 +99,9 @@ Labels are `scam` (suspicious request pattern) and `uncertain` (including appare
 - `scripts/fetch_uci.py` - optional local UCI dataset download
 - `server/eval/` - frozen synthetic UPI pilot dataset and scorer (`npm run eval:upi`)
 - `docs/architecture.md` - workflow, label rules, privacy, evaluation plan
-- `docs/day5-upi-pilot-evaluation.md` - UPI pilot method, metrics and limits
+- `docs/day5-upi-pilot-evaluation.md` - synthetic UPI pilot method, metrics and limits
+- `docs/day6-public-evaluation.md` - public downloaded-dataset evaluation, sources and limits
+- `docs/screenshots/` - app screenshots (English/Hindi verdicts, recovery panel, mobile)
 - `.env.example` - example local configuration; `.gitignore` excludes secrets and downloaded data
 
 ## Build plan and limitations

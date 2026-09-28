@@ -1,0 +1,905 @@
+[
+ {
+  "id": "pub-india-scam-01",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Dear winner, your number has won Rs 75,000 in the PhonePe New Year Lucky Draw. Contact support to claim your prize now."
+ },
+ {
+  "id": "pub-india-scam-02",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Your Aadhaar card will be permanently blocked within 24 hours. Update your KYC immediately at http://bit.ly/aadhr-upd"
+ },
+ {
+  "id": "pub-india-scam-03",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Your mobile number has won 10 lakh rupees cash prize. Claim your reward before it expires today."
+ },
+ {
+  "id": "pub-india-scam-04",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "BREAKING: You have won 2 crore rupees in the mega jackpot draw, contact us immediately to claim your winnings."
+ },
+ {
+  "id": "pub-india-scam-05",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Your Punjab National Bank account KYC is incomplete. Update Aadhaar and PAN within 24 hours to avoid account freeze."
+ },
+ {
+  "id": "pub-india-scam-06",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Lucky Winner Alert! Rs 8,00,000 credited pending, share OTP to release the winning amount to your account."
+ },
+ {
+  "id": "pub-india-scam-07",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Dear Customer, Rs.500 to 10 lucky winners & Rs.50 to 1,000 Early Birds as STAR Clubcard points! To share your feedback, click https://bit.ly/3QfJ07p T&C"
+ },
+ {
+  "id": "pub-india-scam-08",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "You are the lucky winner of 10 lakh rupees in our online lucky draw contest. Click the link below to claim."
+ },
+ {
+  "id": "pub-india-scam-09",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "You are the lucky winner of 1 crore rupees in our online lucky draw contest. Click the link below to claim."
+ },
+ {
+  "id": "pub-india-scam-10",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Lucky draw result: your ticket has won Rs 35,00,000. Pay a small GST fee of Rs 999 to release your winnings today."
+ },
+ {
+  "id": "pub-india-scam-11",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Your ICICI debit card has been blocked due to security reasons, call this number and share your CVV to reactivate."
+ },
+ {
+  "id": "pub-india-scam-12",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Your SBI account KYC is incomplete. Update Aadhaar and PAN within 24 hours to avoid account freeze."
+ },
+ {
+  "id": "pub-india-scam-13",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Lucky draw result: your ticket has won Rs 20,00,000. Pay a small GST fee of Rs 999 to release your winnings today."
+ },
+ {
+  "id": "pub-india-scam-14",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "You have won Rs 20,00,000 cash prize in the Axis Bank Customer Reward Scheme. Share your account number to receive the amount."
+ },
+ {
+  "id": "pub-india-scam-15",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "WARNING: Someone is trying to access your account from a new device. Share the OTP sent to you to cancel this login attempt."
+ },
+ {
+  "id": "pub-india-scam-16",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "You are the lucky winner of 25 lakh rupees in our online lucky draw contest. Click the link below to claim."
+ },
+ {
+  "id": "pub-india-scam-17",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Your SBI debit card has been blocked due to security reasons, call this number and share your CVV to reactivate."
+ },
+ {
+  "id": "pub-india-scam-18",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Your credit card has been charged Rs 12,000 for a purchase you did not make. Call our fraud helpline and share your CVV to dispute."
+ },
+ {
+  "id": "pub-india-scam-19",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Your Aadhaar linked ICICI account shows suspicious activity, verify your identity immediately via this link."
+ },
+ {
+  "id": "pub-india-scam-20",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Your Aadhaar linked Bank of Baroda account shows suspicious activity, verify your identity immediately via this link."
+ },
+ {
+  "id": "pub-india-scam-21",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Someone tried logging into your BHIM UPI account from a new device, share the OTP received to cancel this attempt."
+ },
+ {
+  "id": "pub-india-scam-22",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "BREAKING: You have won 10 lakh rupees in the mega jackpot draw, contact us immediately to claim your winnings."
+ },
+ {
+  "id": "pub-india-scam-23",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Dear user your number is being ported to another network without your consent, share the OTP immediately to stop this process."
+ },
+ {
+  "id": "pub-india-scam-24",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Rs 5,00,000 has been debited from your SBI account for an online purchase. If not done by you, share OTP to block it."
+ },
+ {
+  "id": "pub-india-scam-25",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Congratulations, you have received Rs 2000 cashback in your PhonePe wallet. Click to claim before it expires."
+ },
+ {
+  "id": "pub-india-scam-26",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "NOTICE: An unauthorized login was detected on your HDFC net banking. Verify your identity by entering your login PIN here."
+ },
+ {
+  "id": "pub-india-scam-27",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "ALERT: Rs 49,999 has been debited from your SBI account. If unauthorized, share your OTP now to block the transaction."
+ },
+ {
+  "id": "pub-india-scam-28",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Selected winner: claim your Rs 30 lakh prize from Flipkart Big Billion Lucky Draw by paying a small processing fee."
+ },
+ {
+  "id": "pub-india-scam-29",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Lucky draw result: your ticket has won Rs 75,000. Pay a small GST fee of Rs 999 to release your winnings today."
+ },
+ {
+  "id": "pub-india-scam-30",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Dear customer, your number won 2nd prize of Rs 5,00,000 in KBC lottery 2024. WhatsApp your details to +91-7XXXXXXXXX."
+ },
+ {
+  "id": "pub-india-scam-31",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Dear winner, your number has won Rs 12,00,000 in the BHIM UPI New Year Lucky Draw. Contact support to claim your prize now."
+ },
+ {
+  "id": "pub-india-scam-32",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Congratulations you cleared the first round for Infosys job, share your bank details for salary account setup before joining."
+ },
+ {
+  "id": "pub-india-scam-33",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Congratulations, you are selected for a Work From Home job with Rs 25,000 monthly salary. Pay Rs 500 registration fee to start."
+ },
+ {
+  "id": "pub-india-scam-34",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Rs 35,00,000 has been debited from your Kotak Mahindra account for an online purchase. If not done by you, share OTP to block it."
+ },
+ {
+  "id": "pub-india-scam-35",
+  "source": "anmolshrivastav/scam-hum-india (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "You are selected for Rs 15,00,000 cash prize from Google India Lucky Draw 2024. Click link to verify and claim."
+ },
+ {
+  "id": "pub-hing-scam-01",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Your WhatsApp has been hacked! To secure it, share this OTP with our support team immediately."
+ },
+ {
+  "id": "pub-hing-scam-02",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "This is the 2nd time we have tried 2 contact u. U have won the 750 Pound prize. 2 claim is easy, call 08712101358 NOW! Only 10p per min. BT-national-rate"
+ },
+ {
+  "id": "pub-hing-scam-03",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "URGENT! We are trying to contact U Todays draw shows that you have won a £800 prize GUARANTEED. Call 09050000460 from land line. Claim J89. po box245c2150pm"
+ },
+ {
+  "id": "pub-hing-scam-04",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Please call our customer service representative on FREEPHONE 0808 145 4742 between 9am-11pm as you have WON a guaranteed £1000 cash or £5000 prize!"
+ },
+ {
+  "id": "pub-hing-scam-06",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Congratulations! Thanks to a good friend U have WON the £2,000 Xmas prize. 2 claim is easy, just call 08718726971 NOW! Only 10p per minute. BT-national-rate."
+ },
+ {
+  "id": "pub-hing-scam-07",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Congratulations - Thanks to a good friend U have WON the £2,000 Xmas prize. 2 claim is easy, just call 08712103738 NOW! Only 10p per minute. BT-national-rate"
+ },
+ {
+  "id": "pub-hing-scam-08",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "09066362231 URGENT! Your mobile No 07xxxxxxxxx won a £2,000 bonus caller prize on 02/06/03! this is the 2nd attempt to reach YOU! call 09066362231 ASAP!"
+ },
+ {
+  "id": "pub-hing-scam-09",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "URGENT! We are trying to contact you. Last weekends draw shows that you have won a £900 prize GUARANTEED. Call 09061701939. Claim code S89. Valid 12hrs only"
+ },
+ {
+  "id": "pub-hing-scam-10",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "hinglish",
+  "expect": "scam",
+  "text": "Aapka Aadhaar link mobile number 5 din me block ho raha hai. Turant https://aadhaar-kyc-verify.in par verify karein warna benefits band."
+ },
+ {
+  "id": "pub-hing-scam-11",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Win a £1000 cash prize or a prize worth £5000"
+ },
+ {
+  "id": "pub-hing-scam-12",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Please call our customer service representative on 0800 169 6031 between 10am-9pm as you have WON a guaranteed £1000 cash or £5000 prize!"
+ },
+ {
+  "id": "pub-hing-scam-13",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Lucky draw winner! Your mobile number won ₹2 crore in Bharti Airtel sponsored draw. Send ₹1,500 processing fee to claim."
+ },
+ {
+  "id": "pub-hing-scam-14",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "You have won ?1,000 cash or a ?2,000 prize! To claim, call09050000327. T&C: RSTM, SW7 3SS. 150ppm"
+ },
+ {
+  "id": "pub-hing-scam-15",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "money!!! you r a lucky winner ! 2 claim your prize text money 2 88600 over £1million to give away ! ppt150x3+normal text rate box403 w1t1jy"
+ },
+ {
+  "id": "pub-hing-scam-16",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "URGENT! We are trying to contact U. Todays draw shows that you have won a £2000 prize GUARANTEED. Call 09066358361 from land line. Claim Y87. Valid 12hrs only"
+ },
+ {
+  "id": "pub-hing-scam-17",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "You have WON a guaranteed £1000 cash or a £2000 prize. To claim yr prize call our customer service representative on 08714712394 between 10am-7pm"
+ },
+ {
+  "id": "pub-hing-scam-18",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Dear customer, your SBI account will be blocked today. Update your KYC immediately on sbi-update01.com to avoid closure."
+ },
+ {
+  "id": "pub-hing-scam-19",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Dear Valued Customer, Your account has been temporarily suspended due to unusual activity. Verify now to restore access."
+ },
+ {
+  "id": "pub-hing-scam-20",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "URGENT! Your mobile No 077xxx WON a £2,000 Bonus Caller Prize on 02/06/03! This is the 2nd attempt to reach YOU! Call 09066362206 ASAP! BOX97N7QP, 150ppm"
+ },
+ {
+  "id": "pub-hing-scam-21",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "You have won a free iPhone 15! Click the link to claim your prize: https://prizeclaim-iphone.in before it expires today."
+ },
+ {
+  "id": "pub-hing-scam-22",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "This is the 2nd attempt to contract U, you have won this weeks top prize of either £1000 cash or £200 prize. Just call 09066361921"
+ },
+ {
+  "id": "pub-hing-scam-23",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "WINNER!! As a valued network customer you have been selected to receivea £900 prize reward! To claim call 09061701461. Claim code KL341. Valid 12 hours only."
+ },
+ {
+  "id": "pub-hing-scam-24",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "SBI KYC expires in 24 hours. Update at https://sbi.co.in-update.xyz now or your account will be deactivated permanently."
+ },
+ {
+  "id": "pub-hing-scam-25",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Congratulations ur awarded 500 of CD vouchers or 125gift guaranteed & Free entry 2 100 wkly draw txt MUSIC to 87066 TnCs www.Ldew.com1win150ppmx3age16"
+ },
+ {
+  "id": "pub-hing-scam-26",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "XMAS Prize draws! We are trying to contact U. Todays draw shows that you have won a £2000 prize GUARANTEED. Call 09058094565 from land line. Valid 12hrs only"
+ },
+ {
+  "id": "pub-hing-scam-27",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "URGENT! We are trying to contact U. Todays draw shows that you have won a £800 prize GUARANTEED. Call 09050001808 from land line. Claim M95. Valid12hrs only"
+ },
+ {
+  "id": "pub-hing-scam-28",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "hinglish",
+  "expect": "scam",
+  "text": "Cash prize ₹25,000 aapko mila hai. Claim karne ke liye ₹1,000 ke transaction ki details bhejein on this WhatsApp number."
+ },
+ {
+  "id": "pub-hing-scam-29",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "WIN: We have a winner! Mr. T. Foley won an iPod! More exciting prizes soon, so keep an eye on ur mobile or visit www.win-82050.co.uk"
+ },
+ {
+  "id": "pub-hing-scam-30",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "hinglish",
+  "expect": "scam",
+  "text": "Congratulations! Aapko ₹10,00,000 ka lottery mila hai. Claim karne ke liye is number par call karein: 8899XXXXXX."
+ },
+ {
+  "id": "pub-hing-scam-31",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "IMPORTANT INFORMATION 4 ORANGE USER 0796XXXXXX. TODAY IS UR LUCKY DAY!2 FIND OUT WHY LOG ONTO http://www.urawinner.com THERE'S A FANTASTIC PRIZEAWAITING YOU!"
+ },
+ {
+  "id": "pub-hing-scam-32",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Congratulations YOU'VE Won. You're a Winner in our August £1000 Prize Draw. Call 09066660100 NOW. Prize Code 2309."
+ },
+ {
+  "id": "pub-hing-scam-33",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "You are the lucky winner of our annual draw! Claim your $1,000,000 prize by paying a small processing fee."
+ },
+ {
+  "id": "pub-hing-scam-34",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "URGENT! We are trying to contact you. Last weekends draw shows that you have won a £900 prize GUARANTEED. Call 09061701851. Claim code K61. Valid 12hours only"
+ },
+ {
+  "id": "pub-hing-scam-35",
+  "source": "bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "scam",
+  "text": "Congratulations! Thanks to a good friend U have WON the £2,000 Xmas prize. 2 claim is easy, just call 08718726978 NOW! Only 10p per minute. BT-national-rate"
+ },
+ {
+  "id": "pub-benign-pay-01",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "I am honored to represent India and Bajaj Finserv to participate in this competition. I never worry about the income. In order not to expose my strength too early, I did not reveal the investment secret of stable profit of 10% every day. But please rest assured, I will definitely lead everyone to achieve stable profit every day when the competition starts."
+ },
+ {
+  "id": "pub-benign-pay-02",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "I already paid the maid this month, don't forget to tell her."
+ },
+ {
+  "id": "pub-benign-pay-03",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Recommended stock E2E at the end of trading on August 14, purchase price Rs 1,962, latest price Rs 2,012, profit +2.55%Ã¢ÂÂ"
+ },
+ {
+  "id": "pub-benign-pay-04",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "No wonder the bank stocks we bought were performing well initially, but have completely fallen apart in recent days"
+ },
+ {
+  "id": "pub-benign-pay-05",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "I have tried to reset using the tool but my account is locked"
+ },
+ {
+  "id": "pub-benign-pay-06",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "This friend has a clear understanding. When interest rates are lowered, the bank's interest income decreases significantly, but the cost of lending usually doesn't decrease. As a result, the bank's profits are likely to decline"
+ },
+ {
+  "id": "pub-benign-pay-07",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Short-term borrowing costs in India declined to the lowest in nearly two years, reflecting a buildup of liquidity in the banking system just as calls for central bank policy pivot mount."
+ },
+ {
+  "id": "pub-benign-pay-08",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Already got the stock, opening an order to try to buy it"
+ },
+ {
+  "id": "pub-benign-pay-09",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "It says account is blocked"
+ },
+ {
+  "id": "pub-benign-pay-10",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Transaction completed. IÃ¢ÂÂm waiting for your next trading advice"
+ },
+ {
+  "id": "pub-benign-pay-11",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Pending buy order, waiting for gap"
+ },
+ {
+  "id": "pub-benign-pay-12",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Recently, the bank stocks have been quite weak and haven't shown any signs of improvement"
+ },
+ {
+  "id": "pub-benign-pay-13",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Shares of Paras Defence and Space Technologies were locked in 5 per cent upper circuit at Rs 1,207.40 per share on Friday, August 16, 2024. The uptick in the share price came after the company announced that its associate company, Controp-Paras Technologies Private Limited, has secured an order worth Rs 305 crore from Larsen and Toubro (L&T)."
+ },
+ {
+  "id": "pub-benign-pay-14",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Good evening, Vijay...Thanks for your help, Rama passed on your suggestion to me, I will find an opportunity to sell these stocks in my account on Friday"
+ },
+ {
+  "id": "pub-benign-pay-15",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Lowering loan interest rates should increase the bank's lending business, which in turn boosts profits. It should be a positive development"
+ },
+ {
+  "id": "pub-benign-pay-16",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "I don know account details..i will ask my mom and send you.my mom is out of reach now."
+ },
+ {
+  "id": "pub-benign-pay-17",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Your order from Flipkart has been delivered today. Track ID: FD31289045."
+ },
+ {
+  "id": "pub-benign-pay-18",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "I want  &lt;#&gt;  rs da:)do you have it?"
+ },
+ {
+  "id": "pub-benign-pay-19",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Your account has been refilled successfully by INR  &lt;DECIMAL&gt; . Your KeralaCircle prepaid account balance is Rs  &lt;DECIMAL&gt; . Your Transaction ID is KR &lt;#&gt; ."
+ },
+ {
+  "id": "pub-benign-pay-20",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "I keep ten rs in my shelf:) buy two egg."
+ },
+ {
+  "id": "pub-benign-pay-21",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Oh, i will get paid. The most outstanding one is for a commercial i did for Hasbro...in AUGUST! They made us jump through so many hoops to get paid. Still not."
+ },
+ {
+  "id": "pub-benign-pay-22",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "My friend just got here and says he's upping his order by a few grams (he's got $ &lt;#&gt; ), when can you get here?"
+ },
+ {
+  "id": "pub-benign-pay-23",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Great. So should i send you my account number."
+ },
+ {
+  "id": "pub-benign-pay-24",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Went to pay rent. So i had to go to the bank to authorise the payment."
+ },
+ {
+  "id": "pub-benign-pay-25",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Hi. Happy New Year. I dont mean to intrude but can you pls let me know how much tuition you paid last semester and how much this semester is. Thanks"
+ },
+ {
+  "id": "pub-benign-pay-26",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "NEFT Transaction with reference number  &lt;#&gt;  for Rs. &lt;DECIMAL&gt;  has been credited to the beneficiary account on  &lt;#&gt;  at  &lt;TIME&gt; : &lt;#&gt;"
+ },
+ {
+  "id": "pub-benign-pay-27",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Your EMI of ₹8,400 for car loan has been auto-debited successfully."
+ },
+ {
+  "id": "pub-benign-pay-28",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "its cool but tyler had to take off so we're gonna buy for him and drop it off at his place later tonight. Our total order is a quarter, you got enough?"
+ },
+ {
+  "id": "pub-benign-pay-29",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Save yourself the stress. If the person has a dorm account, just send your account details and the money will be sent to you."
+ },
+ {
+  "id": "pub-benign-pay-30",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Aapki monthly electricity bill ₹1,230 ka payment successful hua hai. Thank you for paying on time."
+ },
+ {
+  "id": "pub-benign-gen-01",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Riya, please check my message when you are free. I left you a message. I want the stock analysis courseware taught by Sohan Sharma last night. Please send it to me. Thank you."
+ },
+ {
+  "id": "pub-benign-gen-02",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Ok, Thanks imtiyaz for update"
+ },
+ {
+  "id": "pub-benign-gen-03",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "\" Secondary Trend A short-term trend that occurs within a primary trend. It can last from a few weeks to a few months and is often referred to as a correction or retracement. Secondary trends can be upward or downward, but they are considered temporary fluctuations that occur in the context of the primary trend.\""
+ },
+ {
+  "id": "pub-benign-gen-04",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Did you try open mails in mobile"
+ },
+ {
+  "id": "pub-benign-gen-05",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Should the price touch the retracement levels?"
+ },
+ {
+  "id": "pub-benign-gen-06",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "In India's long bull market, there will always be adjustments, which may last for 2-4 weeks, and we may have reduced profits or even floating lossesÃ°ÂÂÂ"
+ },
+ {
+  "id": "pub-benign-gen-07",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "The market is volatile at the moment, so the most stable investment method is"
+ },
+ {
+  "id": "pub-benign-gen-08",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Hmm okay I will try again"
+ },
+ {
+  "id": "pub-benign-gen-09",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Those who font join today will be marked one LoP in this month"
+ },
+ {
+  "id": "pub-benign-gen-10",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Would you be able to login to shift on time atleast ?"
+ },
+ {
+  "id": "pub-benign-gen-11",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Thank you for the update I've already sold"
+ },
+ {
+  "id": "pub-benign-gen-12",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "I don't think anyone will like war. I really hope to consider the people of their country and their families before starting a war."
+ },
+ {
+  "id": "pub-benign-gen-13",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Nifty has risen to 24160, the master's prediction should be correctÃ°ÂÂÂ"
+ },
+ {
+  "id": "pub-benign-gen-14",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "The gym is closed today for maintenance, we'll go tomorrow."
+ },
+ {
+  "id": "pub-benign-gen-15",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Ok Imtiyaz, try to join by 3, you are alone from L2 today"
+ },
+ {
+  "id": "pub-benign-gen-16",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Can you please send me my aunty's number"
+ },
+ {
+  "id": "pub-benign-gen-17",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "\"ALRITE HUNNY!WOT U UP 2 2NITE? DIDNT END UP GOIN DOWN TOWN JUS DA PUB INSTEAD! JUS CHILLIN AT DA MO IN ME BEDROOM!LOVE JEN XXX.\""
+ },
+ {
+  "id": "pub-benign-gen-18",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "ITS A LAPTOP TAKE IT WITH YOU."
+ },
+ {
+  "id": "pub-benign-gen-19",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "I HAVE A DATE ON SUNDAY WITH WILL!!"
+ },
+ {
+  "id": "pub-benign-gen-20",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "I'm at bruce &amp; fowler now but I'm in my mom's car so I can't park (long story)"
+ },
+ {
+  "id": "pub-benign-gen-21",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Whatsup there. Dont u want to sleep"
+ },
+ {
+  "id": "pub-benign-gen-22",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "I have attached the quarterly report to this email. Let me know your thoughts."
+ },
+ {
+  "id": "pub-benign-gen-23",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Is there coming friday is leave for pongal?do you get any news from your work place."
+ },
+ {
+  "id": "pub-benign-gen-24",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Hey... Why dont we just go watch x men and have lunch... Haha"
+ },
+ {
+  "id": "pub-benign-gen-25",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Yupz... I've oredi booked slots 4 my weekends liao..."
+ },
+ {
+  "id": "pub-benign-gen-26",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Ill be at yours in about 3 mins but look out for me"
+ },
+ {
+  "id": "pub-benign-gen-27",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "I accidentally deleted the message. Resend please."
+ },
+ {
+  "id": "pub-benign-gen-28",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Yes, i'm small kid.. And boost is the secret of my energy.."
+ },
+ {
+  "id": "pub-benign-gen-29",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Thanx u darlin!im cool thanx. A few bday drinks 2 nite. 2morrow off! Take care c u soon.xxx"
+ },
+ {
+  "id": "pub-benign-gen-30",
+  "source": "anmolshrivastav/scam-hum-india + bolewara/hinglish-scam-text-dataset (Hugging Face)",
+  "language": "en",
+  "expect": "uncertain",
+  "text": "Hey you told your name to gautham ah?"
+ }
+]

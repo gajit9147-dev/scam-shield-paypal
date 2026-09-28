@@ -7,7 +7,8 @@
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
     "test": "node --test src/*.test.js",
-    "eval:upi": "node eval/run-upi-pilot.js"
+    "eval:upi": "node eval/run-upi-pilot.js",
+    "eval:public": "node eval/run-public-eval.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
