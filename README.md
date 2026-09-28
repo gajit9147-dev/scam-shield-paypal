@@ -38,8 +38,11 @@ Run these in separate terminals after `npm ci` in each folder:
 
 ```bash
 cd server && npm test
+cd server && npm run eval:upi   # UPI pilot evaluation on a small synthetic set
 cd client && npm run build
 ```
+
+The UPI pilot run scores 42 frozen, hand-written Hindi/Hinglish/English cases through the real verdict path and reports TP/FP/TN/FN, precision/recall, uncertain coverage and false-positive examples. Current pilot: precision 100%, recall 100%, zero false positives - see [Day 5 evaluation](docs/day5-upi-pilot-evaluation.md) for the method and the honest limits. **These are synthetic regression numbers, not validated real-world UPI accuracy.**
 
 For a local UI check, leave the server and Vite running, then try **made-up** messages: `Share OTP 123456 to claim your refund` and `Pay a fee via https://example.invalid to receive your cashback` should show a `scam` warning. `Your payment of INR 300 was completed` should show `uncertain`, not `safe`. Submitting an empty chat message is blocked in the UI; the API separately rejects blank input with HTTP 400. A standalone link without a matching suspicious request may be `uncertain`: the tool does not check whether links are safe. These are synthetic integration cases, not UPI performance measurements.
 
@@ -63,9 +66,21 @@ With no key the app runs fully on its own: local payment rules + the UCI baselin
   "evidence": [],
   "safeAction": "Do not act on this verdict. Verify in the official payment or bank app, and ask a person if unsure.",
   "method": "payment warning rules + UCI general-spam baseline",
-  "generalSpamSignal": "not flagged"
+  "generalSpamSignal": "not flagged",
+  "evidenceHi": [],
+  "recommendationsHi": [],
+  "recoveryFocus": "money_not_sent",
+  "maskedEntities": { "urls": [], "upiIds": [], "amounts": [] }
 }
 ```
+
+`evidenceHi` / `recommendationsHi` carry the Hindi copies of the evidence and action bullets.
+`recoveryFocus` is `money_sent` when the text looks like a completed payment (the UI highlights the
+after-payment recovery path) and `money_not_sent` otherwise. `maskedEntities` lists only masked identifiers
+(`sb***.xyz`, `ra***@okaxis`): full links, domains and UPI IDs are never echoed back, and pasted links are
+never fetched by the server. The UI also links to the official
+[NCRP suspect repository](https://cybercrime.gov.in/Webform/suspect_search_repository.aspx) for a
+user-initiated check of a number, UPI ID or link - "not listed" never means safe.
 
 Labels are `scam` (suspicious request pattern) and `uncertain` (including apparently ordinary messages). `safe` is deliberately not emitted. Confidence is null until a real UPI evaluation can justify it. The UCI ham/spam score is only a separate general-spam signal, never a payment-safety score. The API never echoes the pasted text or logs it by default.
 
@@ -75,7 +90,9 @@ Labels are `scam` (suspicious request pattern) and `uncertain` (including appare
 - `server/` - Express API with cautious rules, exported UCI spam baseline and optional Gemini text and image review
 - `data/` - dataset sourcing and safety instructions (no raw messages committed)
 - `scripts/fetch_uci.py` - optional local UCI dataset download
+- `server/eval/` - frozen synthetic UPI pilot dataset and scorer (`npm run eval:upi`)
 - `docs/architecture.md` - workflow, label rules, privacy, evaluation plan
+- `docs/day5-upi-pilot-evaluation.md` - UPI pilot method, metrics and limits
 - `.env.example` - example local configuration; `.gitignore` excludes secrets and downloaded data
 
 ## Build plan and limitations
