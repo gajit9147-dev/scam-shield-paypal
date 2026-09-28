@@ -7,11 +7,15 @@
   color-scheme: light;
 }
 
-h1, h2, h3, h4, .font-heading {
+html.dark {
+  color-scheme: dark;
+}
+
+h1, h2, h3, h4, h5, .font-heading {
   font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
 }
 
-/* Custom scrollbar for frosted glass UI */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -31,46 +35,85 @@ h1, h2, h3, h4, .font-heading {
 .glass-canvas {
   background-color: #f0f4f9;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(224, 231, 255, 0.6) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(243, 232, 255, 0.7) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(224, 242, 254, 0.6) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(245, 243, 255, 0.5) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(224, 231, 255, 0.7) 0px, transparent 45%),
+    radial-gradient(at 100% 0%, rgba(243, 232, 255, 0.75) 0px, transparent 45%),
+    radial-gradient(at 100% 100%, rgba(224, 242, 254, 0.65) 0px, transparent 45%),
+    radial-gradient(at 0% 100%, rgba(245, 243, 255, 0.6) 0px, transparent 45%);
 }
 
-/* Frosted Glass Surface */
+/* Dark Mode Canvas */
+html.dark .glass-canvas,
+.dark-theme .glass-canvas {
+  background-color: #090d16;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(30, 41, 59, 0.7) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(55, 48, 163, 0.45) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.8) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(30, 27, 75, 0.5) 0px, transparent 50%);
+}
+
+/* Frosted Glass Panels */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
   box-shadow: 
-    0 10px 30px -5px rgba(100, 116, 139, 0.07),
-    0 4px 12px rgba(100, 116, 139, 0.04),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    0 12px 32px -4px rgba(100, 116, 139, 0.08),
+    0 4px 12px rgba(100, 116, 139, 0.03),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
+}
+
+html.dark .glass-panel,
+.dark-theme .glass-panel {
+  background: rgba(17, 24, 39, 0.78);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 14px 36px -6px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
 }
 
 .glass-panel-elevated {
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  background: rgba(255, 255, 255, 0.84);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
   border: 1px solid rgba(255, 255, 255, 0.95);
   box-shadow: 
-    0 16px 40px -8px rgba(99, 102, 241, 0.08),
-    0 6px 16px rgba(100, 116, 139, 0.05),
-    inset 0 1px 1.5px rgba(255, 255, 255, 1);
+    0 18px 44px -8px rgba(99, 102, 241, 0.09),
+    0 6px 18px rgba(100, 116, 139, 0.04),
+    inset 0 1px 2px rgba(255, 255, 255, 1);
 }
 
-/* Active Nav Capsule */
-.glass-nav-active {
-  background: linear-gradient(135deg, rgba(238, 242, 255, 0.92) 0%, rgba(243, 232, 255, 0.92) 100%);
-  border: 1px solid rgba(196, 181, 253, 0.65);
+html.dark .glass-panel-elevated,
+.dark-theme .glass-panel-elevated {
+  background: rgba(23, 31, 51, 0.85);
+  border-color: rgba(255, 255, 255, 0.14);
   box-shadow: 
-    0 4px 14px rgba(168, 85, 247, 0.12),
-    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    0 20px 48px -8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+}
+
+/* Active Nav Pill */
+.glass-nav-active {
+  background: linear-gradient(135deg, rgba(238, 242, 255, 0.95) 0%, rgba(243, 232, 255, 0.95) 100%);
+  border: 1px solid rgba(196, 181, 253, 0.75);
+  box-shadow: 
+    0 4px 16px rgba(168, 85, 247, 0.14),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95);
   color: #4f46e5;
 }
 
-/* Glowing Vibrant Action Button */
+html.dark .glass-nav-active,
+.dark-theme .glass-nav-active {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(67, 56, 202, 0.75) 100%);
+  border-color: rgba(129, 140, 248, 0.5);
+  box-shadow: 0 4px 18px rgba(79, 70, 229, 0.25);
+  color: #a5b4fc;
+}
+
+/* Vibrant Action Button */
 .btn-vibrant-gradient {
   background: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #9333ea 100%);
   color: #ffffff;
@@ -87,66 +130,41 @@ h1, h2, h3, h4, .font-heading {
   box-shadow: 0 4px 14px -2px rgba(79, 70, 229, 0.4);
 }
 
-/* Ambient 3D Glass Orbs in Background */
+/* Ambient 3D Glass Bubbles in Background */
 @keyframes floatOrbSlow {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(15px, -15px) scale(1.05); }
+  50% { transform: translate(14px, -14px) scale(1.04); }
 }
 
 @keyframes floatOrbReverse {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-12px, 18px) scale(0.96); }
+  50% { transform: translate(-10px, 14px) scale(0.96); }
 }
 
 .orb-float-1 {
-  animation: floatOrbSlow 12s ease-in-out infinite;
+  animation: floatOrbSlow 14s ease-in-out infinite;
 }
 
 .orb-float-2 {
-  animation: floatOrbReverse 15s ease-in-out infinite;
+  animation: floatOrbReverse 16s ease-in-out infinite;
 }
 
-/* 3D Glass Bubble Effect */
 .glass-bubble {
-  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.8) 0%, rgba(216, 180, 254, 0.3) 45%, rgba(147, 197, 253, 0.2) 80%, rgba(255, 255, 255, 0.6) 100%);
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.85) 0%, rgba(216, 180, 254, 0.35) 45%, rgba(147, 197, 253, 0.25) 80%, rgba(255, 255, 255, 0.65) 100%);
   border: 1px solid rgba(255, 255, 255, 0.6);
   box-shadow: 
-    0 20px 50px rgba(147, 197, 253, 0.3),
-    inset -10px -10px 20px rgba(192, 132, 252, 0.2),
-    inset 10px 10px 20px rgba(255, 255, 255, 0.8);
+    0 24px 60px rgba(147, 197, 253, 0.3),
+    inset -10px -10px 24px rgba(192, 132, 252, 0.22),
+    inset 10px 10px 24px rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(8px);
 }
 
-/* Dark Mode Overrides (when theme toggle is active) */
-.dark-theme {
-  color-scheme: dark;
-}
-.dark-theme .glass-canvas {
-  background-color: #0b0f19;
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(30, 41, 59, 0.5) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(49, 46, 129, 0.4) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.6) 0px, transparent 50%);
-}
-.dark-theme .glass-panel {
-  background: rgba(17, 24, 39, 0.75);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
-  color: #f1f5f9;
-}
-.dark-theme .glass-panel-elevated {
-  background: rgba(24, 33, 53, 0.85);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5);
-  color: #f8fafc;
-}
-.dark-theme .glass-nav-active {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(49, 46, 129, 0.7) 100%);
-  border-color: rgba(99, 102, 241, 0.4);
-  color: #818cf8;
-}
-.dark-theme text,
-.dark-theme p,
-.dark-theme span {
-  color: inherit;
+html.dark .glass-bubble,
+.dark-theme .glass-bubble {
+  background: radial-gradient(circle at 35% 30%, rgba(99, 102, 241, 0.35) 0%, rgba(147, 51, 234, 0.2) 45%, rgba(30, 41, 59, 0.4) 80%, rgba(129, 140, 248, 0.3) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.6),
+    inset -10px -10px 24px rgba(147, 51, 234, 0.15),
+    inset 10px 10px 24px rgba(255, 255, 255, 0.15);
 }
