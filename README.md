@@ -109,3 +109,21 @@ Labels are `scam` (suspicious request pattern) and `uncertain` (including appare
 Day 2: UCI data preparation (done). Day 3: measured English general-spam baseline and cautious payment-warning rules (done). Day 4: fresh-clone installation, server tests, client build and local end-to-end UI checks (done). Next: consented, redacted UPI examples and a held-out UPI evaluation; only then consider model changes, demo and application. The detailed 7-day plan is private to the project owner.
 
 UCI's [SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms%2Bspam%2Bcollection) is English general spam, not an Indian UPI benchmark. It will be used to learn the pipeline, with separate results. The UCI general-spam results are reported in [Day 3 evaluation](docs/day3-evaluation.md), with no UPI accuracy, precision, recall or loss-prevention claim. The app does not verify senders, links or payments; it does not automatically block anything. Never upload personal messages, OTPs or payment identifiers into this public repository.
+
+## Deploy (free, one service on Render)
+
+The Node server can serve the built client itself, so the whole app runs as one
+free web service on Render.
+
+1. Push this repo to GitHub (done).
+2. Go to https://render.com and sign up with your GitHub account.
+3. Click **New → Web Service** and pick this repository. Render reads
+   `render.yaml` automatically (it builds the client, then starts the server).
+4. When the service is created, open **Environment** and add
+   `GEMINI_API_KEY` = your free key from https://aistudio.google.com/apikey
+   (optional - the app works without it, this only improves tricky
+   Hindi/Hinglish checks).
+5. Done - Render gives you a public https URL for the app.
+
+Free-tier notes: the service sleeps after 15 idle minutes, so the first visit
+after a quiet period can take 30-60 seconds to wake. Later visits are instant.

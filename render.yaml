@@ -1,0 +1,15 @@
+# One free Render web service: builds the client, then runs the Node server,
+# which serves both the API and the built client from the same origin.
+services:
+  - type: web
+    name: upi-scam-shield
+    runtime: node
+    plan: free
+    buildCommand: cd client && npm ci && npm run build && cd ../server && npm ci
+    startCommand: node server/src/index.js
+    envVars:
+      # Optional: enables the Gemini layer for tricky Hindi/Hinglish text.
+      # The app works without it (local rules + model). Set the real value in
+      # the Render dashboard after the first deploy - never commit it here.
+      - key: GEMINI_API_KEY
+        sync: false

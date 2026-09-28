@@ -1,5 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import model from '../model/uci-spam-nb.json' with { type: 'json' };
 import { spamScore } from './classify.js';
 import { detectLocalSignals } from './rules.js';
@@ -105,7 +108,6 @@ app.post('/api/check-image', express.json({ limit: '6mb' }), async (req, res) =>
 
 app.use(express.json({ limit: '128kb' }));
 
-app.get('/', (_req, res) => res.redirect(process.env.CLIENT_ORIGIN || 'http://localhost:5173'));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
 app.post('/api/check', async (req, res) => {
@@ -162,6 +164,20 @@ app.post('/api/chat', async (req, res) => {
   if (!reply) return res.status(503).json({ error: 'Chat reply is not available right now.' });
   return res.json({ reply });
 });
+
+// In production (e.g. Render) the built client sits in client/dist and the same
+// server serves it, so the app and the API share one origin. In local dev there
+// is no build, so / redirects to the vite dev server as before.
+const clientDist = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'client', 'dist');
+if (existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+    res.sendFile(join(clientDist, 'index.html'));
+  });
+} else {
+  app.get('/', (_req, res) => res.redirect(process.env.CLIENT_ORIGIN || 'http://localhost:5173'));
+}
 
 app.use((err, _req, res, next) => {
   if (err && (err.type === 'entity.too.large' || err.status === 413)) {
