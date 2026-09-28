@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import ThemeToggle from './components/ThemeToggle.jsx';
 import {
   getDictionary,
   translateCategory,
@@ -623,15 +624,11 @@ export default function App() {
                   </select>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  aria-label={t.theme}
-                  title={t.theme}
-                  className="grid h-9 w-9 place-items-center rounded-full glass-panel hover:scale-105 active:scale-95 transition cursor-pointer text-amber-500 dark:text-amber-300 text-base shadow-sm"
-                >
-                  {theme === 'light' ? '☀️' : '🌙'}
-                </button>
+                <ThemeToggle
+                  theme={theme}
+                  onToggle={toggleTheme}
+                  label={t.theme}
+                />
 
                 <div
                   title={t.profile}
@@ -1419,13 +1416,11 @@ export default function App() {
                             Light glassmorphic aesthetic or dark cyber theme
                           </p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={toggleTheme}
-                          className="btn-vibrant-gradient px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer"
-                        >
-                          {theme === 'light' ? t.settingsThemeLight : t.settingsThemeDark}
-                        </button>
+                        <ThemeToggle
+                          theme={theme}
+                          onToggle={toggleTheme}
+                          label={t.theme}
+                        />
                       </div>
 
                       <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/50 border border-slate-200/80 dark:border-white/10 flex items-center justify-between gap-3">
