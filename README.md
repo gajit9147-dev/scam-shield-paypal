@@ -1,6 +1,6 @@
 # UPI Scam Shield
 
-A defensive student prototype for merchant-support triage of suspicious UPI/payment messages, built for the Razorpay AI Buildathon. **Day 1 is a working UI-to-API skeleton, not a detector.** Every check currently returns `uncertain`; never use it to decide that a real message is safe.
+A defensive student prototype for merchant-support triage of suspicious UPI/payment messages, built for the Razorpay AI Buildathon. **Day 3 adds a measured English general-spam model and cautious payment-warning rules, not a validated UPI scam detector.** No output proves a payment message is safe.
 
 ## Run locally
 
@@ -39,20 +39,21 @@ If `curl` isn't available on Windows, use the browser UI. If the frontend says i
 ```json
 {
   "label": "uncertain",
-  "reason": "The classifier is not built yet. No risk assessment was performed.",
+  "reason": "No strong fraud request pattern was found. Text alone cannot establish that a payment message is safe.",
   "confidence": null,
   "evidence": [],
   "safeAction": "Do not act on this verdict. Verify in the official payment or bank app, and ask a person if unsure.",
-  "method": "placeholder"
+  "method": "payment warning rules + UCI general-spam baseline",
+  "generalSpamSignal": "not flagged"
 }
 ```
 
-Planned labels are `scam`, `safe`, `uncertain`. Confidence will only be populated once a real method can justify it. The API never echoes the pasted text or logs it by default.
+Labels are `scam` (suspicious request pattern) and `uncertain` (including apparently ordinary messages). `safe` is deliberately not emitted. Confidence is null until a real UPI evaluation can justify it. The UCI ham/spam score is only a separate general-spam signal, never a payment-safety score. The API never echoes the pasted text or logs it by default.
 
 ## Repo map
 
 - `client/` - React + Vite + Tailwind paste-message form and result card
-- `server/` - Express API and classifier placeholder
+- `server/` - Express API and cautious rules and exported UCI spam baseline
 - `data/` - dataset sourcing and safety instructions (no raw messages committed)
 - `scripts/fetch_uci.py` - optional local UCI dataset download
 - `docs/architecture.md` - workflow, label rules, privacy, evaluation plan
@@ -60,6 +61,6 @@ Planned labels are `scam`, `safe`, `uncertain`. Confidence will only be populate
 
 ## Build plan and limitations
 
-Day 2: source and redact data. Day 3: transparent baseline rules. Day 4: server-side LLM with strict structured output. Day 5: held-out evaluation, false alarms and abstentions. Day 6: finish UI and docs. Day 7: demo video and application review. The detailed 7-day plan is private to the project owner.
+Day 2: UCI data preparation (done). Day 3: measured English general-spam baseline and cautious payment-warning rules (done). Next: consented, redacted UPI examples and a held-out UPI evaluation; only then consider model changes, demo and application. The detailed 7-day plan is private to the project owner.
 
-UCI's [SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms%2Bspam%2Bcollection) is English general spam, not an Indian UPI benchmark. It will be used to learn the pipeline, with separate results. No accuracy, precision, recall or loss-prevention claim exists yet. The app does not verify senders, links or payments; it does not automatically block anything. Never upload personal messages, OTPs or payment identifiers into this public repository.
+UCI's [SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms%2Bspam%2Bcollection) is English general spam, not an Indian UPI benchmark. It will be used to learn the pipeline, with separate results. The UCI general-spam results are reported in [Day 3 evaluation](docs/day3-evaluation.md), with no UPI accuracy, precision, recall or loss-prevention claim. The app does not verify senders, links or payments; it does not automatically block anything. Never upload personal messages, OTPs or payment identifiers into this public repository.
