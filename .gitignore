@@ -10,3 +10,4 @@ data/processed/train.jsonl
 data/processed/validation.jsonl
 data/processed/test.jsonl
 __pycache__/
+.vscode/
