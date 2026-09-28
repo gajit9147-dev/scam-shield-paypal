@@ -1,7 +1,22 @@
 # Data sources and safety
 
-Day 1 contains no SMS examples. On Day 2, download the [UCI SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms%2Bspam%2Bcollection) from the original source and record its citation and license/terms before redistributing any data. It is English general spam, **not** a benchmark of UPI or Indian payment scams. Keep its scores separate from India/UPI evaluation.
+## Day 2: UCI SMS Spam Collection (done)
 
-To fetch a local copy, run `python scripts/fetch_uci.py` from the repository root. The script downloads a ZIP from UCI and extracts it to `data/raw/` (ignored by Git). Check the source terms yourself before publishing any derivative dataset. Never commit raw personal messages, OTPs, phone numbers, UPI IDs or live links.
+The [UCI SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+collection) (v.1, 5,574 messages: 4,827 ham / 747 spam) is downloaded locally with `python scripts/fetch_uci.py` and prepared with `python scripts/prepare_data.py`.
 
-For a later India-relevant dataset, use only consented or publicly shareable messages; redact identifiers and links, record source and label, and split by sender/template family before testing. Synthetic examples must be labeled synthetic.
+**Citation:** Almeida, T.A., Gomez Hidalgo, J.M., Yamakami, A. Contributions to the Study of SMS Spam Filtering: New Collection and Results. Proceedings of the 2011 ACM Symposium on Document Engineering (DocEng '11).
+
+**License:** the [UCI dataset page](https://archive.ics.uci.edu/dataset/228/sms+spam+collection) states the dataset is licensed under Creative Commons Attribution 4.0 (CC BY 4.0), which allows sharing and adaptation with credit. The readme bundled with the download separately states the corpus is free of charge under the authors' copyright with a no-warranty disclaimer and asks for the citation above. Check both yourself before redistributing; see `data/raw/readme` after fetching for the bundled text.
+
+**What the prepare script does:**
+- Normalizes whitespace and drops exact duplicate messages (414 removed, 5,160 kept).
+- Writes stratified 80/10/10 train/validation/test splits to `data/processed/` with a fixed seed (42), so the held-out test set stays frozen and reproducible.
+- Full splits (`train.jsonl`, `validation.jsonl`, `test.jsonl`) are gitignored. `data/processed/sample.jsonl` (20 rows) and `data/processed/stats.json` are committed to show the format.
+
+**Labels:** each row keeps the source label `ham` or `spam`. These are English general-spam messages, **not** UPI or Indian payment scam examples, and they are not this project's `scam`/`safe`/`uncertain` labels. General spam is mostly advertising, not credential or money theft. Keep any scores on this data separate from India/UPI evaluation, per `docs/architecture.md`.
+
+**Privacy:** no personal SMS, OTPs, phone numbers, UPI IDs or live links are committed. Raw and full processed data stay local and gitignored.
+
+## Later: India/UPI examples (pending)
+
+Real UPI scam examples are being collected separately with consent. They must be redacted (no personal identifiers or live links), labeled with source and consent, marked synthetic if synthetic, and split by sender/template family before testing.
