@@ -71,7 +71,7 @@ export function detectLocalSignals(rawText) {
   const isDefensive = DEFENSIVE_ADVICE.test(textToMatch);
 
   // 1. OTP Requests (English, Hindi Devanagari, and Hinglish transliterations)
-  const otpRequestPattern = /\b(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\s*(?:bhejo|batao|share|send|de do|mang|karo|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं|दर्ज\s*करें)\b|\b(?:send|share|reply|provide|enter|submit|tell|give|forward|type|verify|batao|bataiye|bata do|bhejo|bhejiye|bhej do|de do|mang|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं)\s+(?:me\s+|your\s+|the\s+|with\s+(?:the\s+)?|turant\s+|abhi\s+|apna\s+)?(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\b/i;
+  const otpRequestPattern = /\b(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\s*(?:bhejo|batao|share|send|de do|mang|karo|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं|दर्ज\s*करें)\b|\b(?:send|share|reply|provide|enter|submit|tell|give|forward|type|verify|batao|bataiye|bata do|bhejo|bhejiye|bhej do|de do|mang|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं)\s+(?:me\s+|your\s+|the\s+|this\s+|with\s+(?:the\s+)?|turant\s+|abhi\s+|apna\s+)?(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\b/i;
 
   if (otpRequestPattern.test(textToMatch) && !isDefensive) {
     signals.push({
@@ -97,7 +97,7 @@ export function detectLocalSignals(rawText) {
   }
 
   // 3. Card Details / ATM PIN / CVV / Password theft
-  const credentialPattern = /\b(?:cvv|atm\s*pin|card\s*number|debit\s*card\s*pin|credit\s*card\s*number|netbanking\s*password|login\s*password|credentials?)\s*(?:batao|bhejo|share|send|enter|provide|submit|update)\b|\b(?:share|enter|send|provide|give)\s+(?:your\s+|the\s+)?(?:cvv|atm\s*pin|16\s*digit|card\s*(?:number|details)|netbanking\s*password|password)\b|सीवीवी|एटीएम\s*पिन|पासवर्ड\s*(?:बताओ|भेजो)/i;
+  const credentialPattern = /\b(?:cvv|atm\s*pin|card\s*number|debit\s*card\s*pin|credit\s*card\s*number|netbanking\s*password|login\s*password|credentials?)\s*(?:batao|bhejo|share|send|enter|provide|submit|update)\b|\b(?:share|enter|send|provide|give)\s+(?:your\s+|the\s+)?(?:cvv|atm\s*pin|16\s*digit|card\s*(?:number|details)|netbanking\s*password|password|bank\s+details|login\s+(?:details|credentials|id))\b|सीवीवी|एटीएम\s*पिन|पासवर्ड\s*(?:बताओ|भेजो)/i;
 
   if (credentialPattern.test(textToMatch) && !isDefensive) {
     signals.push({
@@ -149,7 +149,7 @@ export function detectLocalSignals(rawText) {
   }
 
   // 7. Account suspension / block threats
-  const accountThreatPattern = /\b(?:account|a\/c|upi|sim|electricity|power|bijli)\s*(?:will\s+be\s+|is\s+|has\s+been\s+)?(?:blocked|suspended|deactivated|stopped|disconnected|terminated|freeze)\b|\b(?:account|khata|bijli|line|sim)\s*(?:band\s+ho\s+jayega|block\s+ho\s+jayega|kat\s+jayegi|rok\s+di\s+jayegi)\b|खाता\s*(?:बंद|ब्लॉक)|अकाउंट\s*(?:बंद|ब्लॉक)|बिजली\s*(?:कट|बंद)/i;
+  const accountThreatPattern = /\b(?:account|a\/c|upi|sim|electricity|power|bijli)\s*(?:will\s+be\s+|is\s+|has\s+been\s+)?(?:temporarily\s+|permanently\s+)?(?:blocked|suspended|deactivated|stopped|disconnected|terminated|freeze)\b|\b(?:account|khata|bijli|line|sim)\s*(?:band\s+ho\s+jayega|block\s+ho\s+jayega|kat\s+jayegi|rok\s+di\s+jayegi)\b|खाता\s*(?:बंद|ब्लॉक)|अकाउंट\s*(?:बंद|ब्लॉक)|बिजली\s*(?:कट|बंद)/i;
 
   if (accountThreatPattern.test(textToMatch)) {
     signals.push({
@@ -161,8 +161,21 @@ export function detectLocalSignals(rawText) {
     });
   }
 
+  // 7b. "Suspicious activity, verify your identity" phishing
+  const suspiciousActivityPattern = /\b(?:suspicious|unusual|unauthorized|unauthorised)\s+(?:activity|login|sign[ -]?in|transaction|attempt)\b|\bverify\s+your\s+(?:identity|account)\b/i;
+
+  if (suspiciousActivityPattern.test(textToMatch) && !isDefensive && !isLegitimateReceipt(rawText)) {
+    signals.push({
+      type: 'suspicious_activity_phish',
+      severity: 'high',
+      category: 'account_block_scam',
+      evidence: 'Claims suspicious account activity and pushes identity verification - a common phishing pretext',
+      evidenceHi: 'खाते में संदिग्ध गतिविधि का दावा करके पहचान सत्यापन कराया जा रहा है - फ़िशिंग का आम बहाना'
+    });
+  }
+
   // 8. Prize, lottery, and reward scams
-  const prizeLotteryPattern = /\b(?:congratulations|congrats|lucky\s*draw|winner|won)\b.*\b(?:lottery|prize|reward|kbc|cash\s*prize|car|gift)\b|\b(?:won|winner\s+of)\s+(?:rs\.?|inr|₹)\s*[\d,]+\b|\b(?:lottery\s+lagi|inaam\s+jeeta|prize\s+mila)\b|लॉटरी\s*(?:जीत|मिली)|इनाम\s*(?:जीता|मिला)|लकी\s*ड्रा\s*विजेता/i;
+  const prizeLotteryPattern = /\b(?:congratulations|congrats|lucky\s*draw|winner|won|win|awarded)\b.*\b(?:lottery|prizes?|reward|kbc|cash\s*prize|car|gift|jackpot|winnings?|vouchers?|draw)\b|\b(?:won|winner\s+of|win)\s+(?:rs\.?|inr|₹|£)?\s*[\d,]+\s*(?:rupees|lakh|crore|pounds?)?\b|\b(?:won|win)\b.*\b(?:\d+\s*(?:lakh|crore))\b|\b(?:lottery\s+lagi|inaam\s+jeeta)\b|\bprize\b[\s\S]{0,30}\b(?:mila|jeeta|claim)\b|लॉटरी\s*(?:जीत|मिली)|इनाम\s*(?:जीता|मिला)|लकी\s*ड्रा\s*विजेता/i;
 
   if (prizeLotteryPattern.test(textToMatch)) {
     signals.push({
@@ -175,7 +188,7 @@ export function detectLocalSignals(rawText) {
   }
 
   // 9. Cashback scams
-  const cashbackPattern = /\b(?:cashback\s+(?:of\s+)?(?:rs\.?|inr|₹)?\s*[\d,]*\s*(?:credited|approved|ready|reward|pending|claim))\b.*\b(?:click|link|claim|receive|upi)\b|\b(?:cashback\s+(?:pane|lene|claim)\s+ke\s+liye)\b|कैशबैक\s*(?:मिला|क्लेम|प्राप्त)/i;
+  const cashbackPattern = /\b(?:cashback\s+(?:of\s+)?(?:rs\.?|inr|₹)?\s*[\d,]*\s*(?:credited|approved|ready|reward|pending|claim|received))\b.*\b(?:click|link|claim|receive|upi|expires?)\b|\b(?:received?\s+(?:rs\.?|inr|₹)\s*[\d,]+\s+cashback)\b.*\b(?:click|link|claim|expires?)\b|\b(?:cashback\s+(?:pane|lene|claim)\s+ke\s+liye)\b|कैशबैक\s*(?:मिला|क्लेम|प्राप्त)/i;
 
   if (cashbackPattern.test(textToMatch)) {
     signals.push({

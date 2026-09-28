@@ -275,3 +275,16 @@ test('29. UPI pilot dataset holds its measured floor (recall >= 90%, zero false 
   assert.equal(fp, 0, `false positives on benign pilot cases: ${fp}`);
   assert.ok(tp / (tp + fn) >= 0.9, `scam recall ${tp}/${tp + fn} below 0.9 floor`);
 });
+
+test('30. Public-source dataset holds its measured floor (recall >= 90%, at most 2 false positives)', () => {
+  const dataset = JSON.parse(readFileSync(new URL('../eval/public-upi-dataset.json', import.meta.url)));
+  let tp = 0, fp = 0, fn = 0;
+  for (const item of dataset) {
+    const result = classify(item.text);
+    const flagged = result.label === 'scam' || result.label === 'suspicious';
+    if (item.expect === 'scam') flagged ? tp++ : fn++;
+    else if (flagged) fp++;
+  }
+  assert.ok(fp <= 2, `false positives on public benign cases: ${fp}`);
+  assert.ok(tp / (tp + fn) >= 0.9, `public scam recall ${tp}/${tp + fn} below 0.9 floor`);
+});
