@@ -1,7 +1,7 @@
 // Deterministic scam detection rules for Indian financial & payment messages.
 // Covers English, Hindi (Devanagari), and Hinglish transliterations.
 
-import { normalizeMessage, extractEntities } from './normalizer.js';
+import { normalizeMessage, extractEntities, maskUrl, maskUpiId, extractHost } from './normalizer.js';
 
 // Legitimate caution / defensive phrases that advise the user NOT to share codes
 const DEFENSIVE_ADVICE = /\b(?:never|do not|don'?t|should not|kabhi bhi|kisi ko|kisi se)\s+(?:share|disclose|give|tell|send|reveal|bata(?:o|en|ye)|bhej(?:o|en|ye)|enter)\b|\b(?:never\s+share\s+(?:your\s+)?otp|bank\s+never\s+asks?)\b|कभी\s*भी\s*(?:ओटीपी|पिन)\s*(?:शेयर|साझा|बताएं|न\s*दें)/i;
@@ -13,6 +13,45 @@ const LEGIT_RECEIPT_INDICATORS = [
   /\b(?:txn\s*id|transaction\s*id|upi\s*ref(?:\s*no)?|utr(?:\s*no)?)\s*[:#]?\s*[a-zA-Z0-9]{8,}/i,
   /\b(?:payment\s+of\s+(?:rs\.?|inr|₹)\s*[\d,]+(?:\.\d{1,2})?\s+(?:was\s+)?received\s+successfully|paid\s+successfully\s+to)\b/i
 ];
+
+// Bank / payment brands that scammers imitate inside lookalike domains
+const BRAND_TOKENS = ['sbi', 'hdfc', 'icici', 'axis', 'pnb', 'kotak', 'paytm', 'phonepe', 'bhim', 'npci', 'rbi', 'yesbank', 'bob'];
+const LEGIT_TLDS = ['com', 'in', 'co.in', 'net', 'org', 'bank'];
+
+function registrableParts(host) {
+  const labels = host.split('.').filter(Boolean);
+  if (labels.length >= 3 && labels.slice(-2).join('.') === 'co.in') {
+    return { base: labels[labels.length - 3], tld: 'co.in', sub: labels.slice(0, -3).join('.') };
+  }
+  if (labels.length >= 2) {
+    return { base: labels[labels.length - 2], tld: labels[labels.length - 1], sub: labels.slice(0, -2).join('.') };
+  }
+  return { base: host, tld: '', sub: '' };
+}
+
+function isOfficialBrandHost(base, tld, brand) {
+  if (!LEGIT_TLDS.includes(tld)) return false;
+  return base === brand
+    || base === `${brand}bank`
+    || base === `online${brand}`
+    || base === `${brand}online`;
+}
+
+// Returns { host, brand } when a URL host imitates a known bank/payment brand
+export function findLookalikeDomain(urls) {
+  for (const url of urls || []) {
+    const host = extractHost(url);
+    if (!host) continue;
+    const { base, tld } = registrableParts(host);
+    for (const brand of BRAND_TOKENS) {
+      if (!host.includes(brand)) continue;
+      if (!isOfficialBrandHost(base, tld, brand)) {
+        return { host, brand };
+      }
+    }
+  }
+  return null;
+}
 
 export function isLegitimateReceipt(text) {
   const norm = text.toLowerCase();
@@ -32,50 +71,54 @@ export function detectLocalSignals(rawText) {
   const isDefensive = DEFENSIVE_ADVICE.test(textToMatch);
 
   // 1. OTP Requests (English, Hindi Devanagari, and Hinglish transliterations)
-  const otpRequestPattern = /\b(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\s*(?:bhejo|batao|share|send|de do|mang|karo|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं|दर्ज\s*करें)\b|\b(?:send|share|reply|provide|enter|submit|tell|give|forward|type|verify|batao|bataiye|bata do|bhejo|bhejiye|bhej do|de do|mang|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं)\s+(?:me\s+|your\s+|the\s+|turant\s+|abhi\s+|apna\s+)?(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\b/i;
+  const otpRequestPattern = /\b(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\s*(?:bhejo|batao|share|send|de do|mang|karo|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं|दर्ज\s*करें)\b|\b(?:send|share|reply|provide|enter|submit|tell|give|forward|type|verify|batao|bataiye|bata do|bhejo|bhejiye|bhej do|de do|mang|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं)\s+(?:me\s+|your\s+|the\s+|with\s+(?:the\s+)?|turant\s+|abhi\s+|apna\s+)?(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\b/i;
 
   if (otpRequestPattern.test(textToMatch) && !isDefensive) {
     signals.push({
       type: 'otp_request',
       severity: 'high',
       category: 'otp_pin_theft',
-      evidence: 'Requests the recipient to share or provide a one-time password (OTP)'
+      evidence: 'Requests the recipient to share or provide a one-time password (OTP)',
+      evidenceHi: 'OTP (वन-टाइम पासवर्ड) भेजने या बताने को कहा गया है'
     });
   }
 
   // 2. UPI PIN Requests (English, Hindi Devanagari, and Hinglish transliterations)
-  const upiPinPattern = /\b(?:upi\s*pin|mpin|secret\s*pin|pin|यूपीआई\s*पिन|पिन)\s*(?:batao|bataiye|bhejo|bhejiye|dalo|enter|type|share|बताओ|भेजो|डालो|दर्ज|दीजिये|शेयर)\b|\b(?:enter|share|send|provide|give|type|submit|tell|batao|bataiye|bhejo|bhejiye|dalo|बताओ|भेजो|डालो|दर्ज)\s+(?:your\s+|apna\s+)?(?:upi\s*pin|mpin|secret\s*pin|pin|यूपीआई\s*पिन|पिन)\b|\b(?:enter|type|dalo)\s+(?:upi\s*)?pin\s+to\s+(?:receive|claim|get)\b/i;
+  const upiPinPattern = /\b(?:upi\s*pin|mpin|secret\s*pin|pin|यूपीआई\s*पिन|पिन)\s*(?:batao|bataiye|bhejo|bhejiye|dalo|send|enter|type|share|बताओ|भेजो|डालो|दर्ज|दीजिये|शेयर)\b|\b(?:enter|share|send|provide|give|type|submit|tell|batao|bataiye|bhejo|bhejiye|dalo|बताओ|भेजो|डालो|दर्ज)\s+(?:your\s+|apna\s+)?(?:upi\s*pin|mpin|secret\s*pin|pin|यूपीआई\s*पिन|पिन)\b|\b(?:enter|type|dalo)\s+(?:upi\s*)?pin\s+to\s+(?:receive|claim|get)\b/i;
 
   if (upiPinPattern.test(textToMatch) && !isDefensive) {
     signals.push({
       type: 'upi_pin_request',
       severity: 'high',
       category: 'otp_pin_theft',
-      evidence: 'Asks the user to enter or reveal their UPI PIN or MPIN'
+      evidence: 'Asks the user to enter or reveal their UPI PIN or MPIN',
+      evidenceHi: 'UPI PIN या MPIN डालने या बताने को कहा गया है'
     });
   }
 
   // 3. Card Details / ATM PIN / CVV / Password theft
-  const credentialPattern = /\b(?:cvv|atm\s*pin|card\s*number|debit\s*card\s*pin|credit\s*card\s*number|netbanking\s*password|login\s*password|credentials?)\s*(?:batao|bhejo|share|send|enter|provide|submit|update)\b|\b(?:share|enter|send|provide)\s+(?:your\s+)?(?:cvv|atm\s*pin|16\s*digit|card\s*details|netbanking\s*password|password)\b|सीवीवी|एटीएम\s*पिन|पासवर्ड\s*(?:बताओ|भेजो)/i;
+  const credentialPattern = /\b(?:cvv|atm\s*pin|card\s*number|debit\s*card\s*pin|credit\s*card\s*number|netbanking\s*password|login\s*password|credentials?)\s*(?:batao|bhejo|share|send|enter|provide|submit|update)\b|\b(?:share|enter|send|provide|give)\s+(?:your\s+|the\s+)?(?:cvv|atm\s*pin|16\s*digit|card\s*(?:number|details)|netbanking\s*password|password)\b|सीवीवी|एटीएम\s*पिन|पासवर्ड\s*(?:बताओ|भेजो)/i;
 
   if (credentialPattern.test(textToMatch) && !isDefensive) {
     signals.push({
       type: 'credential_theft',
       severity: 'high',
       category: 'credential_theft',
-      evidence: 'Requests sensitive banking credentials such as CVV, ATM PIN, or card password'
+      evidence: 'Requests sensitive banking credentials such as CVV, ATM PIN, or card password',
+      evidenceHi: 'CVV, ATM पिन या कार्ड पासवर्ड जैसी गोपनीय बैंकिंग जानकारी माँगी गई है'
     });
   }
 
   // 4. Payment-to-receive scams / pay to unlock
-  const payToReceivePattern = /\b(?:pay|transfer|send|deposit)\s+(?:(?:rs\.?|inr|₹)?\s*[\d,]+|\w+\s+)?.*?\b(?:to\s+(?:receive|get|claim|collect|release|unlock|activate)|for\s+receiving|before\s+(?:we|you)\s+(?:release|credit|unblock))\b|\b(?:pay|transfer|deposit|send)\s+(?:fee|charge|penalty|money|rs\.?|inr|₹|amount)?\s*(?:to\s+(?:account|upi|vpa|link|qr|wallet))\s*.*?\b(?:to\s+(?:unlock|activate|unblock)|avoid)\b|\b(?:paise|rupaye|paisa|amount)\s+(?:receive|pane|lene)\s+ke\s+liye\s+(?:pay|bhejo|transfer|jama)\b|\b(?:receive|pane|lene)\s+ke\s+liye\s+(?:pay|paise\s+bhejo)\b|पैसे\s*(?:पाने|प्राप्त\s*करने)\s*के\s*लिए\s*(?:भुगतान|पे)/i;
+  const payToReceivePattern = /\b(?:pay|transfer|send|deposit)\s+(?:(?:rs\.?|inr|₹)?\s*[\d,]+|\w+\s+)?.*?\b(?:to\s+(?:receive|get|claim|collect|release|unlock|activate)|for\s+receiving|before\s+(?:we|you)\s+(?:release|credit|unblock))\b|\b(?:pay|transfer|deposit|send)\s+(?:fee|charge|penalty|money|rs\.?|inr|₹|amount)?\s*(?:to\s+(?:account|upi|vpa|link|qr|wallet))\s*.*?\b(?:to\s+(?:unlock|activate|unblock)|avoid)\b|\b(?:paise|rupaye|paisa|amount|money)\s+(?:receive|pane|lene)\b[\s\S]{0,40}?\bke\s+liye\b[\s\S]{0,30}?\b(?:pay|bhejo|transfer|jama)\b|\b(?:paise|rupaye|paisa|amount)\s+(?:receive|pane|lene)\s+ke\s+liye\s+(?:pay|bhejo|transfer|jama)\b|\b(?:receive|pane|lene)\s+ke\s+liye\s+(?:pay|paise\s+bhejo)\b|पैसे\s*(?:पाने|प्राप्त\s*करने)\s*के\s*लिए\s*(?:भुगतान|पे)/i;
 
   if (payToReceivePattern.test(textToMatch)) {
     signals.push({
       type: 'payment_to_receive',
       severity: 'high',
       category: 'upi_payment_scam',
-      evidence: 'Demands payment, fee, or funds transfer in order to receive money or unlock an account'
+      evidence: 'Demands payment, fee, or funds transfer in order to receive money or unlock an account',
+      evidenceHi: 'पैसे पाने या खाता चालू करने के लिए पहले भुगतान या फीस माँगी गई है'
     });
   }
 
@@ -87,19 +130,21 @@ export function detectLocalSignals(rawText) {
       type: 'refund_fee_scam',
       severity: 'high',
       category: 'refund_scam',
-      evidence: 'Demands a processing fee or charge to release an alleged refund'
+      evidence: 'Demands a processing fee or charge to release an alleged refund',
+      evidenceHi: 'रिफंड देने के बहाने प्रोसेसिंग फीस या चार्ज माँगा गया है'
     });
   }
 
   // 6. KYC / PAN / Aadhaar threats & phishing
-  const kycPattern = /\b(?:kyc\s*(?:is\s+)?(?:update|verify|verification|expire|expired|suspend|suspended|deactivat|incomplete)|pan\s*(?:card\s*)?(?:link|update|blocked)|aadhaar\s*(?:link|update))\b.*\b(?:immediately|today|link|click|within|call|otherwise|nahi\s+to|turant|karo)\b|\b(?:update|verify)\s+your\s+kyc\b|\bkyc\s+(?:karo|update|verify)\b|केवाईसी\s*(?:अपडेट|वेरिफाई|ब्लॉक|बंद)/i;
+  const kycPattern = /\b(?:kyc\s*(?:is\s+)?(?:update|verify|verification|expire|expired|suspend|suspended|deactivat|incomplete)|pan\s*(?:card\s*)?(?:link|update|blocked)|aadhaar\s*(?:link|update))\b.*\b(?:immediately|today|link|click|within|call|otherwise|nahi\s+to|turant|karo)\b|\b(?:update|verify)\s+your\s+kyc\b|\bkyc\s+(?:is\s+)?(?:expired?|suspended)\b.*\b(?:update|verify|link|click|now|http|call)\b|\bkyc\s+(?:karo|update|verify)\b|केवाईसी\s*(?:अपडेट|वेरिफाई|ब्लॉक|बंद)/i;
 
   if (kycPattern.test(textToMatch)) {
     signals.push({
       type: 'kyc_phishing',
       severity: 'high',
       category: 'kyc_phishing',
-      evidence: 'Uses KYC / PAN suspension threats to pressure the recipient into urgent action or clicking links'
+      evidence: 'Uses KYC / PAN suspension threats to pressure the recipient into urgent action or clicking links',
+      evidenceHi: 'KYC / PAN बंद होने की धमकी देकर जल्दी कार्रवाई या लिंक पर क्लिक करने का दबाव बनाया गया है'
     });
   }
 
@@ -111,7 +156,8 @@ export function detectLocalSignals(rawText) {
       type: 'account_threat',
       severity: 'high',
       category: 'account_block_scam',
-      evidence: 'Threatens immediate block, suspension, or disconnection of bank account, UPI, or essential services'
+      evidence: 'Threatens immediate block, suspension, or disconnection of bank account, UPI, or essential services',
+      evidenceHi: 'बैंक खाता, UPI या ज़रूरी सेवा तुरंत बंद या ब्लॉक होने की धमकी दी गई है'
     });
   }
 
@@ -123,7 +169,8 @@ export function detectLocalSignals(rawText) {
       type: 'lottery_prize',
       severity: 'high',
       category: 'prize_lottery_scam',
-      evidence: 'Unsolicited announcement of lottery, lucky draw, or major prize winnings'
+      evidence: 'Unsolicited announcement of lottery, lucky draw, or major prize winnings',
+      evidenceHi: 'बिना भाग लिए लॉटरी, लकी ड्रा या बड़े इनाम जीतने का दावा किया गया है'
     });
   }
 
@@ -135,7 +182,8 @@ export function detectLocalSignals(rawText) {
       type: 'cashback_scam',
       severity: 'medium',
       category: 'cashback_scam',
-      evidence: 'Promises incoming cashback requiring user action or link navigation'
+      evidence: 'Promises incoming cashback requiring user action or link navigation',
+      evidenceHi: 'कैशबैक मिलने का वादा करके क्लिक या लिंक खोलने को कहा गया है'
     });
   }
 
@@ -147,7 +195,8 @@ export function detectLocalSignals(rawText) {
       type: 'qr_payment_scam',
       severity: 'high',
       category: 'qr_payment_scam',
-      evidence: 'Directs the user to scan a QR code to receive money (scanning a QR code or entering a PIN only sends money)'
+      evidence: 'Directs the user to scan a QR code to receive money (scanning a QR code or entering a PIN only sends money)',
+      evidenceHi: 'पैसे पाने के लिए QR कोड स्कैन करने को कहा गया है (QR स्कैन या PIN डालने से पैसे जाते हैं, आते नहीं)'
     });
   }
 
@@ -159,7 +208,8 @@ export function detectLocalSignals(rawText) {
       type: 'remote_access',
       severity: 'high',
       category: 'credential_theft',
-      evidence: 'Instructs the recipient to install remote access or screen-sharing tools'
+      evidence: 'Instructs the recipient to install remote access or screen-sharing tools',
+      evidenceHi: 'रिमोट एक्सेस या स्क्रीन-शेयरिंग ऐप इंस्टॉल करने को कहा गया है'
     });
   }
 
@@ -171,32 +221,75 @@ export function detectLocalSignals(rawText) {
       type: 'fake_support',
       severity: 'medium',
       category: 'fake_support',
-      evidence: 'Provides an unofficial personal mobile number masquerading as official customer support or helpline'
+      evidence: 'Provides an unofficial personal mobile number masquerading as official customer support or helpline',
+      evidenceHi: 'अनौपचारिक मोबाइल नंबर को कस्टमर केयर या हेल्पलाइन बताया गया है'
     });
   }
 
-  // 13. Shortened URLs
+  // 13. Shortened URLs (masked so the reply never echoes the full link)
   if (entities.shortenedUrls.length > 0) {
+    const masked = entities.maskedShortenedUrls[0] || maskUrl(entities.shortenedUrls[0]);
     signals.push({
       type: 'shortened_url',
       severity: 'medium',
       category: 'malicious_link',
-      evidence: `Contains shortened URL (${entities.shortenedUrls[0]}) which obscures the true destination website`
+      evidence: `Contains a shortened URL (${masked}) which hides the real destination website`,
+      evidenceHi: `संदेश में छोटा किया हुआ लिंक (${masked}) है जो असली वेबसाइट छिपाता है`
     });
   }
 
   // 14. Suspicious links (raw IP address or untrusted TLDs)
   const suspiciousIpOrTld = /\bhttps?:\/\/(?:\d{1,3}\.){3}\d{1,3}|\bhttps?:\/\/[a-zA-Z0-9.\-_]+\.(?:xyz|top|work|club|buzz|guru|live|download|tk|ml|ga|cf|gq|apk)\b/i;
   if (suspiciousIpOrTld.test(textToMatch)) {
+    const badUrl = entities.urls.find(u => suspiciousIpOrTld.test(u)) || entities.urls[0] || '';
     signals.push({
       type: 'suspicious_link',
       severity: 'high',
       category: 'malicious_link',
-      evidence: 'Contains link pointing to an IP address or suspicious high-risk domain'
+      evidence: `Contains a link (${maskUrl(badUrl)}) pointing to an IP address or a high-risk domain`,
+      evidenceHi: `संदेश में IP पते या जोखिम वाले डोमेन (${maskUrl(badUrl)}) का लिंक है`
     });
   }
 
-  // 15. Fake government / Tax refund / E-challan scams
+  // 15. Lookalike bank / payment-brand domains
+  const lookalike = findLookalikeDomain(entities.urls);
+  if (lookalike) {
+    signals.push({
+      type: 'lookalike_domain',
+      severity: 'high',
+      category: 'malicious_link',
+      evidence: `Link domain (${maskUrl('https://' + lookalike.host)}) imitates the "${lookalike.brand.toUpperCase()}" brand but is not its official website`,
+      evidenceHi: `लिंक का डोमेन (${maskUrl('https://' + lookalike.host)}) "${lookalike.brand.toUpperCase()}" जैसा दिखता है, लेकिन आधिकारिक वेबसाइट नहीं है`
+    });
+  }
+
+  // 16. Link coupled with refund / KYC / urgency pressure
+  const hasAnyUrl = entities.urls.length > 0 || entities.shortenedUrls.length > 0;
+  const linkPressurePattern = /\b(?:refund|kyc|cashback|verify|verification|update|blocked|suspended|claim|immediately|urgent|expire|within\s*(?:24|12|2|1)\s*hours?)\b|\b(?:refund|verify|update|block)\s+(?:karo|karein|kar\s*lo)\b|रिफंड|केवाईसी|अपडेट\s*करें|ब्लॉक|तुरंत/i;
+  if (hasAnyUrl && linkPressurePattern.test(textToMatch)) {
+    const masked = entities.maskedUrls[0] || entities.maskedShortenedUrls[0] || '***';
+    signals.push({
+      type: 'link_with_pressure',
+      severity: 'high',
+      category: 'malicious_link',
+      evidence: `Couples a link (${masked}) with a refund, KYC, or urgent-verification demand - a classic phishing combination`,
+      evidenceHi: `लिंक (${masked}) के साथ रिफंड, KYC या तुरंत सत्यापन का दबाव दिया गया है - फ़िशिंग का आम तरीका`
+    });
+  }
+
+  // 17. Pay / enter PIN to receive money trick (explicit wording)
+  const pinToReceivePattern = /\b(?:enter|type|dalo|डालो|दर्ज)\s+(?:your\s+|apna\s+|अपना\s+)?(?:upi\s*pin|mpin|pin|पिन)\s+(?:to|taaki|ke\s*liye)\s+(?:receive|claim|get|collect|credit)\b|\bpin\s+(?:dalo|daalo|enter\s+karo)\s+(?:paise|money)\s+(?:pane|receive|lene)\s+ke\s+liye\b/i;
+  if (pinToReceivePattern.test(textToMatch) && !isDefensive) {
+    signals.push({
+      type: 'pin_to_receive',
+      severity: 'high',
+      category: 'upi_payment_scam',
+      evidence: 'Says to enter a UPI PIN to receive money - a PIN is only ever needed to SEND money',
+      evidenceHi: 'पैसे पाने के लिए UPI PIN डालने को कहा गया है - PIN सिर्फ पैसे भेजने के लिए चाहिए होता है'
+    });
+  }
+
+  // 18. Fake government / Tax refund / E-challan scams
   const govtScamPattern = /\b(?:income\s*tax\s*refund|tax\s*refund|e-?challan\s*pending|parivahan\s*challan|pm\s*yojana|modi\s*yojana)\b.*\b(?:claim|pay|click|link|rs\.?|inr|₹|immediately)\b/i;
 
   if (govtScamPattern.test(textToMatch)) {
@@ -204,11 +297,12 @@ export function detectLocalSignals(rawText) {
       type: 'tax_refund_scam',
       severity: 'high',
       category: 'tax_refund_scam',
-      evidence: 'Impersonates government tax authorities, traffic e-challan systems, or subsidy schemes'
+      evidence: 'Impersonates government tax authorities, traffic e-challan systems, or subsidy schemes',
+      evidenceHi: 'सरकारी टैक्स विभाग, ई-चालान या सब्सिडी योजना का नाम देकर धोखा दिया गया है'
     });
   }
 
-  // 16. Courier / Delivery failure scams
+  // 19. Courier / Delivery failure scams
   const deliveryScamPattern = /\b(?:package|parcel|courier|shipment|india\s*post|delivery)\b.*\b(?:cannot\s+be\s+delivered|address\s+(?:incomplete|missing|wrong)|pending\s+fee|update\s+address|held\s+at\s+customs)\b.*\b(?:link|click|update|http|bit\.ly)/i;
 
   if (deliveryScamPattern.test(textToMatch)) {
@@ -216,11 +310,12 @@ export function detectLocalSignals(rawText) {
       type: 'delivery_scam',
       severity: 'high',
       category: 'delivery_scam',
-      evidence: 'Claims postal package delivery failure to induce clicking an address-update phishing link'
+      evidence: 'Claims postal package delivery failure to induce clicking an address-update phishing link',
+      evidenceHi: 'पार्सल डिलीवरी न होने का दावा करके पता अपडेट करने के लिंक पर क्लिक कराया जा रहा है'
     });
   }
 
-  // 17. Job / Work-from-home / Registration fee scams
+  // 20. Job / Work-from-home / Registration fee scams
   const jobScamPattern = /\b(?:part[ -]?time\s*job|work\s*from\s*home|daily\s*(?:earning|income)|like\s+and\s+subscribe|youtube\s*task|earn\s*(?:rs\.?|inr|₹)\s*\d{3,5}\s*(?:daily|per\s*day))\b.*\b(?:telegram|whatsapp|fee|register|deposit|task)\b/i;
 
   if (jobScamPattern.test(textToMatch)) {
@@ -228,11 +323,12 @@ export function detectLocalSignals(rawText) {
       type: 'job_fee_scam',
       severity: 'high',
       category: 'job_fee_scam',
-      evidence: 'Promises unrealistic daily work-from-home earnings or demands job registration fees'
+      evidence: 'Promises unrealistic daily work-from-home earnings or demands job registration fees',
+      evidenceHi: 'घर बैठे रोज़ कमाई का अवास्तविक वादा या नौकरी के लिए रजिस्ट्रेशन फीस माँगी गई है'
     });
   }
 
-  // 18. Investment & crypto scams
+  // 21. Investment & crypto scams
   const investmentScamPattern = /\b(?:guaranteed\s*returns?|double\s*your\s*money|crypto\s*trading\s*bot|100%\s*(?:profit|guarantee)|trading\s*signal|invest\s+(?:rs\.?|inr|₹)\s*[\d,]+\s*(?:earn|get))\b/i;
 
   if (investmentScamPattern.test(textToMatch)) {
@@ -240,11 +336,12 @@ export function detectLocalSignals(rawText) {
       type: 'investment_scam',
       severity: 'high',
       category: 'investment_scam',
-      evidence: 'Promotes fraudulent high-return investment schemes or cryptocurrency guarantees'
+      evidence: 'Promotes fraudulent high-return investment schemes or cryptocurrency guarantees',
+      evidenceHi: 'गारंटीड रिटर्न या क्रिप्टो निवेश के धोखाधड़ी वाले वादे किए गए हैं'
     });
   }
 
-  // 19. Urgency & Pressure Tactics
+  // 22. Urgency & Pressure Tactics
   const urgencyPattern = /\b(?:immediately|urgent|urgently|within\s*(?:24|12|2|1)\s*hours?|before\s*(?:midnight|today)|turant|abhi|jaldi|turant\s*payment|abhi\s*verify)\b|तुरंत|जल्दी|24\s*घंटे/i;
 
   if (urgencyPattern.test(textToMatch)) {
@@ -252,11 +349,12 @@ export function detectLocalSignals(rawText) {
       type: 'urgency_pressure',
       severity: 'low',
       category: 'unknown_suspicious',
-      evidence: 'Applies psychological urgency or strict deadline pressure to rush user decisions'
+      evidence: 'Applies psychological urgency or strict deadline pressure to rush user decisions',
+      evidenceHi: 'जल्दी फैसला करवाने के लिए तुरंत कार्रवाई का मनोवैज्ञानिक दबाव बनाया गया है'
     });
   }
 
-  // 20. Institutional Impersonation
+  // 23. Institutional Impersonation
   const impersonationPattern = /\b(?:dear\s+customer|valued\s+customer)\b.*\b(?:sbi|hdfc|icici|axis|pnb|paytm|phonepe|gpay|google\s*pay|cbi|police|rbi|trai)\b|\b(?:police|customs\s*officer|cbi\s*department)\b/i;
 
   if (impersonationPattern.test(textToMatch)) {
@@ -264,7 +362,8 @@ export function detectLocalSignals(rawText) {
       type: 'impersonation',
       severity: 'low',
       category: 'impersonation',
-      evidence: 'Impersonates banks, payment providers, law enforcement, or regulatory institutions'
+      evidence: 'Impersonates banks, payment providers, law enforcement, or regulatory institutions',
+      evidenceHi: 'बैंक, पेमेंट कंपनी, पुलिस या नियामक संस्था का नाम देकर पहचान का दुरुपयोग किया गया है'
     });
   }
 

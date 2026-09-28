@@ -36,7 +36,7 @@ const HINDI_MAP = [
   [/केवाईसी/gu, 'kyc'],
   [/पैन\s*कार्ड/gu, 'pan card'],
   [/आधार/gu, 'aadhaar'],
-  [/भेजो|भेजें|बताओ|बताएं|दर्ज\s*करें|दीजिये|दीजिए/gu, 'send'],
+  [/भेजो|भेजें|बताओ|बताएं|दर्ज\s*करें|दीजिये|दीजिए|डालो|डालें/gu, 'send'],
   [/तुरंत|जल्द|जल्दी/gu, 'immediately'],
   [/पैसे|रुपये|रुपए|रकम/gu, 'money'],
   [/रिफंड/gu, 'refund'],
@@ -47,6 +47,37 @@ const HINDI_MAP = [
   [/कॉल|संपर्क/gu, 'call contact'],
   [/हेल्पलाइन|कस्टमर\s*केयर/gu, 'customer care helpline']
 ];
+
+
+// Mask identifiers before they appear in any output, so a reply never
+// echoes a full scam link, phone number or UPI ID back to the user.
+export function maskDomain(host) {
+  if (!host) return '';
+  const labels = host.split('.');
+  if (labels.length < 2) return host.slice(0, 2) + '***';
+  const tld = labels[labels.length - 1];
+  const name = labels[labels.length - 2];
+  return `${name.slice(0, 2)}***.${tld}`;
+}
+
+export function maskUrl(url) {
+  const match = String(url).match(/^(https?:\/\/)?([^/\s]+)([^\s]*)$/i);
+  if (!match) return '***';
+  const [, scheme = '', host = '', rest = ''] = match;
+  const maskedHost = host.split(':').map((part, i) => i === 0 && /[a-zA-Z]/.test(part) ? maskDomain(part) : part.replace(/\d/g, '*')).join(':');
+  return `${scheme}${maskedHost}${rest ? '/...' : ''}`;
+}
+
+export function maskUpiId(upiId) {
+  const [name = '', handle = ''] = String(upiId).split('@');
+  if (!handle) return name.slice(0, 2) + '***';
+  return `${name.slice(0, 2)}***@${handle}`;
+}
+
+export function extractHost(url) {
+  const match = String(url).match(/^https?:\/\/([^/\s]+)/i);
+  return match ? match[1].toLowerCase() : '';
+}
 
 export function normalizeMessage(text) {
   if (typeof text !== 'string') return '';
@@ -122,6 +153,9 @@ export function extractEntities(text) {
     shortenedUrls,
     phoneNumbers,
     upiIds,
-    amounts
+    amounts,
+    maskedUrls: urls.map(maskUrl),
+    maskedShortenedUrls: shortenedUrls.map(maskUrl),
+    maskedUpiIds: upiIds.map(maskUpiId)
   };
 }
