@@ -1,7 +1,7 @@
 """Prepare the UCI SMS Spam Collection for later model work.
 
 Reads data/raw/SMSSpamCollection (run scripts/fetch_uci.py first),
-cleans and normalizes the text, deduplicates, and writes stratified
+cleans and normalizes the text, deduplicates, and writes shuffled
 train/validation/test splits to data/processed/.
 
 Full splits are gitignored. A small sample and dataset statistics are
@@ -64,7 +64,7 @@ def main():
             seen.add(key)
             rows.append({'id': key[:12], 'text': text, 'source_label': label})
 
-    random.Random(SEED).shuffle(rows)
+    random.Random(SEED).shuffle(rows)  # Existing Day 2 split; not stratified. Keep test frozen.
 
     n = len(rows)
     n_train = int(n * TRAIN_FRAC)
