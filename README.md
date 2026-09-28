@@ -22,7 +22,7 @@ npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite (usually http://localhost:5173). Paste a **made-up, non-private** payment message and press **Send**, or press **+** and pick a screenshot of a message: the app reads its text on-device (tesseract.js OCR, loaded from a CDN at runtime) into the chat composer so you can correct it before sending. The assistant responds in chat. Type a natural question such as **Is this fraud?** for a cautious verdict or **I sent money to the wrong person, what do I do?** for recovery steps. There are no option buttons; ask a follow-up in the same chat without uploading again. Unclear requests get a clarifying reply. The optional Gemini review helps the verdict, while chat intent uses local English/Hindi/Hinglish patterns without a key. Extraction quality depends on the screenshot; Hindi UI is available from the language selector. The frontend calls the local Express API through Vite's `/api` proxy. No API key or database is needed. Stop either process with Ctrl+C.
+Open the URL printed by Vite (usually http://localhost:5173). Paste a **made-up, non-private** payment message and press **Send** - it is checked straight away, no second question needed - or press **+** and pick a screenshot of a message: with a Gemini key the server looks at the image itself (vision) and answers straight away in chat; without a key the app falls back to reading its text on-device (tesseract.js OCR, loaded from a CDN at runtime) into the chat composer so you can correct it before sending. The assistant responds in chat. Follow-up questions about the shared message - **it is froud or not**, **how to prevent this** - get natural, in-context answers through Gemini when a key is set, and canned guidance without one. **I sent money to the wrong person, what do I do?** gives recovery steps. There are no option buttons; ask a follow-up in the same chat without uploading again. Typos in common fraud words are tolerated. Unclear requests get a clarifying reply. The optional Gemini review helps the verdict, while chat intent uses local English/Hindi/Hinglish patterns without a key. Extraction quality depends on the screenshot; Hindi UI is available from the language selector. The frontend calls the local Express API through Vite's `/api` proxy. No API key or database is needed. Stop either process with Ctrl+C.
 
 Quick API test in another terminal:
 
@@ -71,8 +71,8 @@ Labels are `scam` (suspicious request pattern) and `uncertain` (including appare
 
 ## Repo map
 
-- `client/` - React + Vite + Tailwind conversational interface with screenshot OCR, verdict replies and recovery guidance
-- `server/` - Express API with cautious rules, exported UCI spam baseline and optional Gemini review
+- `client/` - React + Vite + Tailwind conversational interface with screenshot image checks (OCR fallback), verdict replies and recovery guidance
+- `server/` - Express API with cautious rules, exported UCI spam baseline and optional Gemini text and image review
 - `data/` - dataset sourcing and safety instructions (no raw messages committed)
 - `scripts/fetch_uci.py` - optional local UCI dataset download
 - `docs/architecture.md` - workflow, label rules, privacy, evaluation plan
