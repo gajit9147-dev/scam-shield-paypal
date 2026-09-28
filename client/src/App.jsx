@@ -1,9 +1,11 @@
 import { useState } from 'react';
 
 const labelStyles = {
-  scam: 'bg-red-100 text-red-800',
-  uncertain: 'bg-amber-100 text-amber-900'
+  scam: 'bg-red-100/90 text-red-800 ring-1 ring-red-300/70',
+  uncertain: 'bg-amber-100/90 text-amber-900 ring-1 ring-amber-300/70'
 };
+
+const glassCard = 'rounded-3xl border border-white/60 bg-white/55 shadow-xl shadow-indigo-900/5 backdrop-blur-xl';
 
 const copy = {
   en: {
@@ -81,39 +83,44 @@ export default function App() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-12 text-slate-900" lang={language}>
-      <div className="mx-auto max-w-2xl">
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-indigo-100 via-sky-50 to-rose-100 px-4 py-12 text-slate-900" lang={language}>
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-20 -top-20 h-80 w-80 rounded-full bg-indigo-300/50 blur-3xl" />
+        <div className="absolute -right-24 top-1/3 h-96 w-96 rounded-full bg-sky-300/50 blur-3xl" />
+        <div className="absolute -bottom-24 left-1/4 h-80 w-80 rounded-full bg-rose-300/50 blur-3xl" />
+      </div>
+      <div className="relative mx-auto max-w-2xl">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold uppercase tracking-widest text-indigo-700">{t.eyebrow}</p>
-            <h1 className="mt-2 text-4xl font-bold">{t.title}</h1>
+            <h1 className="mt-2 bg-gradient-to-r from-indigo-700 to-sky-600 bg-clip-text text-4xl font-bold text-transparent">{t.title}</h1>
           </div>
           <div className="shrink-0">
             <label htmlFor="language" className="block text-sm font-medium text-slate-700">{t.language}</label>
-            <select id="language" value={language} onChange={e => setLanguage(e.target.value)} className="mt-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none">
+            <select id="language" value={language} onChange={e => setLanguage(e.target.value)} className="mt-1 rounded-xl border border-white/60 bg-white/60 px-3 py-2 text-sm text-slate-900 shadow-sm backdrop-blur-md focus:border-indigo-500 focus:outline-none">
               <option value="en">English</option>
               <option value="hi">हिंदी</option>
             </select>
           </div>
         </header>
         <p className="mt-3 text-slate-600">{t.intro}</p>
-        <form onSubmit={check} className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <form onSubmit={check} className={`mt-8 p-6 ${glassCard}`}>
           <label htmlFor="message" className="block font-semibold">{t.message}</label>
-          <textarea id="message" maxLength={1000} required rows={6} value={text} onChange={e => setText(e.target.value)} placeholder={t.placeholder} className="mt-3 w-full rounded-lg border border-slate-300 p-3 focus:border-indigo-600 focus:outline-none" />
+          <textarea id="message" maxLength={1000} required rows={6} value={text} onChange={e => setText(e.target.value)} placeholder={t.placeholder} className="mt-3 w-full rounded-xl border border-slate-300/80 bg-white/70 p-3 backdrop-blur-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <span className="text-sm text-slate-500">{text.length}/1000 {t.characters}</span>
-            <button disabled={loading} className="rounded-lg bg-indigo-700 px-5 py-2.5 font-medium text-white hover:bg-indigo-800 disabled:opacity-60">{loading ? t.checking : t.check}</button>
+            <button disabled={loading} className="rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 px-5 py-2.5 font-medium text-white shadow-lg shadow-indigo-600/25 transition hover:from-indigo-700 hover:to-sky-700 disabled:opacity-60">{loading ? t.checking : t.check}</button>
           </div>
         </form>
-        {error && <p role="alert" className="mt-5 rounded-lg bg-red-50 p-4 text-red-800">{display(error, language) === error && language === 'hi' ? t.error : display(error, language)}</p>}
-        {result && <section aria-live="polite" className="mt-6 min-w-0 break-words rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        {error && <p role="alert" className="mt-5 rounded-2xl border border-red-200/70 bg-red-50/80 p-4 text-red-800 backdrop-blur-md">{display(error, language) === error && language === 'hi' ? t.error : display(error, language)}</p>}
+        {result && <section aria-live="polite" className={`mt-6 min-w-0 break-words p-6 ${glassCard}`}>
           <div className="flex flex-wrap items-center gap-3"><h2 className="text-xl font-semibold">{t.verdict}</h2><span className={`rounded-full px-3 py-1 text-sm font-semibold ${labelStyles[result.label] || labelStyles.uncertain}`}>{display(result.label, language)}</span></div>
           <p className="mt-4"><strong>{t.reason}:</strong> {display(result.reason, language)}</p>
           <p className="mt-3"><strong>{t.action}:</strong> {display(result.safeAction, language)}</p>
           <p className="mt-3 text-sm text-slate-600">{t.method}: {display(result.method, language)}. {t.signal}: {display(result.generalSpamSignal, language)}. {t.confidence}</p>
           {result.evidence?.length > 0 && <p className="mt-3 text-sm"><strong>{t.evidence}:</strong> {result.evidence.map(item => display(item, language)).join(', ')}</p>}
         </section>}
-        <p className="mt-8 text-sm text-slate-500">{t.footer}</p>
+        <p className="mt-8 rounded-2xl border border-white/50 bg-white/40 p-4 text-sm text-slate-600 backdrop-blur-md">{t.footer}</p>
       </div>
     </main>
   );
