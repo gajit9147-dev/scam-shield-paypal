@@ -1,0 +1,41 @@
+{
+  "task": "UCI English general SMS ham/spam only; not scam/safe/uncertain",
+  "source_url": "https://archive.ics.uci.edu/dataset/228/sms+spam+collection",
+  "seed": 42,
+  "train_rows": 4128,
+  "validation_rows": 516,
+  "test_rows": 516,
+  "training": "CountVectorizer ASCII word uni/bigrams with number masking min_df=2 max_features=12000; MultinomialNB alpha=1.0",
+  "fixed_threshold_checked_on_validation": 0.95,
+  "validation": {
+    "tp": 48,
+    "fp": 5,
+    "tn": 459,
+    "fn": 4,
+    "precision": 0.9056603773584906,
+    "recall": 0.9230769230769231,
+    "accuracy": 0.9825581395348837
+  },
+  "test": {
+    "tp": 62,
+    "fp": 1,
+    "tn": 446,
+    "fn": 7,
+    "precision": 0.9841269841269841,
+    "recall": 0.8985507246376812,
+    "accuracy": 0.9844961240310077
+  },
+  "majority_ham_test": {
+    "tp": 0,
+    "fp": 0,
+    "tn": 447,
+    "fn": 69,
+    "precision": 0,
+    "recall": 0.0,
+    "accuracy": 0.8662790697674418
+  },
+  "test_false_positive_ids": [
+    "79b5f6afc7d3"
+  ],
+  "no_upi_test": true
+}
