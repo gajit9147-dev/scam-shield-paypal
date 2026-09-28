@@ -1675,6 +1675,7 @@ export default function App() {
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Card 3: Safety Tips (Exact reference list) */}
                 <div className="p-5 rounded-[28px] glass-panel flex flex-col gap-2.5">
