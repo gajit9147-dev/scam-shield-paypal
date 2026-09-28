@@ -40,7 +40,7 @@ function extractJson(raw) {
 }
 
 // Models retire fast; try the configured/default model, then known fallbacks.
-const MODEL_FALLBACKS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-flash-lite-latest'];
+const MODEL_FALLBACKS = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
 
 async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS) {
   const controller = new AbortController();
@@ -160,45 +160,72 @@ export async function aiReviewImage({ data, mimeType }) {
   };
 }
 
-const DIRECT_VERDICT_QUERY = /\b(?:is\s+it\s+(?:a\s+)?(?:fraud|froud|fruad|scam|real|fake)|(?:fraud|froud|fruad|scam)\s+or\s+(?:not|real)|real\s+or\s+(?:fake|scam)|kya\s+ye\s+(?:fraud|scam|sahi)\s+hai|scam\s+hai\s+kya)\b/i;
+const DIRECT_VERDICT_QUERY = /\b(?:is\s+(?:it|this)\s+(?:a\s+)?(?:fraud|froud|fruad|scam|real|fake)|(?:fraud|froud|fruad|scam)\s+or\s+(?:not|real)|(?:real|fake)\s+or\s+(?:fake|real|scam)|kya\s+ye\s+(?:fraud|scam|sahi)\s+hai|scam\s+hai\s+kya)\b/i;
+const OCR_QUERY = /\b(?:what\s+(?:text|words?)\s+(?:did\s+you\s+read|was\s+read|extracted|is\s+in\s+(?:the\s+)?image)|show\s+(?:the\s+)?(?:ocr|text|transcript)|text\s+(?:in|from)\s+(?:the\s+)?image|kya\s+likha\s+hai|kya\s+text\s+padha)\b/i;
 
 // Free chat: answer follow-ups about the message under discussion
 export async function aiChat({ message, context, language, detectionResult }) {
-  // If the user is asking a direct verification follow-up ("is it fraud?", "real or fake?"),
+  // If user asks about the extracted OCR text specifically
+  if (OCR_QUERY.test(message)) {
+    const textToShow = context || detectionResult?.ocr?.text || detectionResult?.transcript || '';
+    const isHi = language === 'hi';
+    if (!textToShow) {
+      return isHi
+        ? 'स्क्रीनशॉट से कोई टेक्स्ट नहीं पढ़ा जा सका।'
+        : 'No clear text could be extracted from the screenshot.';
+    }
+    return isHi
+      ? `स्क्रीनशॉट से निकाला गया टेक्स्ट:\n\n"${textToShow}"\n\n⚠ गोपनीयता सूचना: OCR में त्रुटियाँ हो सकती हैं। हम आपकी छवियों या निजी जानकारी को कभी स्टोर नहीं करते हैं।`
+      : `Here is the text extracted from the screenshot:\n\n"${textToShow}"\n\n⚠ Privacy note: Optical character recognition may contain transcription errors. We do not store your screenshots or extracted data.`;
+  }
+
+  // If the user is asking a direct verification follow-up ("is it fraud?", "is this fraud?", "real or fake?"),
   // use the EXISTING detection result directly without running an unrelated new decision.
   if (detectionResult && DIRECT_VERDICT_QUERY.test(message)) {
     const isHi = language === 'hi';
-    const evidenceText = (detectionResult.evidence || []).slice(0, 3).map(e => `• ${e}`).join('\n');
+    const evidenceText = (detectionResult.evidence || []).slice(0, 4).map(e => `• ${e}`).join('\n');
+    const isImg = detectionResult.inputType === 'image' || detectionResult.isImage;
+    const targetDescEn = isImg ? 'in the screenshot' : 'in the message';
+    const targetDescHi = isImg ? 'स्क्रीनशॉट में' : 'संदेश में';
+
     if (detectionResult.riskLevel === 'HIGH_RISK') {
       if (isHi) {
-        return `मिले चेतावनी संकेतों के आधार पर, यह संदेश उच्च जोखिम (High Risk) वाला है और धोखाधड़ी होने की पूरी संभावना है।\n\nपहचाने गए मुख्य कारण:\n${evidenceText || '• संदिग्ध धोखाधड़ी पैटर्न पाया गया'}\n\nक्या करें: कोई OTP या PIN साझा न करें, किसी लिंक पर क्लिक न करें, और बैंक ऐप में खुद जाँचें।`;
+        return `मिले चेतावनी संकेतों के आधार पर, यह ${targetDescHi} उच्च जोखिम (High Risk) वाला है और धोखाधड़ी होने की पूरी संभावना है।\n\nपहचाने गए मुख्य कारण:\n${evidenceText || '• संदिग्ध धोखाधड़ी पैटर्न पाया गया'}\n\nक्या करें: कोई OTP या PIN साझा न करें, किसी लिंक पर क्लिक न करें, और बैंक ऐप में खुद जाँचें।`;
       }
-      return `Based on the warning signs detected, this message is high risk and is likely a scam.\n\nDetected reasons:\n${evidenceText || '• Fraudulent request pattern detected'}\n\nWhat to do: Do not share OTP or PIN, do not click message links, and verify directly through your official banking app.`;
+      return `Based on the warning signs detected ${targetDescEn}, this message is high risk and appears consistent with a scam.\n\nDetected reasons:\n${evidenceText || '• Fraudulent request pattern detected'}\n\nWhat to do: Do not share OTP or PIN, do not click message links, and verify directly through your official banking app.`;
     }
     if (detectionResult.riskLevel === 'SUSPICIOUS') {
       if (isHi) {
-        return `इस संदेश में संदिग्ध चेतावनी संकेत मिले हैं।\n\nपहचाने गए संकेत:\n${evidenceText || '• संदिग्ध गतिविधि'}\n\nक्या करें: जब तक खुद आधिकारिक बैंक से पुष्टि न कर लें, तब तक कोई कदम न उठाएँ।`;
+        return `${targetDescHi} संदिग्ध चेतावनी संकेत मिले हैं।\n\nपहचाने गए संकेत:\n${evidenceText || '• संदिग्ध गतिविधि'}\n\nक्या करें: जब तक खुद आधिकारिक बैंक से पुष्टि न कर लें, तब तक कोई कदम न उठाएँ।`;
       }
-      return `Based on the warning signs detected, this message is suspicious.\n\nDetected warning signs:\n${evidenceText || '• Suspicious activity'}\n\nWhat to do: Do not proceed until you verify independently through the official bank app.`;
+      return `Based on the warning signs detected ${targetDescEn}, this message is suspicious.\n\nDetected warning signs:\n${evidenceText || '• Suspicious activity'}\n\nWhat to do: Do not proceed until you verify independently through the official bank app.`;
     }
     if (isHi) {
-      return `इस संदेश में धोखाधड़ी का कोई स्पष्ट पैटर्न नहीं मिला। हालांकि, सिर्फ टेक्स्ट के आधार पर इसे सुरक्षित या असली प्रमाणित नहीं किया जा सकता। किसी भी लेन-देन की पुष्टि अपने बैंक ऐप में करें।`;
+      return `${targetDescHi} धोखाधड़ी का कोई स्पष्ट पैटर्न नहीं मिला। हालांकि, सिर्फ टेक्स्ट के आधार पर इसे सुरक्षित या असली प्रमाणित नहीं किया जा सकता। किसी भी लेन-देन की पुष्टि अपने बैंक ऐप में करें।`;
     }
-    return `No strong scam pattern was detected in this message. However, this does not prove that the message is genuine or safe. Always check your transaction independently in the official banking app.`;
+    return `No strong scam pattern was detected ${targetDescEn}. However, this does not prove that the message is genuine or safe. Always check your transaction independently in the official banking app.`;
   }
 
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) {
-    // Provide a helpful canned response if Gemini is not available
+  function fallbackReply() {
     const isHi = language === 'hi';
     if (detectionResult?.riskLevel === 'HIGH_RISK') {
       return isHi
         ? 'संदेश में गंभीर जोखिम के संकेत हैं। OTP या PIN किसी को न दें और कोई लिंक न खोलें। सहायता के लिए 1930 पर कॉल करें।'
         : 'This message has high-risk scam indicators. Never share OTPs or PINs and do not open links. Call 1930 for cyber helpline.';
     }
+    if (detectionResult?.riskLevel === 'SUSPICIOUS') {
+      return isHi
+        ? 'इस संदेश में संदिग्ध संकेत मिले हैं। किसी भी भुगतान या लिंक पर आगे बढ़ने से पहले बैंक से स्वतंत्र रूप से पुष्टि करें।'
+        : 'This message has suspicious warning signs. Verify independently with your bank before taking any action or clicking links.';
+    }
     return isHi
       ? 'भुगतान सुरक्षा के लिए हमेशा आधिकारिक बैंक ऐप का उपयोग करें और कभी किसी के साथ OTP या UPI PIN साझा न करें।'
       : 'Always check payments in your official bank app and never share your OTP or UPI PIN with anyone.';
+  }
+
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) {
+    return fallbackReply();
   }
 
   const models = [...new Set([process.env.GEMINI_MODEL, ...MODEL_FALLBACKS].filter(Boolean))];
@@ -220,8 +247,8 @@ export async function aiChat({ message, context, language, detectionResult }) {
     raw = await callModel(model, key, [{ text: prompt }]);
     if (raw) break;
   }
-  if (!raw) return null;
+  if (!raw) return fallbackReply();
   const parsed = extractJson(raw);
   const reply = parsed && typeof parsed.reply === 'string' ? parsed.reply.trim().slice(0, 1200) : '';
-  return reply || null;
+  return reply || fallbackReply();
 }

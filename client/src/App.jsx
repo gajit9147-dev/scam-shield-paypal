@@ -8,6 +8,7 @@ const copy = {
     characters: 'characters', checking: 'Checking...', check: 'Check message', verdict: 'Verdict',
     upload: 'Upload screenshot', reading: 'Reading text from the screenshot...',
     readingImage: 'Reading the screenshot...', uploadedImage: 'Uploaded screenshot',
+    checkingImage: 'Checking this image for scam warning signs...', viewImage: 'View Full Image', closePreview: 'Close',
     ocrDone: 'Text extracted. Review or edit it, then choose what you need below.',
     chooseAction: 'What would you like to do?', fraudChoice: 'Check if this message is fraud', recoveryChoice: 'Wrong payment - how to get money back',
     recoveryChosenIntro: 'If you sent money to the wrong person, act fast. Follow these steps; getting it back is not guaranteed.',
@@ -82,6 +83,7 @@ const copy = {
     characters: 'अक्षर', checking: 'जाँच जारी है...', check: 'संदेश जाँचें', verdict: 'नतीजा',
     upload: 'स्क्रीनशॉट अपलोड करें', reading: 'स्क्रीनशॉट से टेक्स्ट पढ़ा जा रहा है...',
     readingImage: 'स्क्रीनशॉट पढ़ा जा रहा है...', uploadedImage: 'अपलोड किया गया स्क्रीनशॉट',
+    checkingImage: 'स्क्रीनशॉट में धोखाधड़ी के संकेतों की जाँच हो रही है...', viewImage: 'बड़ा देखें', closePreview: 'बंद करें',
     ocrDone: 'स्क्रीनशॉट से टेक्स्ट मिल गया। इसे देखें या सुधारें, फिर नीचे अपना विकल्प चुनें।',
     chooseAction: 'आप क्या करना चाहते हैं?', fraudChoice: 'क्या यह संदेश धोखाधड़ी है, जाँचें', recoveryChoice: 'गलत भुगतान - पैसे वापस कैसे पाएं',
     recoveryChosenIntro: 'अगर आपने गलत व्यक्ति को पैसे भेजे हैं तो जल्दी करें। ये कदम अपनाएँ; पैसे वापसी की गारंटी नहीं है।',
@@ -193,6 +195,7 @@ const debitPattern = /(debited|deducted|payment successful|paid successfully|txn
 const amountPattern = /(rs\.?|inr|\u20B9)\s*[\d,]+/i;
 
 function looksLikeCompletedPayment(text) {
+  if (typeof text !== 'string' || !text) return false;
   return debitPattern.test(text) && amountPattern.test(text);
 }
 
@@ -201,15 +204,17 @@ function display(value, language) {
 }
 
 let nextId = 0;
-const makeMessage = (role, kind, content = {}) => ({ id: ++nextId, role, kind, ...content });
+const makeMessage = (role, kind, content = {}) => ({ id: ++nextId, role, kind, type: kind, ...content });
 const greetingIntent = /^(?:hi+|hello+|hey+|heya+|namaste+|pranam+|hola|good\s*(?:morning|afternoon|evening))\b[!?.\s]*$/i;
 const wrongPaymentIntent = /\b(wrong|mistak(?:e|en)|galat|galt|galti)\b.{0,70}\b(payment|paid|transfer|upi|paisa|paise|money|bhej|send|sent)\b|\b(payment|paid|transfer|paisa|paise|money|bhej|sent)\b.{0,70}\b(wrong|mistak(?:e|en)|galat|galt|galti)\b|गलत.{0,50}(भुगतान|पैसे|भेज)|(?:भुगतान|पैसे).{0,50}गलत/i;
 const fraudIntent = /\b(fraud|frauds|froud|fruad|fraaud|frod|scam|scams|scame|scamm|scem|skam|fake|faek|genuine|safe|saef|real|suspicious|dhokha|dhoka|dhokadhadi)\b|धोखाधड़ी|फ़्रॉड|फ्रॉड|स्कैम|नकली|सुरक्षित/i;
 const learningIntent = /\b(how (?:can|do|to)|what (?:are|is)|ways to|tips|explain|understand|spot|identify|recogniz(?:e|ing))\b.{0,100}\b(upi|fraud|scam|payment)\b|\b(upi|fraud|scam|payment)\b.{0,100}\b(how|spot|identify|tips|work|happens)\b|(?:कैसे|क्या|समझा).{0,60}(?:धोखाधड़ी|स्कैम|UPI)|(?:धोखाधड़ी|स्कैम|UPI).{0,60}(?:कैसे|पहचान|बचाव)|\b(?:kaise|pehchan|bachne)\b.{0,60}\b(?:fraud|scam|upi)\b/i;
 const inquiry = /[?？]|\b(is|check|tell|help|how|kya|kaise|hai|hoga|please|can|what)\b|क्या|कैसे|मदद/i;
-const directVerdictQuery = /\b(?:is\s+it\s+(?:a\s+)?(?:fraud|froud|fruad|scam|real|fake)|(?:fraud|froud|fruad|scam)\s+or\s+(?:not|real)|real\s+or\s+(?:fake|scam)|kya\s+ye\s+(?:fraud|scam|sahi)\s+hai|scam\s+hai\s+kya)\b/i;
+const directVerdictQuery = /\b(?:is\s+(?:it|this)\s+(?:a\s+)?(?:fraud|froud|fruad|scam|real|fake)|(?:fraud|froud|fruad|scam)\s+or\s+(?:not|real)|(?:real|fake)\s+or\s+(?:fake|real|scam)|kya\s+ye\s+(?:fraud|scam|sahi)\s+hai|scam\s+hai\s+kya)\b/i;
+const ocrQuery = /\b(?:what\s+(?:text|words?)\s+(?:did\s+you\s+read|was\s+read|extracted|is\s+in\s+(?:the\s+)?image)|show\s+(?:the\s+)?(?:ocr|text|transcript)|text\s+(?:in|from)\s+(?:the\s+)?image|kya\s+likha\s+hai|kya\s+text\s+padha)\b/i;
 
 function intentOf(text) {
+  if (typeof text !== 'string' || !text) return '';
   if (wrongPaymentIntent.test(text)) return 'recovery';
   if (fraudIntent.test(text) && (inquiry.test(text) || text.trim().split(/\s+/).length <= 5)) return 'fraud';
   return '';
@@ -235,11 +240,19 @@ function prepareImage(file) {
   });
 }
 
-async function checkImage(prepared) {
+async function checkImage(prepared, clientOcrText = '') {
   try {
+    const payload = {
+      image: prepared.base64,
+      mimeType: prepared.mimeType
+    };
+    if (clientOcrText) {
+      payload.ocrText = clientOcrText;
+    }
     const response = await fetch('/api/check-image', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: prepared.base64, mimeType: prepared.mimeType })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
     if (!response.ok) return null;
     return await response.json();
@@ -300,6 +313,7 @@ export default function App() {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrState, setOcrState] = useState('');
   const [readingImage, setReadingImage] = useState(false);
+  const [previewModalUrl, setPreviewModalUrl] = useState(null);
   const fileInput = useRef(null);
   const bottomRef = useRef(null);
   const requestId = useRef(0);
@@ -311,35 +325,88 @@ export default function App() {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
+
+    setBusy(true);
+    setReadingImage(true);
     setOcrLoading(true);
     setOcrState('');
     const started = Date.now();
+
     try {
       const prepared = await prepareImage(file);
-      if (prepared) {
-        setReadingImage(true);
-        setMessages(previous => [...previous, makeMessage('user', 'image', { image: prepared.dataUrl })]);
-        const result = await checkImage(prepared);
-        await pause(Math.max(0, MIN_THINK_MS - (Date.now() - started)));
-        setReadingImage(false);
-        if (result) {
-          if (result.transcript) setActiveText(result.transcript);
-          setLatestVerdict(result);
-          setMessages(previous => [...previous, makeMessage('assistant', 'verdict', { result, sourceText: result.transcript || '' })]);
-          return;
+      if (!prepared) throw new Error('Image could not be processed');
+
+      // 1. Immediately show preview in user's chat message using uploaded image
+      const imageMsg = makeMessage('user', 'image', {
+        type: 'image',
+        image: prepared.dataUrl,
+        imageUrl: prepared.dataUrl,
+        mimeType: prepared.mimeType,
+        name: file.name
+      });
+      setMessages(previous => [...previous, imageMsg]);
+
+      // 2. Send image to backend for analysis (Gemini vision + fusion)
+      let result = await checkImage(prepared);
+
+      // 3. Fallback: If backend vision is unavailable, run OCR INTERNALLY
+      // OCR text is used strictly internally for local detection rules, NEVER displayed as user's bubble
+      if (!result) {
+        try {
+          const tesseract = (await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.esm.min.js')).default;
+          const ocrLang = language === 'hi' ? 'hin+eng' : 'eng+hin';
+          const { data } = await tesseract.recognize(prepared.dataUrl, ocrLang);
+          const extracted = (data?.text || '').replace(/[ \t]+\n/g, '\n').trim().slice(0, 1000);
+          if (extracted && (extracted.match(/[\p{L}\p{N}]/gu) || []).length >= 3) {
+            setActiveText(extracted);
+            // Retry /api/check-image with internally extracted OCR text
+            result = await checkImage(prepared, extracted);
+            if (!result) {
+              const textRes = await fetch('/api/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: extracted })
+              });
+              if (textRes.ok) {
+                result = await textRes.json();
+              }
+            }
+          }
+        } catch (ocrErr) {
+          console.warn('Internal OCR execution error:', ocrErr);
         }
       }
-      const tesseract = (await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.esm.min.js')).default;
-      const { data } = await tesseract.recognize(file, 'eng');
-      const extracted = (data?.text || '').replace(/[ \t]+\n/g, '\n').trim().slice(0, 1000);
-      if ((extracted.match(/[\p{L}\p{N}]/gu) || []).length < 3) throw new Error('No text');
-      setDraft(extracted);
-      setOcrState('done');
+
+      await pause(Math.max(0, MIN_THINK_MS - (Date.now() - started)));
+
+      if (result) {
+        const finalAnalysis = result.analysis || result;
+        const transcript = result.ocr?.text || result.transcript || activeText || '';
+        if (transcript) setActiveText(transcript);
+        finalAnalysis.isImage = true;
+        setLatestVerdict(finalAnalysis);
+        setMessages(previous => [...previous, makeMessage('assistant', 'verdict', {
+          result: finalAnalysis,
+          sourceText: transcript,
+          isImage: true
+        })]);
+      } else {
+        setMessages(previous => [...previous, makeMessage('assistant', 'chat', {
+          text: language === 'hi'
+            ? 'स्क्रीनशॉट की जाँच नहीं हो सकी। क्या बैकएंड सर्वर (पोर्ट 3001) चल रहा है? आप चाहें तो संदेश का टेक्स्ट सीधे टाइप करके भी जाँच सकते हैं।'
+            : 'Could not check the screenshot right now. Please verify that the backend server is running, or paste the message text directly.'
+        })]);
+      }
     } catch {
-      setOcrState('error');
+      setMessages(previous => [...previous, makeMessage('assistant', 'error', {
+        error: language === 'hi'
+          ? 'स्क्रीनशॉट से चेतावनी संकेत नहीं पढ़े जा सके।'
+          : 'Could not read text or warning signs from that image.'
+      })]);
     } finally {
       setReadingImage(false);
       setOcrLoading(false);
+      setBusy(false);
     }
   }
 
@@ -351,12 +418,13 @@ export default function App() {
     setOcrState('');
     const action = intentOf(text);
     const learning = !looksLikeCompletedPayment(text) && learningIntent.test(text) && !/(otp|pin|https?:|\u20b9|inr|rs\.?|account.*(?:pay|send))/i.test(text);
-    const user = makeMessage('user', 'text', { text });
+    const user = makeMessage('user', 'text', { text, type: 'text' });
     setMessages(previous => [...previous, user]);
     const wordCount = text.trim().split(/\s+/).length;
     const paymentish = looksLikeCompletedPayment(text) || /(otp|pin|https?:|bit\.ly|\u20b9|inr\b|rs\.?\s*\d|account|a\/c|refund|debited|credited|blocked|kyc|verify|won|winner|lottery|cashback|payment|paid|upi|bank)/i.test(text) || wordCount > 8;
     const shortQuery = text.length < 130 && inquiry.test(text) && !paymentish;
     const isDirectVerdictQuery = latestVerdict && directVerdictQuery.test(text);
+    const isOcrQuery = ocrQuery.test(text);
 
     if (greetingIntent.test(text)) {
       setMessages(previous => [...previous, makeMessage('assistant', 'chat', {
@@ -369,7 +437,7 @@ export default function App() {
     } else if (action === 'recovery') {
       setActiveText(text);
       setMessages(previous => [...previous, makeMessage('assistant', 'recovery', { sourceText: text })]);
-    } else if (isDirectVerdictQuery) {
+    } else if (isDirectVerdictQuery || isOcrQuery) {
       // Use existing detection result directly without re-running detection
       chatReply(text, latestVerdict);
     } else if (action === 'fraud') {
@@ -402,7 +470,7 @@ export default function App() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: question,
-          context: activeText,
+          context: (activeText || '').slice(0, 1000),
           language,
           detectionResult: verdictToUse
         })
@@ -414,22 +482,36 @@ export default function App() {
       setMessages(previous => [...previous, makeMessage('assistant', 'chat', { text: data.reply })]);
     } catch {
       if (call !== requestId.current) return;
+      if (ocrQuery.test(question)) {
+        const textToShow = activeText || verdictToUse?.ocr?.text || verdictToUse?.transcript || '';
+        const isHi = language === 'hi';
+        const replyText = textToShow
+          ? (isHi
+              ? `स्क्रीनशॉट से निकाला गया टेक्स्ट:\n\n"${textToShow}"\n\n⚠ गोपनीयता सूचना: OCR में त्रुटियाँ हो सकती हैं। हम आपकी छवियों या निजी जानकारी को कभी स्टोर नहीं करते हैं।`
+              : `Here is the text extracted from the screenshot:\n\n"${textToShow}"\n\n⚠ Privacy note: Optical character recognition may contain reading errors. We do not permanently store your screenshots or extracted data.`)
+          : (isHi ? 'स्क्रीनशॉट से कोई टेक्स्ट नहीं पढ़ा जा सका।' : 'No clear text could be extracted from the screenshot.');
+        setMessages(previous => [...previous, makeMessage('assistant', 'chat', { text: replyText })]);
+        return;
+      }
       if (verdictToUse) {
         const isHi = language === 'hi';
-        const evidenceList = (verdictToUse.evidence || []).slice(0, 3).map(e => `• ${display(e, language)}`).join('\n');
+        const isImg = verdictToUse.inputType === 'image' || verdictToUse.isImage;
+        const targetDescEn = isImg ? 'in the screenshot' : 'in the message';
+        const targetDescHi = isImg ? 'स्क्रीनशॉट में' : 'संदेश में';
+        const evidenceList = (verdictToUse.evidence || []).slice(0, 4).map(e => `• ${display(e, language)}`).join('\n');
         let replyText = '';
         if (verdictToUse.riskLevel === 'HIGH_RISK') {
           replyText = isHi
-            ? `मिले चेतावनी संकेतों के आधार पर, यह संदेश उच्च जोखिम (High Risk) वाला है और धोखाधड़ी होने की पूरी संभावना है।\n\nपहचाने गए मुख्य कारण:\n${evidenceList || '• संदिग्ध धोखाधड़ी पैटर्न पाया गया'}\n\nक्या करें: कोई OTP या PIN साझा न करें, किसी लिंक पर क्लिक न करें, और बैंक ऐप में खुद जाँचें।`
-            : `Based on the warning signs detected, this message is high risk and is likely a scam.\n\nDetected reasons:\n${evidenceList || '• Fraudulent request pattern detected'}\n\nWhat to do: Do not share OTP or PIN, do not click message links, and verify directly through your official banking app.`;
+            ? `मिले चेतावनी संकेतों के आधार पर, यह ${targetDescHi} उच्च जोखिम (High Risk) वाला है और धोखाधड़ी होने की पूरी संभावना है।\n\nपहचाने गए मुख्य कारण:\n${evidenceList || '• संदिग्ध धोखाधड़ी पैटर्न पाया गया'}\n\nक्या करें: कोई OTP या PIN साझा न करें, किसी लिंक पर क्लिक न करें, और बैंक ऐप में खुद जाँचें।`
+            : `Based on the warning signs detected ${targetDescEn}, this message is high risk and appears consistent with a scam.\n\nDetected reasons:\n${evidenceList || '• Fraudulent request pattern detected'}\n\nWhat to do: Do not share OTP or PIN, do not click message links, and verify directly through your official banking app.`;
         } else if (verdictToUse.riskLevel === 'SUSPICIOUS') {
           replyText = isHi
-            ? `इस संदेश में संदिग्ध चेतावनी संकेत मिले हैं।\n\nपहचाने गए संकेत:\n${evidenceList || '• संदिग्ध गतिविधि'}\n\nक्या करें: जब तक खुद आधिकारिक बैंक से पुष्टि न कर लें, कोई कदम न उठाएँ।`
-            : `Based on the warning signs detected, this message is suspicious.\n\nDetected warning signs:\n${evidenceList || '• Suspicious activity'}\n\nWhat to do: Do not proceed until you verify independently through the official bank app.`;
+            ? `${targetDescHi} संदिग्ध चेतावनी संकेत मिले हैं।\n\nपहचाने गए संकेत:\n${evidenceList || '• संदिग्ध गतिविधि'}\n\nक्या करें: जब तक खुद आधिकारिक बैंक से पुष्टि न कर लें, कोई कदम न उठाएँ।`
+            : `Based on the warning signs detected ${targetDescEn}, this message is suspicious.\n\nDetected warning signs:\n${evidenceList || '• Suspicious activity'}\n\nWhat to do: Do not proceed until you verify independently through the official bank app.`;
         } else {
           replyText = isHi
-            ? `इस संदेश में धोखाधड़ी का कोई स्पष्ट पैटर्न नहीं मिला। हालांकि, सिर्फ टेक्स्ट के आधार पर इसे सुरक्षित नहीं माना जा सकता। बैंक ऐप में खुद पुष्टि करें।`
-            : `No strong scam pattern was detected. However, this does not prove that the message is legitimate. Always verify independently through your official banking app.`;
+            ? `${targetDescHi} धोखाधड़ी का कोई स्पष्ट पैटर्न नहीं मिला। हालांकि, सिर्फ टेक्स्ट के आधार पर इसे सुरक्षित नहीं माना जा सकता। बैंक ऐप में खुद पुष्टि करें।`
+            : `No strong scam pattern was detected ${targetDescEn}. However, this does not prove that the message is legitimate. Always verify independently through your official banking app.`;
         }
         setMessages(previous => [...previous, makeMessage('assistant', 'chat', { text: replyText })]);
       } else if (learningIntent.test(question) || /prevent|avoid|protect|bachne|bachao|बच|सुरक्षित रह/.test(question)) {
@@ -648,8 +730,23 @@ export default function App() {
           {messages.map(message => (
             <div key={message.id} className={`flex items-start ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {message.role === 'user' ? (
-                message.kind === 'image' ? (
-                  <img src={message.image} alt={t.uploadedImage} className="max-h-56 max-w-full rounded-3xl border border-white/20 shadow-xl"/>
+                (message.kind === 'image' || message.type === 'image') ? (
+                  <div
+                    className="group relative inline-block cursor-pointer overflow-hidden rounded-2xl border border-white/20 bg-black/40 shadow-xl transition hover:border-white/40"
+                    onClick={() => setPreviewModalUrl(message.imageUrl || message.image)}
+                    title={language === 'hi' ? 'बड़ा देखने के लिए क्लिक करें' : 'Click to expand preview'}
+                  >
+                    <img
+                      src={message.imageUrl || message.image}
+                      alt={t.uploadedImage}
+                      className="max-h-72 w-auto max-w-full rounded-2xl object-contain sm:max-h-80"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100">
+                      <span className="rounded-full bg-black/75 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md">
+                        🔍 {t.viewImage || (language === 'hi' ? 'बड़ा देखें' : 'View Full Image')}
+                      </span>
+                    </div>
+                  </div>
                 ) : (
                   <div className="liquid-grey-pill max-w-[92%] sm:max-w-[82%] px-6 py-4 text-white text-[15px] sm:text-[16px] leading-relaxed break-words">
                     <p className="whitespace-pre-wrap">{message.text}</p>
@@ -667,7 +764,11 @@ export default function App() {
             <div className="flex items-center">
               <div role="status" className="liquid-grey-card px-4 py-3 text-sm text-zinc-300 flex items-center gap-2.5">
                 <span className="animate-spin text-base inline-block">⚙️</span>
-                <span>{t.checking}</span>
+                <span>
+                  {readingImage
+                    ? (t.checkingImage || (language === 'hi' ? 'स्क्रीनशॉट में धोखाधड़ी के संकेतों की जाँच हो रही है...' : 'Checking this image for scam warning signs...'))
+                    : t.checking}
+                </span>
                 <span aria-hidden="true" className="inline-block animate-pulse text-zinc-400">● ● ●</span>
               </div>
             </div>
@@ -678,7 +779,7 @@ export default function App() {
         {/* Floating Liquid Grey Input Composer */}
         <div className="z-10 shrink-0 border-t border-white/[0.08] bg-[#0c0d11]/85 px-3 pb-[max(env(safe-area-inset-bottom),14px)] pt-3 backdrop-blur-2xl sm:px-6">
           <form onSubmit={sendMessage} className="liquid-grey-input flex items-end gap-2 p-2">
-            <input ref={fileInput} type="file" accept="image/*" onChange={readScreenshot} className="hidden" aria-hidden="true" tabIndex={-1}/>
+            <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp,image/*" onChange={readScreenshot} className="hidden" aria-hidden="true" tabIndex={-1}/>
             <button
               type="button"
               aria-label={t.upload}
@@ -707,12 +808,40 @@ export default function App() {
               {t.send}
             </button>
           </form>
-          {ocrLoading && <p role="status" className="mt-1.5 text-center text-xs text-zinc-400">{readingImage ? t.readingImage : t.reading}</p>}
-          {ocrState === 'done' && <p role="status" className="mt-1.5 text-center text-xs text-emerald-400">{t.reviewImage}</p>}
+          {ocrLoading && <p role="status" className="mt-1.5 text-center text-xs text-zinc-400">{readingImage ? (t.checkingImage || t.readingImage) : t.reading}</p>}
           {ocrState === 'error' && <p role="alert" className="mt-1.5 text-center text-xs text-rose-400">{t.ocrError}</p>}
           <p className="mt-1.5 text-center text-[11px] text-zinc-500">{t.privateNote}</p>
         </div>
       </div>
+
+      {/* Lightbox / Modal for Image Preview */}
+      {previewModalUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md"
+          onClick={() => setPreviewModalUrl(null)}
+        >
+          <div
+            className="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-2xl border border-white/20 bg-[#121418] p-2 shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              aria-label={t.closePreview || 'Close'}
+              onClick={() => setPreviewModalUrl(null)}
+              className="absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-full bg-black/75 text-sm font-bold text-white hover:bg-black transition cursor-pointer"
+            >
+              ✕
+            </button>
+            <img
+              src={previewModalUrl}
+              alt={t.uploadedImage}
+              className="max-h-[82vh] w-auto max-w-[85vw] rounded-xl object-contain"
+            />
+          </div>
+        </div>
+      )}
     </main>
   );
 }

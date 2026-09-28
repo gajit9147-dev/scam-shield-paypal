@@ -170,6 +170,36 @@ test('18. Screenshot / OCR evidence fusion incorporates OCR source', () => {
   assert.equal(result.sources.ocr, true);
 });
 
+test('19. User asks "what text did you read from the image?" provides OCR text with privacy disclaimer', async () => {
+  const reply = await aiChat({
+    message: 'What text did you read from the image?',
+    context: 'Urgent: Update your PAN card details to unblock SBI account',
+    language: 'en',
+    detectionResult: {
+      riskLevel: 'HIGH_RISK',
+      ocr: { text: 'Urgent: Update your PAN card details to unblock SBI account' }
+    }
+  });
+  assert.ok(reply.includes('extracted from the screenshot') && reply.includes('Privacy note'));
+});
+
+test('20. Follow-up "is this fraud?" with image result mentions screenshot context', async () => {
+  const reply = await aiChat({
+    message: 'is this fraud?',
+    context: 'Urgent: Scan QR to receive prize money',
+    language: 'en',
+    detectionResult: {
+      riskLevel: 'HIGH_RISK',
+      inputType: 'image',
+      isImage: true,
+      category: 'qr_payment_scam',
+      categoryLabel: 'QR Code Payment Scam',
+      evidence: ['QR code scan requested to receive funds']
+    }
+  });
+  assert.ok(reply.includes('screenshot') && reply.includes('high risk'));
+});
+
 test('threat plus payment destination legacy test passes', () => {
   assert.equal(classify('Your UPI will be blocked. Pay fee to account to unlock it').label, 'scam');
 });

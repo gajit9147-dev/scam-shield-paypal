@@ -10,7 +10,19 @@ loadEnvFile();
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' }));
+
+// Allow CORS from localhost, configured origin, or local network devices (e.g. mobile testing on LAN)
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (/^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[01])\.\d+\.\d+)(?::\d+)?$/.test(origin)
+      || origin === process.env.CLIENT_ORIGIN) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -18,16 +30,29 @@ const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 app.post('/api/check-image', express.json({ limit: '6mb' }), async (req, res) => {
   const image = req.body?.image;
   const mimeType = req.body?.mimeType;
-  if (typeof image !== 'string' || typeof mimeType !== 'string' || !IMAGE_TYPES.includes(mimeType)
-    || image.length < 100 || image.length > 5600000 || !/^[A-Za-z0-9+/=]+$/.test(image)) {
+  const clientOcrText = typeof req.body?.ocrText === 'string' ? req.body.ocrText.trim() : '';
+
+  const cleanImage = typeof image === 'string' ? image.replace(/[\r\n\s]+/g, '') : '';
+
+  if (!cleanImage || typeof mimeType !== 'string' || !IMAGE_TYPES.includes(mimeType)
+    || cleanImage.length < 100 || cleanImage.length > 5600000 || !/^[A-Za-z0-9+/=]+$/.test(cleanImage)) {
     return res.status(400).json({ error: 'Send a JPEG, PNG or WebP screenshot.' });
   }
 
   // Do not log or store images.
-  const ai = await aiReviewImage({ data: image, mimeType });
-  if (!ai) return res.status(503).json({ error: 'Image check is not available right now.' });
+  let ai = null;
+  try {
+    ai = await aiReviewImage({ data: image, mimeType });
+  } catch {
+    ai = null;
+  }
 
-  const transcript = (ai.transcript || '').trim();
+  const transcript = (ai?.transcript || clientOcrText || '').trim();
+
+  if (!ai && !transcript) {
+    return res.status(503).json({ error: 'Image check is not available right now.' });
+  }
+
   const localResult = transcript ? detectLocalSignals(transcript) : null;
   const score = transcript ? spamScore(transcript) : 0;
   const isSpamFlagged = score >= model.spamThreshold;
@@ -43,10 +68,37 @@ app.post('/api/check-image', express.json({ limit: '6mb' }), async (req, res) =>
   });
 
   result.transcript = transcript;
-  return res.json(result);
+
+  return res.json({
+    inputType: 'image',
+    image: {
+      url: `data:${mimeType};base64,${image}`,
+      mimeType
+    },
+    ocr: {
+      text: transcript,
+      available: Boolean(transcript)
+    },
+    analysis: {
+      riskLevel: result.riskLevel,
+      label: result.label,
+      category: result.category,
+      categoryLabel: result.categoryLabel,
+      summary: result.summary,
+      reason: result.reason,
+      evidence: result.evidence,
+      signals: result.signals,
+      recommendations: result.recommendations,
+      safeAction: result.safeAction,
+      confidence: result.confidence,
+      method: result.method,
+      sources: result.sources
+    },
+    ...result
+  });
 });
 
-app.use(express.json({ limit: '8kb' }));
+app.use(express.json({ limit: '128kb' }));
 
 app.get('/', (_req, res) => res.redirect(process.env.CLIENT_ORIGIN || 'http://localhost:5173'));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
@@ -88,15 +140,16 @@ app.post('/api/chat', async (req, res) => {
   const detectionResult = req.body?.detectionResult;
 
   if (typeof message !== 'string' || !message.trim() || message.length > 500
-    || (context !== undefined && (typeof context !== 'string' || context.length > 1000))
     || (language !== undefined && language !== 'en' && language !== 'hi')) {
     return res.status(400).json({ error: 'Send a question of 1 to 500 characters.' });
   }
 
+  const safeContext = typeof context === 'string' ? context.slice(0, 2000).trim() : '';
+
   // Do not log or store chat content.
   const reply = await aiChat({
     message: message.trim(),
-    context: typeof context === 'string' ? context.trim() : '',
+    context: safeContext,
     language: language === 'hi' ? 'hi' : 'en',
     detectionResult
   });

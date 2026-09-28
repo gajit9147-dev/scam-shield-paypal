@@ -5,6 +5,7 @@ import { combineEvidence } from './fusion.js';
 // A fixed, train-only UCI ham/spam baseline. This probability is NOT a
 // calibrated probability that a payment message is a scam.
 export function spamScore(text) {
+  if (typeof text !== 'string' || !text.trim()) return 0;
   const words = (text.toLowerCase().match(/[a-z0-9]+/g) || []).map(word => /[0-9]/.test(word) ? 'num' : word);
   // Keep exactly the same feature selection as scikit-learn's CountVectorizer: binary document frequency >= 2.
   // All exported features already passed that threshold.

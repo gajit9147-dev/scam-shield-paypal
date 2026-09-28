@@ -80,7 +80,9 @@ export function extractHost(url) {
 }
 
 export function normalizeMessage(text) {
-  if (typeof text !== 'string') return '';
+  if (typeof text !== 'string' || !text) {
+    return { raw: '', normalized: '', expanded: '' };
+  }
 
   // 1. Unicode NFKC normalization
   let normalized = text.normalize('NFKC');
@@ -117,6 +119,10 @@ export function extractEntities(text) {
   const upiIds = [];
   const amounts = [];
 
+  if (typeof text !== 'string' || !text) {
+    return { urls, shortenedUrls, phoneNumbers, upiIds, amounts };
+  }
+
   // Shortened URL patterns
   const shortenerRegex = /\b(?:https?:\/\/)?(?:bit\.ly|tinyurl\.com|t\.co|is\.gd|buff\.ly|cutt\.ly|rb\.gy|shorturl\.at|ow\.ly|goo\.gl|tiny\.cc)\/[a-zA-Z0-9_-]+/gi;
   let match;
@@ -130,8 +136,8 @@ export function extractEntities(text) {
     urls.push(match[0]);
   }
 
-  // Indian phone numbers: 10 digits starting with 6-9, or with +91 / 091 prefix
-  const phoneRegex = /(?:\+91[\s-]?)?[6-9]\d{9}\b/g;
+  // Indian phone numbers: 10 digits starting with 6-9, with optional +91 prefix, bounded so UTRs/account numbers aren't misidentified
+  const phoneRegex = /(?:(?<!\d)(?:\+91[\s-]?)?[6-9]\d{9}\b)/g;
   while ((match = phoneRegex.exec(text)) !== null) {
     phoneNumbers.push(match[0]);
   }
