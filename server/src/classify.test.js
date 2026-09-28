@@ -285,6 +285,32 @@ test('30. Public-source dataset holds its measured floor (recall >= 90%, at most
     if (item.expect === 'scam') flagged ? tp++ : fn++;
     else if (flagged) fp++;
   }
-  assert.ok(fp <= 2, `false positives on public benign cases: ${fp}`);
+  assert.ok(fp <= 2, `public benign false positives ${fp} exceeds limit`);
   assert.ok(tp / (tp + fn) >= 0.9, `public scam recall ${tp}/${tp + fn} below 0.9 floor`);
 });
+
+test('31. Dotted acronyms (O.T.P., U.P.I.) are normalized and flagged', () => {
+  const res = classify('Please send your O.T.P. to confirm transaction.');
+  assert.equal(res.riskLevel, 'HIGH_RISK');
+  assert.equal(res.category, 'otp_pin_theft');
+});
+
+test('32. Hinglish colloquial verbs (bta do, bhej do) are flagged as OTP theft', () => {
+  const res1 = classify('bhai jaldi OTP bta do varna transaction fail ho jayega');
+  assert.equal(res1.riskLevel, 'HIGH_RISK');
+  const res2 = classify('apna otp bhej do turant');
+  assert.equal(res2.riskLevel, 'HIGH_RISK');
+});
+
+test('33. Family emergency impersonation with urgent UPI transfer is flagged', () => {
+  const res = classify('Hi beta, this is Dad. My phone is broken and I am using friend phone. Urgently need ₹8,000 for hospital bill. Send to UPI: friend99@oksbi');
+  assert.ok(res.riskLevel === 'HIGH_RISK' || res.riskLevel === 'SUSPICIOUS');
+  assert.equal(res.category, 'impersonation');
+});
+
+test('34. Inverted pay-to-receive Hinglish phrasing is flagged', () => {
+  const res = classify('refund receive karne ke liye ₹500 fee pay kare');
+  assert.equal(res.riskLevel, 'HIGH_RISK');
+  assert.equal(res.category, 'upi_payment_scam');
+});
+

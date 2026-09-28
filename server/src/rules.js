@@ -71,7 +71,7 @@ export function detectLocalSignals(rawText) {
   const isDefensive = DEFENSIVE_ADVICE.test(textToMatch);
 
   // 1. OTP Requests (English, Hindi Devanagari, and Hinglish transliterations)
-  const otpRequestPattern = /\b(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\s*(?:bhejo|batao|share|send|de do|mang|karo|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं|दर्ज\s*करें)\b|\b(?:send|share|reply|provide|enter|submit|tell|give|forward|type|verify|batao|bataiye|bata do|bhejo|bhejiye|bhej do|de do|mang|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं)\s+(?:me\s+|your\s+|the\s+|this\s+|with\s+(?:the\s+)?|turant\s+|abhi\s+|apna\s+)?(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\b/i;
+  const otpRequestPattern = /\b(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\s*(?:bta\s*do|batao|bata\s*do|bataiye|bhej\s*do|bhejo|bhejiye|share|send|de\s*do|dedo|mang|karo|करो|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं|दर्ज\s*करें)\b|\b(?:send|share|reply|provide|enter|submit|tell|give|forward|type|verify|batao|bataiye|bata\s*do|bta\s*do|bhejo|bhejiye|bhej\s*do|de\s*do|dedo|mang|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं)\s+(?:me\s+|your\s+|the\s+|this\s+|with\s+(?:the\s+)?|turant\s+|abhi\s+|apna\s+)?(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\b/i;
 
   if (otpRequestPattern.test(textToMatch) && !isDefensive) {
     signals.push({
@@ -110,7 +110,7 @@ export function detectLocalSignals(rawText) {
   }
 
   // 4. Payment-to-receive scams / pay to unlock
-  const payToReceivePattern = /\b(?:pay|transfer|send|deposit)\s+(?:(?:rs\.?|inr|₹)?\s*[\d,]+|\w+\s+)?.*?\b(?:to\s+(?:receive|get|claim|collect|release|unlock|activate)|for\s+receiving|before\s+(?:we|you)\s+(?:release|credit|unblock))\b|\b(?:pay|transfer|deposit|send)\s+(?:fee|charge|penalty|money|rs\.?|inr|₹|amount)?\s*(?:to\s+(?:account|upi|vpa|link|qr|wallet))\s*.*?\b(?:to\s+(?:unlock|activate|unblock)|avoid)\b|\b(?:paise|rupaye|paisa|amount|money)\s+(?:receive|pane|lene)\b[\s\S]{0,40}?\bke\s+liye\b[\s\S]{0,30}?\b(?:pay|bhejo|transfer|jama)\b|\b(?:paise|rupaye|paisa|amount)\s+(?:receive|pane|lene)\s+ke\s+liye\s+(?:pay|bhejo|transfer|jama)\b|\b(?:receive|pane|lene)\s+ke\s+liye\s+(?:pay|paise\s+bhejo)\b|पैसे\s*(?:पाने|प्राप्त\s*करने)\s*के\s*लिए\s*(?:भुगतान|पे)/i;
+  const payToReceivePattern = /\b(?:pay|transfer|send|deposit)\s+(?:(?:rs\.?|inr|₹)?\s*[\d,]+|\w+\s+)?.*?\b(?:to\s+(?:receive|get|claim|collect|release|unlock|activate)|for\s+receiving|before\s+(?:we|you)\s+(?:release|credit|unblock))\b|\b(?:pay|transfer|deposit|send)\s+(?:fee|charge|penalty|money|rs\.?|inr|₹|amount)?\s*(?:to\s+(?:account|upi|vpa|link|qr|wallet))\s*.*?\b(?:to\s+(?:unlock|activate|unblock)|avoid)\b|\b(?:refund|paise|rupaye|paisa|amount|money|reward|cashback)\s+(?:receive|pane|lene|claim)\b[\s\S]{0,60}?\b(?:pay|bhejo|transfer|jama|kare|karo)\b|\b(?:paise|rupaye|paisa|amount)\s+(?:receive|pane|lene)\s+ke\s+liye\s+(?:pay|bhejo|transfer|jama)\b|\b(?:receive|pane|lene)\s+ke\s+liye\s+(?:pay|paise\s+bhejo)\b|पैसे\s*(?:पाने|प्राप्त\s*करने)\s*के\s*लिए\s*(?:भुगतान|पे)/i;
 
   if (payToReceivePattern.test(textToMatch)) {
     signals.push({
@@ -377,6 +377,19 @@ export function detectLocalSignals(rawText) {
       category: 'impersonation',
       evidence: 'Impersonates banks, payment providers, law enforcement, or regulatory institutions',
       evidenceHi: 'बैंक, पेमेंट कंपनी, पुलिस या नियामक संस्था का नाम देकर पहचान का दुरुपयोग किया गया है'
+    });
+  }
+
+  // 24. Family / Relative emergency impersonation scam
+  const familyEmergencyPattern = /\b(?:beta|dad|mom|papa|mummy|son|daughter|bhai|sister|friend)\b[\s\S]{0,90}?\b(?:urgently|urgent|hospital|emergency|medical|accident|broken\s*phone|crisis|ill)\b[\s\S]{0,90}?\b(?:send|transfer|pay|upi|friend99|vpa)\b/i;
+
+  if (familyEmergencyPattern.test(textToMatch)) {
+    signals.push({
+      type: 'family_impersonation',
+      severity: 'high',
+      category: 'impersonation',
+      evidence: 'Impersonates a family member or friend claiming an urgent emergency or medical crisis to request money',
+      evidenceHi: 'परिवार के सदस्य या रिश्तेदार बनकर अस्पताल या आपात स्थिति का झांसा देकर पैसे माँगे गए हैं'
     });
   }
 

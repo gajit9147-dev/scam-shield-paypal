@@ -55,9 +55,14 @@ async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS) {
         generationConfig: { temperature: 0.1, maxOutputTokens: 1024, responseMimeType: 'application/json' }
       })
     });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      if (response.status === 429) {
+        return { isQuotaError: true };
+      }
+      return null;
+    }
     const payload = await response.json();
-    return payload?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    return { text: payload?.candidates?.[0]?.content?.parts?.[0]?.text || null };
   } catch {
     return null;
   } finally {
@@ -81,8 +86,12 @@ export async function aiReview(text) {
 
   let raw = null;
   for (const model of models) {
-    raw = await callModel(model, key, [{ text: prompt }]);
-    if (raw) break;
+    const res = await callModel(model, key, [{ text: prompt }]);
+    if (res?.isQuotaError) break;
+    if (res?.text) {
+      raw = res.text;
+      break;
+    }
   }
   if (!raw) return null;
   const parsed = extractJson(raw);
@@ -128,8 +137,12 @@ export async function aiReviewImage({ data, mimeType }) {
   const parts = [{ text: prompt }, { inlineData: { mimeType, data } }];
   let raw = null;
   for (const model of models) {
-    raw = await callModel(model, key, parts, IMAGE_TIMEOUT_MS);
-    if (raw) break;
+    const res = await callModel(model, key, parts, IMAGE_TIMEOUT_MS);
+    if (res?.isQuotaError) break;
+    if (res?.text) {
+      raw = res.text;
+      break;
+    }
   }
   if (!raw) return null;
   const parsed = extractJson(raw);
@@ -244,8 +257,12 @@ export async function aiChat({ message, context, language, detectionResult }) {
 
   let raw = null;
   for (const model of models) {
-    raw = await callModel(model, key, [{ text: prompt }]);
-    if (raw) break;
+    const res = await callModel(model, key, [{ text: prompt }]);
+    if (res?.isQuotaError) break;
+    if (res?.text) {
+      raw = res.text;
+      break;
+    }
   }
   if (!raw) return fallbackReply();
   const parsed = extractJson(raw);

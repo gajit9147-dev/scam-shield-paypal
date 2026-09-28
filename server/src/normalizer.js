@@ -3,6 +3,11 @@
 
 // Common scam wording variations and common spelling mistakes
 const SPELLING_REPLACEMENTS = [
+  [/\bo\.t\.p\.?\b/gi, 'otp'],
+  [/\bu\.p\.i\.?\b/gi, 'upi'],
+  [/\bp\.i\.n\.?\b/gi, 'pin'],
+  [/\bk\.y\.c\.?\b/gi, 'kyc'],
+  [/\bone\s*[- ]\s*time\s*[- ]\s*password\b/gi, 'otp'],
   [/\b(?:froud|fruad|fraaud|frod|scamm|scame|skam|scem)\b/gi, 'scam'],
   [/\b(?:acount|accnt|acnt|acc)\b/gi, 'account'],
   [/\b(?:a\/c|a\\c)\b/gi, 'account'],

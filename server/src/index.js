@@ -19,7 +19,7 @@ app.use(cors({
       || origin === process.env.CLIENT_ORIGIN) {
       return callback(null, true);
     }
-    return callback(null, true);
+    return callback(new Error('CORS origin denied'));
   },
   credentials: true
 }));
@@ -161,6 +161,19 @@ app.post('/api/chat', async (req, res) => {
 
   if (!reply) return res.status(503).json({ error: 'Chat reply is not available right now.' });
   return res.json({ reply });
+});
+
+app.use((err, _req, res, next) => {
+  if (err && (err.type === 'entity.too.large' || err.status === 413)) {
+    return res.status(413).json({ error: 'Payload too large. Message or screenshot exceeds allowed size.' });
+  }
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ error: 'Malformed JSON payload.' });
+  }
+  if (err && err.message === 'CORS origin denied') {
+    return res.status(403).json({ error: 'Origin not allowed by CORS policy.' });
+  }
+  next(err);
 });
 
 app.listen(port, () => console.log(`API ready at http://localhost:${port}`));
