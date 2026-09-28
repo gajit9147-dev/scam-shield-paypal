@@ -1,0 +1,32 @@
+{
+  "source": "UCI SMS Spam Collection v.1",
+  "source_url": "https://archive.ics.uci.edu/dataset/228/sms+spam+collection",
+  "citation": "Almeida, T.A., Gomez Hidalgo, J.M., Yamakami, A. Contributions to the Study of SMS Spam Filtering: New Collection and Results. ACM DocEng 2011.",
+  "seed": 42,
+  "input_rows": 5574,
+  "duplicates_removed": 414,
+  "total_rows": 5160,
+  "splits": {
+    "train": {
+      "rows": 4128,
+      "labels": {
+        "ham": 3607,
+        "spam": 521
+      }
+    },
+    "validation": {
+      "rows": 516,
+      "labels": {
+        "ham": 464,
+        "spam": 52
+      }
+    },
+    "test": {
+      "rows": 516,
+      "labels": {
+        "ham": 447,
+        "spam": 69
+      }
+    }
+  }
+}
