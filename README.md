@@ -22,7 +22,7 @@ npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite (usually http://localhost:5173). Paste a **made-up, non-private** payment message and press **Check message**. The frontend calls the local Express API through Vite's `/api` proxy. No API key or database is needed. Stop either process with Ctrl+C.
+Open the URL printed by Vite (usually http://localhost:5173). Paste a **made-up, non-private** payment message and press **Check message**, or press **Upload screenshot** and pick a screenshot of a message: the app reads its text on-device (tesseract.js OCR, loaded from a CDN at runtime) into the editable box so you can fix mistakes before checking. Extraction quality depends on the screenshot; Hindi UI is available from the language selector. The frontend calls the local Express API through Vite's `/api` proxy. No API key or database is needed. Stop either process with Ctrl+C.
 
 Quick API test in another terminal:
 
@@ -42,6 +42,14 @@ cd client && npm run build
 ```
 
 For a local UI check, leave the server and Vite running, then try **made-up** messages: `Share OTP 123456 to claim your refund` and `Pay a fee via https://example.invalid to receive your cashback` should show a `scam` warning. `Your payment of INR 300 was completed` should show `uncertain`, not `safe`. Submitting an empty form is blocked by browser validation; the API separately rejects blank input with HTTP 400. A standalone link without a matching suspicious request may be `uncertain`: the tool does not check whether links are safe. These are synthetic integration cases, not UPI performance measurements.
+
+## Wrong-payment recovery guidance
+
+When a checked message looks like a completed payment (amount plus debit/reference words), the app also shows the real steps for a mistaken UPI payment: note the 12-digit UPI reference (UTR), raise an "Incorrectly transferred to another account" complaint on the transaction in the UPI app, ask your bank to request a reversal, escalate app > partner bank > your bank > NPCI (npci.org.in), and call 1930 / file at cybercrime.gov.in if the receiver refuses or fraud is involved. The app only explains the process; it never promises recovery.
+
+## Optional AI review (Gemini)
+
+With no key the app runs fully on its own: local payment rules + the UCI baseline. To add AI review (better Hindi/Hinglish understanding and clearer reasons), get a free Gemini key at https://aistudio.google.com/apikey, copy `.env.example` to `server/.env`, and set `GEMINI_API_KEY` (optionally `GEMINI_MODEL`, default `gemini-3.8-flash` with automatic fallbacks). The AI may only return the existing `scam`/`uncertain` labels; a local `scam` warning is never downgraded, and any AI error or timeout silently falls back to the local result. Keys must never be committed: `.gitignore` excludes `.env` files.
 
 ## Current response contract
 
@@ -63,8 +71,8 @@ Labels are `scam` (suspicious request pattern) and `uncertain` (including appare
 
 ## Repo map
 
-- `client/` - React + Vite + Tailwind paste-message form and result card
-- `server/` - Express API and cautious rules and exported UCI spam baseline
+- `client/` - React + Vite + Tailwind form with screenshot OCR upload, result card and recovery guidance
+- `server/` - Express API with cautious rules, exported UCI spam baseline and optional Gemini review
 - `data/` - dataset sourcing and safety instructions (no raw messages committed)
 - `scripts/fetch_uci.py` - optional local UCI dataset download
 - `docs/architecture.md` - workflow, label rules, privacy, evaluation plan
