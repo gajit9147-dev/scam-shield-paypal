@@ -10,7 +10,7 @@ The [UCI SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+c
 
 **What the prepare script does:**
 - Normalizes whitespace and drops exact duplicate messages (414 removed, 5,160 kept).
-- Writes stratified 80/10/10 train/validation/test splits to `data/processed/` with a fixed seed (42), so the held-out test set stays frozen and reproducible.
+- Writes shuffled 80/10/10 (not stratified) train/validation/test splits to `data/processed/` with a fixed seed (42), so the held-out test set stays frozen and reproducible.
 - Full splits (`train.jsonl`, `validation.jsonl`, `test.jsonl`) are gitignored. `data/processed/sample.jsonl` (20 rows) and `data/processed/stats.json` are committed to show the format.
 
 **Labels:** each row keeps the source label `ham` or `spam`. These are English general-spam messages, **not** UPI or Indian payment scam examples, and they are not this project's `scam`/`safe`/`uncertain` labels. General spam is mostly advertising, not credential or money theft. Keep any scores on this data separate from India/UPI evaluation, per `docs/architecture.md`.
