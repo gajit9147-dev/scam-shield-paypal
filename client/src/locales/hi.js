@@ -91,6 +91,7 @@ export const hi = {
   detailAccountThreat: 'खाता बंद होने की धमकी',
   yes: 'हाँ',
   no: 'नहीं',
+  riskEmpty: 'जोखिम विवरण देखने के लिए एक जाँच चलाएँ।',
 
   // Right Panel - Safety Tips
   safetyTipsTitle: 'सुरक्षा सुझाव',

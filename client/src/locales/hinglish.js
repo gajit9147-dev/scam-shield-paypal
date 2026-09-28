@@ -91,6 +91,7 @@ export const hinglish = {
   detailAccountThreat: 'Account Threat',
   yes: 'Haan',
   no: 'Nahi',
+  riskEmpty: 'Risk overview dekhne ke liye ek check chalayein.',
 
   // Right Panel - Safety Tips
   safetyTipsTitle: 'Safety Tips',

@@ -91,6 +91,7 @@ export const en = {
   detailAccountThreat: 'Account Threat',
   yes: 'Yes',
   no: 'No',
+  riskEmpty: 'Run a check to see the risk overview.',
 
   // Right Panel - Safety Tips
   safetyTipsTitle: 'Safety Tips',

@@ -10,52 +10,6 @@ const NCRP_URL = 'https://cybercrime.gov.in/Webform/suspect_search_repository.as
 const CYBERCRIME_URL = 'https://cybercrime.gov.in';
 
 // Default featured mockup state (matches reference mockup directly on initial load)
-const DEMO_INITIAL_VERDICT = {
-  label: 'scam',
-  riskLevel: 'HIGH_RISK',
-  category: 'kyc_phishing',
-  categoryLabel: 'KYC Phishing Scam',
-  categoryLabelHi: 'केवाईसी फ़िशिंग घोटाला',
-  summary: 'This message shows multiple strong fraud signals and is likely a scam.',
-  summaryHi: 'यह संदेश कई गंभीर धोखाधड़ी संकेत दिखाता है और इसके घोटाला होने की पूरी संभावना है।',
-  evidence: [
-    'Asks to update KYC using an external link',
-    'Threatens account block or suspension',
-    'Creates urgency and fear',
-    'Suspicious / unofficial URL detected'
-  ],
-  evidenceHi: [
-    'बाहरी लिंक द्वारा KYC अपडेट करने का दबाव',
-    'खाता ब्लॉक या बंद करने की धमकी',
-    'जल्दबाजी और डर का माहौल बनाना',
-    'संदिग्ध या अनधिकृत URL पाया गया'
-  ],
-  recommendations: [
-    'Do not click the link',
-    'Do not share OTP, PIN or personal details',
-    'Verify through the official bank app or website',
-    'Report this message if possible'
-  ],
-  recommendationsHi: [
-    'लिंक पर क्लिक न करें',
-    'OTP, PIN या व्यक्तिगत विवरण साझा न करें',
-    'आधिकारिक बैंक ऐप या वेबसाइट से पुष्टि करें',
-    'यदि संभव हो तो इस संदेश की रिपोर्ट करें'
-  ],
-  recoveryFocus: 'money_not_sent',
-  maskedEntities: {
-    urls: ['sbi-kyc-***.top'],
-    upiIds: [],
-    amounts: []
-  },
-  sources: {
-    localRules: true,
-    gemini: true,
-    spamModel: true,
-    ocr: false
-  }
-};
-
 // Scale image for efficient transmission while preserving clarity
 function prepareImage(file) {
   return new Promise((resolve) => {
@@ -106,7 +60,7 @@ export default function App() {
   const [previewModalUrl, setPreviewModalUrl] = useState(null);
 
   // Analysis result state (initialized with featured reference scan)
-  const [latestVerdict, setLatestVerdict] = useState(DEMO_INITIAL_VERDICT);
+  const [latestVerdict, setLatestVerdict] = useState(null);
   const [activeSourceText, setActiveSourceText] = useState(
     'Your SBI KYC is expired. Update now at https://sbi-kyc-verify.top/update or your account will be blocked within 24 hours.'
   );
@@ -437,7 +391,15 @@ export default function App() {
       latestVerdict?.category === 'legit_receipt' ||
       latestVerdict?.category === 'Legitimate Transaction');
 
-  const gaugePercent = isHighRisk ? 95 : isSuspicious ? 68 : isPaymentReceipt ? 12 : 25;
+  // Every percentage below is derived from the real signals of THIS verdict
+  // (severity-weighted), never a fixed number.
+  const verdictSignals = Array.isArray(latestVerdict?.signals) ? latestVerdict.signals : [];
+  const SEV_GAUGE = { high: 30, medium: 15, low: 8 };
+  const SEV_BAR = { high: 90, medium: 60, low: 30 };
+  const gaugePercent = Math.min(
+    99,
+    verdictSignals.reduce((sum, sig) => sum + (SEV_GAUGE[sig?.severity] || 0), 0)
+  );
   const gaugeStrokeColor = isHighRisk
     ? '#ef4444'
     : isSuspicious
@@ -448,13 +410,17 @@ export default function App() {
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference - (gaugePercent / 100) * circumference;
 
-  const kycIndicatorVal =
-    isHighRisk && /kyc/i.test(latestVerdict?.category || '') ? 95 : isFraud ? 65 : 15;
-  const urlIndicatorVal =
-    latestVerdict?.maskedEntities?.urls?.length > 0 ? 90 : isFraud ? 60 : 10;
-  const threatIndicatorVal =
-    /block|suspend|threat/i.test(latestVerdict?.category || '') ? 85 : isFraud ? 55 : 10;
-  const urgencyIndicatorVal = isHighRisk ? 80 : isSuspicious ? 65 : 20;
+  const barValueFor = (re) => {
+    const match = verdictSignals.find((sig) => re.test(`${sig?.type || ''} ${sig?.category || ''}`));
+    return match ? (SEV_BAR[match.severity] || 30) : 0;
+  };
+  const kycIndicatorVal = barValueFor(/kyc/i);
+  const urlIndicatorVal = barValueFor(/link|url|domain/i);
+  const threatIndicatorVal = barValueFor(/threat|block|impersonat/i);
+  const urgencyIndicatorVal = barValueFor(/urgency|pressure/i);
+  const topSignalPills = [...verdictSignals]
+    .sort((a, b) => (SEV_BAR[b?.severity] || 0) - (SEV_BAR[a?.severity] || 0))
+    .slice(0, 4);
 
   // Translated category & evidence
   const displayCategory = latestVerdict
@@ -993,25 +959,32 @@ export default function App() {
                             : latestVerdict.summary || latestVerdict.reason}
                         </p>
 
-                        {/* Signal Pills Row (Matching Image 2 tags) */}
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
-                            <span>✓</span>
-                            <span>{t.exampleKyc}</span>
-                          </span>
-                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-                            <span>🔗</span>
-                            <span>{t.exampleSuspiciousLink}</span>
-                          </span>
-                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
-                            <span>🛡️</span>
-                            <span>{t.signalAccountThreat}</span>
-                          </span>
-                          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-                            <span>⏱️</span>
-                            <span>{t.signalUrgency}</span>
-                          </span>
-                        </div>
+                        {/* Signal Pills Row - only the signals actually detected in this verdict */}
+                        {topSignalPills.length > 0 && (
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            {topSignalPills.map((sig, i) => (
+                              <span
+                                key={i}
+                                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold capitalize border ${
+                                  sig.severity === 'high'
+                                    ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+                                    : sig.severity === 'medium'
+                                    ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+                                    : 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+                                }`}
+                              >
+                                <span>{sig.severity === 'high' ? '!' : '•'}</span>
+                                <span>
+                                  {translateCategory(
+                                    sig.category,
+                                    language,
+                                    String(sig.type || 'signal').replace(/_/g, ' ')
+                                  )}
+                                </span>
+                              </span>
+                            ))}
+                          </div>
+                        )}
 
                         {/* Two Columns: Why Flagged (Left) | What to do (Right) */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
@@ -1493,6 +1466,7 @@ export default function App() {
                   </div>
 
                   {/* Horizontal Side-by-Side: Gauge (Left) + Bars (Right) */}
+                  {latestVerdict ? (
                   <div className="flex items-center gap-4 pt-1">
                     {/* Gauge Circle */}
                     <div className="relative w-28 h-28 shrink-0 flex items-center justify-center">
@@ -1608,9 +1582,13 @@ export default function App() {
                       </div>
                     </div>
                   </div>
+                  ) : (
+                    <p className="pt-1 text-xs text-slate-400 dark:text-slate-500">{t.riskEmpty}</p>
+                  )}
                 </div>
 
                 {/* Card 2: Message Details (Exact reference styling) */}
+                {latestVerdict && (
                 <div className="p-5 rounded-[28px] glass-panel flex flex-col gap-2.5">
                   <div className="flex items-center gap-2">
                     <span className="text-blue-500 text-base">📄</span>
@@ -1627,7 +1605,7 @@ export default function App() {
                       </div>
                       <div className="flex items-center gap-1">
                         <span className="font-bold px-2 py-0.5 rounded-full text-[11px] bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-300 truncate max-w-[130px]">
-                          {displayCategory || 'KYC Phishing Scam'}
+                          {displayCategory || '-'}
                         </span>
                         <span className="text-slate-400 text-sm">›</span>
                       </div>
@@ -1656,7 +1634,7 @@ export default function App() {
                         <span>{t.detailContainsLink}</span>
                       </div>
                       <div className="flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-200">
-                        <span>{latestVerdict?.maskedEntities?.urls?.length > 0 ? t.yes : t.yes}</span>
+                        <span>{latestVerdict?.maskedEntities?.urls?.length > 0 ? t.yes : t.no}</span>
                         <span className="text-slate-400 text-sm">›</span>
                       </div>
                     </div>
@@ -1667,7 +1645,7 @@ export default function App() {
                         <span>{t.detailUrgency}</span>
                       </div>
                       <div className="flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-200">
-                        <span>{isHighRisk ? t.yes : t.yes}</span>
+                        <span>{urgencyIndicatorVal > 0 ? t.yes : t.no}</span>
                         <span className="text-slate-400 text-sm">›</span>
                       </div>
                     </div>
@@ -1678,12 +1656,13 @@ export default function App() {
                         <span>{t.detailAccountThreat}</span>
                       </div>
                       <div className="flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-200">
-                        <span>{isHighRisk ? t.yes : t.yes}</span>
+                        <span>{threatIndicatorVal > 0 ? t.yes : t.no}</span>
                         <span className="text-slate-400 text-sm">›</span>
                       </div>
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Card 3: Safety Tips (Exact reference list) */}
                 <div className="p-5 rounded-[28px] glass-panel flex flex-col gap-2.5">
