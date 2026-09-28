@@ -206,7 +206,8 @@ function display(value, language) {
 
 let nextId = 0;
 const makeMessage = (role, kind, content = {}) => ({ id: ++nextId, role, kind, type: kind, ...content });
-const greetingIntent = /^(?:hi+|hello+|hey+|heya+|namaste+|pranam+|hola|good\s*(?:morning|afternoon|evening))\b[!?.\s]*$/i;
+const greetingIntent = /^(?:hi+|hello+|hellow+|helo+|hlo+|hey+|heya+|hiya+|yo|sup|namaste+|namaskar+|pranam+|hola|good\s*(?:morning|afternoon|evening|day))(?:\s+(?:bro|bhai|sir|there|buddy|friend|bot|all))?[!?.\s]*$/i;
+const conversationIntent = /^(?:thanks?|thank\s+you|dhanyawad|shukriya|ok|okay|theek\s+hai|accha|bye|goodbye|who\s+are\s+you|what\s+can\s+you\s+do|how\s+are\s+you|kaise\s+ho|kya\s+hal\s+hai|help|madad)[!?.\s]*$/i;
 const paymentIssueIntent = /\b(wrong|mistak(?:e|en)|galat|galt|galti|issue|problem|failed|dispute|reverse|reversal|stuck|atak|fas|refund)\b.{0,70}\b(payment|paid|transfer|upi|paisa|paise|money|bhej|send|sent)\b|\b(payment|paid|transfer|paisa|paise|money|bhej|sent)\b.{0,70}\b(wrong|mistak(?:e|en)|galat|galt|galti|issue|problem|failed|dispute|reverse|reversal|stuck|atak|fas|refund)\b|गलत.{0,50}(भुगतान|पैसे|भेज)|(?:भुगतान|पैसे).{0,50}(गलत|समस्या|अटक|रिफंड)/i;
 const fraudIntent = /\b(fraud|frauds|froud|fruad|fraaud|frod|scam|scams|scame|scamm|scem|skam|fake|faek|genuine|safe|saef|real|suspicious|dhokha|dhoka|dhokadhadi)\b|धोखाधड़ी|फ़्रॉड|फ्रॉड|स्कैम|नकली|सुरक्षित/i;
 const learningIntent = /\b(how (?:can|do|to)|what (?:are|is)|ways to|tips|explain|understand|spot|identify|recogniz(?:e|ing))\b.{0,100}\b(upi|fraud|scam|payment)\b|\b(upi|fraud|scam|payment)\b.{0,100}\b(how|spot|identify|tips|work|happens)\b|(?:कैसे|क्या|समझा).{0,60}(?:धोखाधड़ी|स्कैम|UPI)|(?:धोखाधड़ी|स्कैम|UPI).{0,60}(?:कैसे|पहचान|बचाव)|\b(?:kaise|pehchan|bachne)\b.{0,60}\b(?:fraud|scam|upi)\b/i;
@@ -433,6 +434,8 @@ export default function App() {
           ? 'नमस्ते! भुगतान का कोई संदेश, SMS या स्क्रीनशॉट यहाँ भेजें। मैं उसमें धोखाधड़ी के जोखिम की जाँच करूँगा। ध्यान रखें: कभी भी अपना OTP या UPI PIN किसी के साथ साझा न करें।'
           : 'Hello! Paste any payment message, SMS, or upload a screenshot here, and I will analyze it for scam risks. Remember: never share your OTP or UPI PIN with anyone.'
       })]);
+    } else if (conversationIntent.test(text)) {
+      chatReply(text, latestVerdict);
     } else if (learning) {
       setMessages(previous => [...previous, makeMessage('assistant', 'learning')]);
     } else if (action === 'recovery') {
@@ -452,8 +455,11 @@ export default function App() {
       } else {
         setMessages(previous => [...previous, makeMessage('assistant', 'question', { text: 'needsText' })]);
       }
-    } else if (shortQuery) {
-      if (activeText) chatReply(text, latestVerdict);
+    } else if (paymentish) {
+      setActiveText(text);
+      checkText(text);
+    } else if (shortQuery || wordCount <= 5) {
+      if (activeText || latestVerdict) chatReply(text, latestVerdict);
       else setMessages(previous => [...previous, makeMessage('assistant', 'question', { text: 'clarification' })]);
     } else {
       setActiveText(text);
