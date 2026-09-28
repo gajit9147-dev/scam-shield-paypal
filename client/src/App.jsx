@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-const labelStyles = { scam: 'bg-red-100/90 text-red-800 ring-1 ring-red-300/70', uncertain: 'bg-amber-100/90 text-amber-900 ring-1 ring-amber-300/70' };
+const labelStyles = { scam: 'bg-rose-400/15 text-rose-200 ring-1 ring-rose-300/40', uncertain: 'bg-amber-300/15 text-amber-100 ring-1 ring-amber-200/40' };
 
 const copy = {
   en: {
@@ -198,12 +198,12 @@ export default function App() {
 
   function assistantContent(message) {
     if (message.kind === 'question') return <p>{t[message.text] || t.clarification}</p>;
-    if (message.kind === 'error') return <p role="alert" className="text-red-800">{language === 'hi' ? (apiCopy[message.error] || t.error) : (message.error || t.error)}</p>;
+    if (message.kind === 'error') return <p role="alert" className="text-rose-200">{language === 'hi' ? (apiCopy[message.error] || t.error) : (message.error || t.error)}</p>;
     if (message.kind === 'recovery') return <>
-      <h2 className="font-semibold text-indigo-950">{t.recoveryTitle}</h2>
+      <h2 className="font-semibold text-white">{t.recoveryTitle}</h2>
       <p className="mt-2">{t.recoveryIntroChat}</p>
       <ol className="mt-3 list-decimal space-y-2 pl-5">{t.recoverySteps.map((step, index) => <li key={index}>{step}</li>)}</ol>
-      <p className="mt-3 text-sm text-slate-700">{t.recoveryNote}</p>
+      <p className="mt-3 text-sm text-slate-200">{t.recoveryNote}</p>
     </>;
     if (message.kind === 'verdict') {
       const r = message.result;
@@ -213,48 +213,48 @@ export default function App() {
         <p className="mt-3"><strong>{t.reason}:</strong> {display(r.reason, language)}</p>
         <p className="mt-3"><strong>{t.action}:</strong> {display(r.safeAction, language)}</p>
         {r.evidence?.length > 0 && <p className="mt-3 text-sm"><strong>{t.evidence}:</strong> {r.evidence.map(item => display(item, language)).join(', ')}</p>}
-        <p className="mt-3 text-sm text-slate-700">{t.method}: {display(r.method, language)}. {t.signal}: {display(r.generalSpamSignal, language)}. {t.confidence}</p>
-        <p className="mt-3 text-sm font-medium text-indigo-900">{t.noSafe}</p>
-        {looksLikeCompletedPayment(message.sourceText) && <p className="mt-2 text-sm">{t.recoveryIntro}</p>}
+        <p className="mt-3 text-sm text-slate-200">{t.method}: {display(r.method, language)}. {t.signal}: {display(r.generalSpamSignal, language)}. {t.confidence}</p>
+        <p className="mt-3 text-sm font-medium text-sky-200">{t.noSafe}</p>
+        {looksLikeCompletedPayment(message.sourceText) && <p className="mt-2 text-sm text-slate-200">{t.recoveryIntro}</p>}
       </>;
     }
     return null;
   }
 
-  return <main lang={language} className="relative flex h-[100dvh] min-h-[480px] flex-col overflow-hidden bg-gradient-to-br from-indigo-100 via-sky-50 to-rose-100 text-slate-900">
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden"><div className="absolute -left-24 -top-20 h-80 w-80 rounded-full bg-indigo-300/50 blur-3xl"/><div className="absolute -right-28 top-1/3 h-96 w-96 rounded-full bg-sky-300/50 blur-3xl"/><div className="absolute -bottom-24 left-1/4 h-80 w-80 rounded-full bg-rose-300/50 blur-3xl"/></div>
-    <div className="relative mx-auto flex h-full w-full max-w-3xl flex-col border-x border-white/50 bg-white/15 shadow-2xl backdrop-blur-sm">
-      <header className="z-10 flex shrink-0 items-center justify-between gap-2 border-b border-white/70 bg-white/60 px-4 py-3 backdrop-blur-xl sm:px-6">
-        <div className="min-w-0"><h1 className="truncate bg-gradient-to-r from-indigo-700 to-sky-600 bg-clip-text text-lg font-bold text-transparent sm:text-xl">🛡️ {t.title}</h1><p className="text-xs text-slate-600">{t.eyebrow}</p></div>
-        <label className="shrink-0 text-xs text-slate-600">{t.language}<select aria-label={t.language} value={language} onChange={e => setLanguage(e.target.value)} className="ml-2 rounded-lg border border-white/70 bg-white/70 px-2 py-2 text-sm text-slate-900 focus:outline-indigo-600"><option value="en">English</option><option value="hi">हिंदी</option></select></label>
+  return <main lang={language} className="relative flex h-[100dvh] min-h-[480px] flex-col overflow-hidden bg-gradient-to-br from-[#080b16] via-[#10192c] to-[#1e172c] text-white">
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden"><div className="absolute -left-24 -top-20 h-80 w-80 rounded-full bg-indigo-700/30 blur-3xl"/><div className="absolute -right-28 top-1/3 h-96 w-96 rounded-full bg-sky-600/20 blur-3xl"/><div className="absolute -bottom-24 left-1/4 h-80 w-80 rounded-full bg-fuchsia-700/20 blur-3xl"/></div>
+    <div className="relative mx-auto flex h-full w-full max-w-3xl flex-col border-x border-white/10 bg-slate-900/25 shadow-2xl shadow-black/30 backdrop-blur-sm">
+      <header className="z-10 flex shrink-0 items-center justify-between gap-2 border-b border-white/15 bg-[#151a29]/75 px-4 py-3 backdrop-blur-2xl sm:px-6">
+        <div className="min-w-0"><h1 className="truncate bg-gradient-to-r from-white to-sky-200 bg-clip-text text-lg font-bold text-transparent sm:text-xl">🛡️ {t.title}</h1><p className="text-xs text-slate-300">{t.eyebrow}</p></div>
+        <label className="shrink-0 text-xs text-slate-300">{t.language}<select aria-label={t.language} value={language} onChange={e => setLanguage(e.target.value)} className="ml-2 rounded-xl border border-white/20 bg-slate-700/80 px-2 py-2 text-sm text-white focus:outline-indigo-600"><option value="en">English</option><option value="hi">हिंदी</option></select></label>
       </header>
       <div role="log" aria-live="polite" aria-relevant="additions" className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-3 py-5 sm:px-8 sm:py-7">
-        <div className="flex items-start gap-2"><Avatar/><div className="max-w-[88%] rounded-2xl rounded-tl-sm border border-white/70 bg-white/65 p-4 text-sm leading-relaxed shadow-lg shadow-indigo-900/5 backdrop-blur-xl sm:max-w-[78%] sm:text-base"><p>{t.greeting}</p><p className="mt-2 text-xs text-slate-600">{t.noSafe}</p></div></div>
+        <div className="flex items-start gap-2"><Avatar/><div className="max-w-[88%] rounded-[1.6rem] rounded-tl-md border border-white/25 bg-white/[0.12] p-4 text-sm leading-relaxed text-white shadow-lg shadow-black/15 backdrop-blur-2xl sm:max-w-[78%] sm:text-base"><p>{t.greeting}</p><p className="mt-2 text-xs text-slate-300">{t.noSafe}</p></div></div>
         {messages.map(message => <div key={message.id} className={`flex items-start gap-2 ${message.role === 'user' ? 'justify-end' : ''}`}>
           {message.role === 'assistant' && <Avatar/>}
-          <div className={`min-w-0 max-w-[88%] break-words rounded-2xl p-4 text-sm leading-relaxed shadow-lg backdrop-blur-xl sm:max-w-[78%] sm:text-base ${message.role === 'user' ? 'rounded-tr-sm border border-indigo-300/40 bg-indigo-600/90 text-white shadow-indigo-700/10' : 'rounded-tl-sm border border-white/70 bg-white/70 text-slate-900 shadow-indigo-900/5'}`}>
+          <div className={`min-w-0 max-w-[88%] break-words rounded-[1.6rem] p-4 text-sm leading-relaxed shadow-lg backdrop-blur-2xl sm:max-w-[78%] sm:text-base ${message.role === 'user' ? 'rounded-tr-md border border-sky-200/30 bg-sky-300/15 text-white shadow-black/20' : 'rounded-tl-md border border-white/25 bg-white/[0.12] text-white shadow-black/15'}`}>
             {message.role === 'user' ? <p className="whitespace-pre-wrap">{message.text}</p> : assistantContent(message)}
           </div>
         </div>)}
-        {busy && <div className="flex items-center gap-2"><Avatar/><div role="status" className="rounded-2xl rounded-tl-sm border border-white/70 bg-white/70 px-4 py-3 text-sm text-indigo-800 backdrop-blur-xl">{t.checking} <span aria-hidden="true" className="inline-block animate-pulse">● ● ●</span></div></div>}
+        {busy && <div className="flex items-center gap-2"><Avatar/><div role="status" className="rounded-[1.6rem] rounded-tl-md border border-white/25 bg-white/[0.12] px-4 py-3 text-sm text-sky-200 backdrop-blur-2xl">{t.checking} <span aria-hidden="true" className="inline-block animate-pulse">● ● ●</span></div></div>}
         <div ref={bottomRef}/>
       </div>
-      <div className="z-10 shrink-0 border-t border-white/70 bg-white/65 px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-xl sm:px-6">
-        <form onSubmit={sendMessage} className="flex items-end gap-2 rounded-2xl border border-white/80 bg-white/75 p-2 shadow-sm">
+      <div className="z-10 shrink-0 border-t border-white/15 bg-[#151a29]/75 px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 backdrop-blur-xl sm:px-6">
+        <form onSubmit={sendMessage} className="flex items-end gap-2 rounded-[2rem] border border-white/35 bg-white/[0.12] p-2 shadow-[inset_0_1px_1px_rgba(255,255,255,0.18),0_12px_35px_rgba(0,0,0,0.25)] backdrop-blur-2xl">
           <input ref={fileInput} type="file" accept="image/*" onChange={readScreenshot} className="hidden" aria-hidden="true" tabIndex={-1}/>
-          <button type="button" aria-label={t.upload} title={t.upload} disabled={busy || ocrLoading} onClick={() => fileInput.current?.click()} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-xl text-indigo-700 hover:bg-indigo-50 disabled:opacity-50">＋</button>
-          <textarea aria-label={t.message} rows={1} maxLength={1000} value={draft} onChange={e => { setDraft(e.target.value); setOcrState(''); }} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} placeholder={t.composer} className="max-h-32 min-h-10 w-full flex-1 resize-none bg-transparent px-1 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-500 sm:text-base" />
-          <button type="submit" disabled={busy || ocrLoading || !draft.trim()} className="shrink-0 rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-40">{t.send}</button>
+          <button type="button" aria-label={t.upload} title={t.upload} disabled={busy || ocrLoading} onClick={() => fileInput.current?.click()} className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-xl text-white hover:bg-white/15 disabled:opacity-50">＋</button>
+          <textarea aria-label={t.message} rows={1} maxLength={1000} value={draft} onChange={e => { setDraft(e.target.value); setOcrState(''); }} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} placeholder={t.composer} className="max-h-32 min-h-10 w-full flex-1 resize-none bg-transparent px-1 py-2 text-sm text-white outline-none placeholder:text-slate-300 sm:text-base" />
+          <button type="submit" disabled={busy || ocrLoading || !draft.trim()} className="shrink-0 rounded-full border border-white/30 bg-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/30 disabled:opacity-40">{t.send}</button>
         </form>
-        {ocrLoading && <p role="status" className="mt-1 text-xs text-indigo-800">{t.reading}</p>}
-        {ocrState === 'done' && <p role="status" className="mt-1 text-xs text-emerald-800">{t.reviewImage}</p>}
-        {ocrState === 'error' && <p role="alert" className="mt-1 text-xs text-red-800">{t.ocrError}</p>}
-        <p className="mt-1 text-center text-[11px] text-slate-600">{t.privateNote}</p>
+        {ocrLoading && <p role="status" className="mt-1 text-xs text-sky-200">{t.reading}</p>}
+        {ocrState === 'done' && <p role="status" className="mt-1 text-xs text-emerald-200">{t.reviewImage}</p>}
+        {ocrState === 'error' && <p role="alert" className="mt-1 text-xs text-rose-200">{t.ocrError}</p>}
+        <p className="mt-1 text-center text-[11px] text-slate-300">{t.privateNote}</p>
       </div>
     </div>
   </main>;
 }
 
 function Avatar() {
-  return <div aria-hidden="true" className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-indigo-600 text-sm text-white shadow-sm">✦</div>;
-      }
+  return <div aria-hidden="true" className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-sky-200/30 bg-sky-300/20 text-sm text-white shadow-sm backdrop-blur-xl">✦</div>;
+}
