@@ -22,7 +22,7 @@ npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite (usually http://localhost:5173). Paste a **made-up, non-private** payment message and press **Check message**, or press **Upload screenshot** and pick a screenshot of a message: the app reads its text on-device (tesseract.js OCR, loaded from a CDN at runtime) into the editable box so you can fix mistakes. After extraction, choose **Check if this message is fraud** for a cautious verdict or **Wrong payment - how to get money back** for direct recovery guidance. You can switch choices without uploading again. Extraction quality depends on the screenshot; Hindi UI is available from the language selector. The frontend calls the local Express API through Vite's `/api` proxy. No API key or database is needed. Stop either process with Ctrl+C.
+Open the URL printed by Vite (usually http://localhost:5173). Paste a **made-up, non-private** payment message and press **Send**, or press **+** and pick a screenshot of a message: the app reads its text on-device (tesseract.js OCR, loaded from a CDN at runtime) into the chat composer so you can correct it before sending. The assistant responds in chat. Type a natural question such as **Is this fraud?** for a cautious verdict or **I sent money to the wrong person, what do I do?** for recovery steps. There are no option buttons; ask a follow-up in the same chat without uploading again. Unclear requests get a clarifying reply. The optional Gemini review helps the verdict, while chat intent uses local English/Hindi/Hinglish patterns without a key. Extraction quality depends on the screenshot; Hindi UI is available from the language selector. The frontend calls the local Express API through Vite's `/api` proxy. No API key or database is needed. Stop either process with Ctrl+C.
 
 Quick API test in another terminal:
 
@@ -41,11 +41,11 @@ cd server && npm test
 cd client && npm run build
 ```
 
-For a local UI check, leave the server and Vite running, then try **made-up** messages: `Share OTP 123456 to claim your refund` and `Pay a fee via https://example.invalid to receive your cashback` should show a `scam` warning. `Your payment of INR 300 was completed` should show `uncertain`, not `safe`. Submitting an empty form is blocked by browser validation; the API separately rejects blank input with HTTP 400. A standalone link without a matching suspicious request may be `uncertain`: the tool does not check whether links are safe. These are synthetic integration cases, not UPI performance measurements.
+For a local UI check, leave the server and Vite running, then try **made-up** messages: `Share OTP 123456 to claim your refund` and `Pay a fee via https://example.invalid to receive your cashback` should show a `scam` warning. `Your payment of INR 300 was completed` should show `uncertain`, not `safe`. Submitting an empty chat message is blocked in the UI; the API separately rejects blank input with HTTP 400. A standalone link without a matching suspicious request may be `uncertain`: the tool does not check whether links are safe. These are synthetic integration cases, not UPI performance measurements.
 
 ## Wrong-payment recovery guidance
 
-When a pasted and checked message looks like a completed payment (amount plus debit/reference words), the app also shows the real steps for a mistaken UPI payment. For an uploaded screenshot, you can choose the recovery steps directly even if OCR misses debit words: note the 12-digit UPI reference (UTR), raise an "Incorrectly transferred to another account" complaint on the transaction in the UPI app, ask your bank to request a reversal, escalate app > partner bank > your bank > NPCI (npci.org.in), and call 1930 / file at cybercrime.gov.in if the receiver refuses or fraud is involved. The app only explains the process; it never promises recovery.
+For a sent message or uploaded screenshot, ask for wrong-payment help in the conversation even if OCR misses debit words: note the 12-digit UPI reference (UTR), raise an "Incorrectly transferred to another account" complaint on the transaction in the UPI app, ask your bank to request a reversal, escalate app > partner bank > your bank > NPCI (npci.org.in), and call 1930 / file at cybercrime.gov.in if the receiver refuses or fraud is involved. The app only explains the process; it never promises recovery.
 
 ## Optional AI review (Gemini)
 
@@ -71,7 +71,7 @@ Labels are `scam` (suspicious request pattern) and `uncertain` (including appare
 
 ## Repo map
 
-- `client/` - React + Vite + Tailwind form with screenshot OCR upload, result card and recovery guidance
+- `client/` - React + Vite + Tailwind conversational interface with screenshot OCR, verdict replies and recovery guidance
 - `server/` - Express API with cautious rules, exported UCI spam baseline and optional Gemini review
 - `data/` - dataset sourcing and safety instructions (no raw messages committed)
 - `scripts/fetch_uci.py` - optional local UCI dataset download
