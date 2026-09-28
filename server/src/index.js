@@ -145,7 +145,7 @@ app.post('/api/chat', async (req, res) => {
   const detectionResult = req.body?.detectionResult;
 
   if (typeof message !== 'string' || !message.trim() || message.length > 500
-    || (language !== undefined && language !== 'en' && language !== 'hi')) {
+    || (language !== undefined && language !== 'en' && language !== 'hi' && language !== 'hinglish')) {
     return res.status(400).json({ error: 'Send a question of 1 to 500 characters.' });
   }
 
@@ -155,7 +155,7 @@ app.post('/api/chat', async (req, res) => {
   const reply = await aiChat({
     message: message.trim(),
     context: safeContext,
-    language: language === 'hi' ? 'hi' : 'en',
+    language: language === 'hi' ? 'hi' : language === 'hinglish' ? 'hinglish' : 'en',
     detectionResult
   });
 

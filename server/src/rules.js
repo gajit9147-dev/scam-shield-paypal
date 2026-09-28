@@ -84,7 +84,7 @@ export function detectLocalSignals(rawText) {
   }
 
   // 2. UPI PIN Requests (English, Hindi Devanagari, and Hinglish transliterations)
-  const upiPinPattern = /\b(?:upi\s*pin|mpin|secret\s*pin|pin|यूपीआई\s*पिन|पिन)\s*(?:batao|bataiye|bhejo|bhejiye|dalo|send|enter|type|share|बताओ|भेजो|डालो|दर्ज|दीजिये|शेयर)\b|\b(?:enter|share|send|provide|give|type|submit|tell|batao|bataiye|bhejo|bhejiye|dalo|बताओ|भेजो|डालो|दर्ज)\s+(?:your\s+|apna\s+)?(?:upi\s*pin|mpin|secret\s*pin|pin|यूपीआई\s*पिन|पिन)\b|\b(?:enter|type|dalo)\s+(?:upi\s*)?pin\s+to\s+(?:receive|claim|get)\b/i;
+  const upiPinPattern = /\b(?:upi\s*pin|mpin|secret\s*pin|pin|यूपीआई\s*पिन|पिन)\s*(?:bta\s*do|bata\s*do|batao|bataiye|bhej\s*do|bhejo|bhejiye|de\s*do|dedo|dalo|send|enter|type|share|बताओ|भेजो|डालो|दर्ज|दीजिये|शेयर)\b|\b(?:enter|share|send|provide|give|type|submit|tell|batao|bataiye|bata\s*do|bta\s*do|bhejo|bhejiye|bhej\s*do|de\s*do|dedo|dalo|बताओ|भेजो|डालो|दर्ज)\s+(?:your\s+|apna\s+|mera\s+)?(?:upi\s*pin|mpin|secret\s*pin|pin|यूपीआई\s*पिन|पिन)\b|\b(?:enter|type|dalo)\s+(?:upi\s*)?pin\s+to\s+(?:receive|claim|get)\b/i;
 
   if (upiPinPattern.test(textToMatch) && !isDefensive) {
     signals.push({
