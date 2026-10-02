@@ -227,6 +227,7 @@ app.post('/api/payments/review', rateLimit(30), async (req, res) => {
 
 const expectedOrders = new Map();
 const paidOrders = new Map();
+const webhookState = { registered: false, error: '' };
 const ORDER_TTL_MS = 60 * 60 * 1000;
 function cleanOldOrders() {
   const now = Date.now();
@@ -296,6 +297,8 @@ app.post('/api/paypal/webhook', rateLimit(120), async (req, res) => {
 });
 
 // The page asks whether PayPal's own webhook confirmed a payment this server captured.
+app.get('/api/paypal/webhook-status', (req, res) => res.json({ registered: webhookState.registered, error: webhookState.error }));
+
 app.get('/api/paypal/confirmation', rateLimit(60), (req, res) => {
   const orderId = String(req.query.orderId || '');
   const paid = paidOrders.get(orderId);
@@ -359,5 +362,5 @@ app.use((err, _req, res, next) => {
 app.listen(port, () => {
   console.log(`API ready at http://localhost:${port}`);
   const publicUrl = process.env.PUBLIC_URL || process.env.RENDER_EXTERNAL_URL;
-  if (publicUrl) ensureWebhook(publicUrl).then((id) => id && console.log('PayPal webhook ready')).catch((e) => console.log(`PayPal webhook not set up: ${e.message}`));
+  if (publicUrl) ensureWebhook(publicUrl).then((id) => { webhookState.registered = Boolean(id); if (id) console.log('PayPal webhook ready'); }).catch((e) => { webhookState.error = String(e.message || e).slice(0, 200); console.log(`PayPal webhook not set up: ${webhookState.error}`); });
 });
