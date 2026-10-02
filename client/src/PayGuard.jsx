@@ -230,10 +230,10 @@ export default function PayGuard() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#05060a] text-slate-100 px-4 py-10 sm:py-16">
-      <div aria-hidden className="pointer-events-none absolute -top-24 -left-20 h-72 w-72 rounded-full bg-gradient-to-br from-slate-100 via-slate-400 to-slate-700 opacity-80 blur-[2px]" />
-      <div aria-hidden className="pointer-events-none absolute top-1/3 -right-24 h-80 w-80 rotate-12 rounded-[3rem] bg-gradient-to-tr from-slate-300 via-slate-500 to-slate-900 opacity-70" />
-      <div aria-hidden className="pointer-events-none absolute -bottom-28 left-1/4 h-64 w-64 rounded-full bg-gradient-to-tl from-slate-200 via-slate-600 to-slate-900 opacity-70" />
-      <div className="relative mx-auto max-w-xl space-y-5 rounded-[2rem] border border-white/20 bg-white/[0.07] p-6 sm:p-8 shadow-[0_8px_60px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-2xl">
+      <div aria-hidden className="pointer-events-none absolute -top-24 -left-20 h-72 w-72 rounded-full bg-gradient-to-br from-slate-100 via-slate-400 to-slate-700 opacity-25 blur-[2px]" />
+      <div aria-hidden className="pointer-events-none absolute top-1/3 -right-24 h-80 w-80 rotate-12 rounded-[3rem] bg-gradient-to-tr from-slate-300 via-slate-500 to-slate-900 opacity-20" />
+      <div aria-hidden className="pointer-events-none absolute -bottom-28 left-1/4 h-64 w-64 rounded-full bg-gradient-to-tl from-slate-200 via-slate-600 to-slate-900 opacity-20" />
+      <div className="relative mx-auto max-w-xl space-y-5 tracking-[0.01em] rounded-[2rem] border border-white/20 bg-white/[0.07] p-6 sm:p-8 shadow-[0_8px_60px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-2xl">
         <a href="/" className="text-sm text-white/60 hover:text-white">&larr; Back to ScamShield</a>
         <h1 className="text-3xl font-semibold tracking-tight">Check before you pay</h1>
         <p className="text-white/60 text-sm">
@@ -241,19 +241,22 @@ export default function PayGuard() {
           <b> sandbox</b> checkout. No real money moves.
         </p>
 
+        <p className="text-xs text-white/70">1 Check &rarr; 2 Verdict &rarr; 3 PayPal sandbox. Powered by Gemini and the PayPal sandbox. <a href="#attack" className="underline">Try to bypass it</a></p>
+
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           maxLength={1000}
           rows={5}
           placeholder="Paste an invoice, seller message or payment request"
-          className="w-full rounded-2xl bg-black/30 border border-white/15 p-4 text-sm placeholder-white/30 focus:outline-none focus:border-white/50 backdrop-blur"
+          className="w-full rounded-2xl bg-black/30 border border-white/15 p-4 text-sm placeholder-white/55 focus:outline-none focus:border-white/50 backdrop-blur"
         />
-        <p className="text-xs text-white/40">Demo examples below are fictional.</p>
+        <p className="text-xs text-white/65">Demo examples below are fictional.</p>
+        <button onClick={review} disabled={busy || !text.trim()} className="w-full rounded-full bg-gradient-to-r from-sky-400 to-indigo-500 text-white shadow-lg shadow-indigo-500/30 hover:brightness-110 disabled:opacity-50 disabled:shadow-none px-6 py-3 text-sm font-semibold">
+          {busy && !shot ? 'Checking...' : 'Check request'}
+        </button>
+        {!text.trim() && !busy && <p className="text-xs text-white/65">Paste text or pick an example below.</p>}
         <div className="flex flex-wrap gap-2">
-          <button onClick={review} disabled={busy || !text.trim()} className="rounded-full bg-white text-black hover:bg-white/85 disabled:opacity-40 px-6 py-2.5 text-sm font-semibold">
-            {busy && !shot ? 'Checking...' : 'Check request'}
-          </button>
           {SAMPLES.map(([label, s], i) => (
             <button key={i} onClick={() => setText(s)} className="rounded-full border border-white/20 bg-white/5 px-4 py-2.5 text-xs text-white/80 hover:bg-white/15">
               {label}
@@ -280,7 +283,7 @@ export default function PayGuard() {
 
         {busy && <p className="text-xs text-white/60">{SCAN_STEPS[scanIdx]} After idle time the free server may need up to 30 seconds to wake up.</p>}
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-2">
+        <div id="attack" className="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-2">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-white/70">Think you can cheat it? Try to bypass ScamShield.</p>
             <button type="button" onClick={runAttacks} className="rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Attack the shield</button>
@@ -356,7 +359,7 @@ export default function PayGuard() {
             {paid && (
               <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-100 space-y-1">
                 <p className="font-semibold">Sandbox payment {paid.status}. {paid.amount ? `${paid.amount.value} ${paid.amount.currency_code}. ` : ''}Receipt id: {paid.captureId}</p>
-                <p className="text-xs text-emerald-100/80">Passed the automated checks: risk score {review_.riskScore}/100, {verdict.label || verdict.riskLevel}. Order {paid.orderId}. {paid.paidAt ? new Date(paid.paidAt).toLocaleString() : ''}. No real money moved.</p>
+                <p className="text-xs text-emerald-100/80">Payment completed and the amount matched the review. Risk score {review_.riskScore}/100, {verdict.label || verdict.riskLevel}. Order {paid.orderId}. {paid.paidAt ? new Date(paid.paidAt).toLocaleString() : ''}. No real money moved.</p>
               </div>
             )}
             <button type="button" onClick={() => downloadReport(result, result.transcript || checkedText)} className="rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Download evidence report</button>
