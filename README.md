@@ -38,10 +38,11 @@ There is also a downloadable evidence report for every check.
 ## Honest limits
 
 - A CLEARED result means the request did not match our blocking rules. It does not prove the seller is genuine, and no output proves a payment is safe.
-- The sandbox order pays the app's own PayPal sandbox merchant, not the seller named in the request. It shows the gate, not a real seller payout.
+- The sandbox order pays the app's own PayPal sandbox merchant, not the seller named in the request. The payee in the text is read but not verified, and the checkout line says so. It shows the gate, not a real seller payout.
 - Webhook confirmations are also kept in memory, and the server needs a public URL to register the webhook (Render sets it automatically).
 - Review tokens and expected orders live in server memory. That fits this single-instance sandbox demo. If the free server restarts, the user sees "Review expired or missing. Check the request again before paying". A real product would keep this state in a shared database.
-- INR amounts are converted to USD at a fixed demo rate.
+- INR amounts are converted to USD at a fixed demo rate of 85 INR = 1 USD (set with `DEMO_INR_PER_USD`). It is not a live exchange rate. The PayPal sandbox charges in USD, so the screen shows the USD amount and says so.
+- If the AI review does not answer, the screen says "NOT CLEARED: AI review unavailable" and checkout stays locked. Rules alone never unlock checkout.
 - "Signal strength" is a simple read of the risk score and the number of signals. It is not a calibrated probability.
 - The older chat page (`/`) has an optional OCR fallback that loads Tesseract from a CDN. The `/pay` flow does not use it.
 - No real money moves. Only the free PayPal sandbox is used.
@@ -71,12 +72,13 @@ PAYPAL_CLIENT_SECRET=your-sandbox-secret
 GEMINI_API_KEY=optional
 ```
 
-Get sandbox keys at https://developer.paypal.com (Apps and Credentials, Sandbox). Test payments use a sandbox buyer account from the same dashboard. Without a Gemini key the app still works on the local rules, and the screen says that the AI did not answer.
+Get sandbox keys at https://developer.paypal.com (Apps and Credentials, Sandbox). Test payments use a sandbox buyer account from the same dashboard. Without a Gemini key the rules still run and block scams, but checkout never unlocks, and the screen says that the AI did not answer.
 
 Checks:
 
 ```bash
-cd server && npm test      # 47 tests, PayPal calls are mocked
+cd server && npm test      # 61 tests, PayPal calls are mocked
+node eval/run-paypal-testset.js http://localhost:3001   # 40 labeled payment requests (20 scams, 20 safe)
 cd client && npm run build
 ```
 

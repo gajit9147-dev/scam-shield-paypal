@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 const SAMPLES = [
   ['Normal invoice', 'Invoice 88 from Blue Cafe Vadodara: please pay $12.50 for catering order 88. Thanks!'],
-  ['Refund scam', 'URGENT! Pay Rs 2,000 to refund.desk@okaxis in 10 minutes to release your cashback or account will be blocked'],
+  ['Refund scam', 'URGENT! Pay $25 to refund.desk@paypa1-help.com in 10 minutes to release your refund or your account will be blocked'],
   ['OTP theft', 'Your bank account is locked. Share the OTP 483920 sent to your phone with our agent to unlock it today'],
   ['Fake prize', 'Congratulations! You won a $500 gift card. Pay a $15 delivery fee at https://claim-prize.example.invalid to get it'],
   ['Friend payback', 'Hey, here are the tickets from last night. Please send me $20 for your share, thanks!'],
@@ -320,11 +320,11 @@ export default function PayGuard() {
 
         {result && (
           <div className="rounded-2xl border border-white/15 bg-black/30 p-5 space-y-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
-            <div className={`rounded-2xl border px-4 py-3 ${review_.blocked ? 'border-rose-300/40 bg-rose-500/15' : 'border-emerald-300/30 bg-emerald-400/10'}`}>
-              <p className={`text-2xl font-semibold tracking-tight ${review_.blocked ? 'text-rose-100' : 'text-emerald-100'}`}>
-                {review_.blocked ? 'BLOCKED: suspicious payment request' : review_.canPay ? 'CLEARED: PayPal Sandbox unlocked' : 'NOT PAYABLE: checkout could not be prepared'}
+            <div className={`rounded-2xl border px-4 py-3 ${review_.blocked ? 'border-rose-300/40 bg-rose-500/15' : review_.degraded ? 'border-amber-300/50 bg-amber-400/15' : 'border-emerald-300/30 bg-emerald-400/10'}`}>
+              <p className={`text-2xl font-semibold tracking-tight ${review_.blocked ? 'text-rose-100' : review_.degraded ? 'text-amber-100' : 'text-emerald-100'}`}>
+                {review_.blocked ? 'BLOCKED: suspicious payment request' : review_.canPay ? 'CLEARED: PayPal Sandbox unlocked' : review_.degraded ? 'NOT CLEARED: AI review unavailable' : 'NOT PAYABLE: checkout could not be prepared'}
               </p>
-              <p className="text-xs text-white/60">{review_.blocked ? 'The server will not open checkout for this request.' : 'It passed the automated checks. That does not prove the seller is genuine.'}</p>
+              <p className="text-xs text-white/60">{review_.blocked ? 'The server will not open checkout for this request.' : review_.degraded ? 'Only the rules ran. Checkout stays locked until the AI review answers. Check again in a minute.' : 'It passed the automated checks. That does not prove the seller is genuine.'}</p>
               <p className="mt-1 text-sm text-white/85">
                 {review_.request?.amount ? `${review_.request.amount} ${review_.request.currency || ''}` : 'Amount not found'}
                 {review_.request?.payee ? ` to ${review_.request.payee}` : ''}
