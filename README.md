@@ -49,7 +49,7 @@ The synthetic pilot scores 42 frozen, hand-written Hindi/Hinglish/English cases 
 
 | Payment blocked | Cleared to pay | Screenshot review | Mobile (390px) |
 | --- | --- | --- | --- |
-| ![Scam Shield blocks a risky payment before PayPal opens](docs/screenshots/blocked.png) | ![A clean request is cleared and PayPal sandbox unlocks](docs/screenshots/cleared.png) | ![Gemini reads a payment screenshot and the request is checked](docs/screenshots/screenshot-upload.png) | ![Mobile view of a blocked refund scam](docs/screenshots/mobile.png) |
+| ![ScamShield blocks a risky payment before PayPal opens](docs/screenshots/blocked.png) | ![A clean request is cleared and PayPal sandbox unlocks](docs/screenshots/cleared.png) | ![Gemini reads a payment screenshot and the request is checked](docs/screenshots/screenshot-upload.png) | ![Mobile view of a blocked refund scam](docs/screenshots/mobile.png) |
 
 For a local UI check, leave the server and Vite running, then try **made-up** messages: `Share OTP 123456 to claim your refund` and `Pay a fee via https://example.invalid to receive your cashback` should show a `scam` warning. `Your payment of INR 300 was completed` should show `uncertain`, not `safe`. Submitting an empty chat message is blocked in the UI; the API separately rejects blank input with HTTP 400. A standalone link without a matching suspicious request may be `uncertain`: the tool does not check whether links are safe. These are synthetic integration cases, not UPI performance measurements.
 

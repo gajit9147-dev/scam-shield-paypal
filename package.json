@@ -1,5 +1,5 @@
 {
-  "name": "upi-scam-shield",
+  "name": "scamshield",
   "version": "1.0.0",
   "private": true,
   "description": "AI-powered UPI, banking and payment scam detection application with glassmorphic UI and trilingual support",

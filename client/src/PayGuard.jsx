@@ -168,7 +168,7 @@ export default function PayGuard() {
       <div aria-hidden className="pointer-events-none absolute top-1/3 -right-24 h-80 w-80 rotate-12 rounded-[3rem] bg-gradient-to-tr from-slate-300 via-slate-500 to-slate-900 opacity-70" />
       <div aria-hidden className="pointer-events-none absolute -bottom-28 left-1/4 h-64 w-64 rounded-full bg-gradient-to-tl from-slate-200 via-slate-600 to-slate-900 opacity-70" />
       <div className="relative mx-auto max-w-xl space-y-5 rounded-[2rem] border border-white/20 bg-white/[0.07] p-6 sm:p-8 shadow-[0_8px_60px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-2xl">
-        <a href="/" className="text-sm text-white/60 hover:text-white">&larr; Back to Scam Shield</a>
+        <a href="/" className="text-sm text-white/60 hover:text-white">&larr; Back to ScamShield</a>
         <h1 className="text-3xl font-semibold tracking-tight">Check before you pay</h1>
         <p className="text-white/60 text-sm">
           Paste a payment request. AI and scam rules read it first. Only a request that passes the automated checks can open a PayPal

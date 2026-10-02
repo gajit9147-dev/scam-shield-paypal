@@ -1,5 +1,5 @@
 {
-  "name": "upi-scam-shield-server",
+  "name": "scamshield-server",
   "version": "0.1.0",
   "private": true,
   "type": "module",
