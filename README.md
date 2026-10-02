@@ -4,8 +4,13 @@ ScamShield checks a payment request with AI **before** you pay. Only a request t
 
 Built for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/).
 Live demo: https://scam-shield-paypal.onrender.com/pay (free server, the first load can take up to a minute).
+Demo video (2 min 23 s): https://youtu.be/EQYg1HCnSXk
 
 ![ScamShield blocks a risky payment before PayPal opens](docs/screenshots/blocked.png)
+
+| Cleared, PayPal sandbox unlocked | Mobile |
+| --- | --- |
+| ![A clean request is cleared](docs/screenshots/cleared.png) | ![Mobile view](docs/screenshots/mobile.png) |
 
 ## How it works
 
