@@ -1,6 +1,6 @@
 export const hinglish = {
   // Brand
-  brandName: 'UPI Scam Shield',
+  brandName: 'ScamShield',
   brandTagline: 'Detect • Verify • Stay Safe',
   brandMissionTitle: 'Safer Payments, Stronger India',
   brandMissionDesc: 'Suspicious UPI, banking aur payment messages ko AI se check karein.',

@@ -273,7 +273,7 @@ export async function aiChat({ message, context, language = 'en', detectionResul
     : (language === 'hinglish' ? 'natural conversational Hinglish (Hindi in Latin script)' : 'simple English');
 
   const prompt = [
-    'You are UPI Scam Shield, an expert assistant that helps people in India identify UPI/payment scam messages and stay safe.',
+    'You are ScamShield, an expert assistant that helps people in India identify UPI/payment scam messages and stay safe.',
     context ? `The payment message under discussion: ${quoted}${context}${quoted}` : 'No payment message has been shared yet.',
     detectionResult ? `Prior detection assessment: Risk Level: ${detectionResult.riskLevel}, Category: ${detectionResult.categoryLabel || detectionResult.category}, Evidence: ${(detectionResult.evidence || []).join(', ')}` : '',
     `User's question: ${quoted}${message}${quoted}`,

@@ -1,4 +1,4 @@
-# UPI Scam Shield
+# ScamShield
 
 A defensive student prototype for merchant-support triage of suspicious UPI/payment messages, built for the Razorpay AI Buildathon. **The prototype uses a measured English general-spam model and cautious payment-warning rules, not a validated UPI scam detector.** No output proves a payment message is safe.
 
