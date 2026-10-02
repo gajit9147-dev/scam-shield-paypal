@@ -11,7 +11,7 @@ import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
 import { paypalConfigured, createOrder, captureOrder, ensureWebhook, verifyWebhookSignature } from './paypal.js';
 import { processWebhook, confirmationFor } from './webhook.js';
 import { aiStatus } from './ai.js';
-import { aiExtract, reviewPaymentRequest, verifyToken, useTokenOnce, releaseToken, rateLimit, runAttackDemo } from './paymentReview.js';
+import { aiExtract, paymentRedFlags, reviewPaymentRequest, verifyToken, useTokenOnce, releaseToken, rateLimit, runAttackDemo } from './paymentReview.js';
 import { randomUUID } from 'node:crypto';
 
 loadEnvFile();
@@ -212,7 +212,17 @@ async function reviewRequestText(cleanText) {
     verdict.summary = 'Suspicious: it asks you to pay a fee before you get anything. Real prizes, refunds and accounts do not work that way.';
     verdict.signals = [...(Array.isArray(verdict.signals) ? verdict.signals : []), { source: 'local_rules', type: 'advance_fee', severity: 'high', evidence: 'Asks for a fee before giving you a prize, refund or access' }];
   }
-  const review = await reviewPaymentRequest(cleanText, verdict, extracting);
+  const flags = paymentRedFlags(cleanText);
+  if (flags.length && verdict.riskLevel !== 'HIGH_RISK' && verdict.riskLevel !== 'SUSPICIOUS') {
+    verdict.riskLevel = 'SUSPICIOUS';
+    verdict.label = 'scam';
+    verdict.categoryLabel = verdict.categoryLabel || 'Payment scam pattern';
+    verdict.summary = `Suspicious: ${flags[0].evidence.charAt(0).toLowerCase()}${flags[0].evidence.slice(1)}.`;
+  }
+  if (flags.length) {
+    verdict.signals = [...(Array.isArray(verdict.signals) ? verdict.signals : []), ...flags.map((f) => ({ source: 'local_rules', type: f.type, severity: 'high', evidence: f.evidence }))];
+  }
+  const review = await reviewPaymentRequest(cleanText, verdict, extracting, Boolean(ai));
   review.riskScore = riskScore(verdict, review);
   return { verdict, review };
 }

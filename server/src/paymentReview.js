@@ -17,7 +17,9 @@ const SYMBOLS = [
   [/([\d,]+(?:\.\d{1,2})?)\s*(?:rupees|rs\b|inr)/i, 'INR'],
   [/(?:\$|usd)\s*([\d,]+(?:\.\d{1,2})?)/i, 'USD'],
   [/([\d,]+(?:\.\d{1,2})?)\s*usd/i, 'USD'],
+  [/([\d,]+(?:\.\d{1,2})?)\s*(?:eur|euros?)\b/i, 'EUR'],
   [/(?:€|eur)\s*([\d,]+(?:\.\d{1,2})?)/i, 'EUR'],
+  [/([\d,]+(?:\.\d{1,2})?)\s*(?:gbp|pounds?)\b/i, 'GBP'],
   [/(?:£|gbp)\s*([\d,]+(?:\.\d{1,2})?)/i, 'GBP']
 ];
 
@@ -85,11 +87,41 @@ export function toCheckout({ amount, currency }) {
   if (cur === 'INR') {
     value = amount / INR_PER_USD;
     cur = 'USD';
-    note = `Sandbox demo converts INR at ${INR_PER_USD} per USD.`;
+    note = `INR is converted at a fixed demo rate of ${INR_PER_USD} INR = 1 USD, not a live exchange rate. The PayPal sandbox charges in USD.`;
   }
   value = Math.max(0.01, Math.round(value * 100) / 100);
   if (cur === 'USD' && value > MAX_USD) return { ok: false, reason: `Sandbox demo is capped at ${MAX_USD} USD.` };
   return { ok: true, amount: value.toFixed(2), currency: cur, note };
+}
+
+// Payment-specific red flags the AI may call only "uncertain". Each one alone is enough to stop checkout.
+const BRANDS = ['paypal', 'amazon', 'netflix', 'microsoft', 'apple', 'google', 'dhl', 'fedex', 'usps', 'irs', 'sbi', 'hdfc', 'icici', 'paytm'];
+const RED_FLAGS = [
+  ['outside_platform', /\b(skip|avoid|without)\b[^.]{0,40}\b(platform|marketplace|site)\b[^.]{0,20}\bfees?\b|\bpay\b[^.]{0,40}\bdirectly\b[^.]{0,40}\b(personal|my)\b|\bdo not tell\b|\bkeep (it|this) (a )?secret\b/i, 'Asks you to pay outside the platform or keep it secret'],
+  ['gift_card', /\bgift cards?\b[^.]{0,80}\b(pay|buy|send|need)|\b(pay|buy|send|need)\b[^.]{0,80}\bgift cards?\b/i, 'Asks for payment in gift cards'],
+  ['crypto_returns', /\b(guaranteed|assured)\b[^.]{0,40}\b(returns?|profit)\b|\b\d+x\b[^.]{0,20}\breturns?\b|\bdouble your (money|investment)\b/i, 'Promises guaranteed investment returns'],
+  ['stranger_emergency', /\b(stuck|stranded)\b[^.]{0,60}\b(need|send)\b[^.]{0,40}\$?\d|\bmy love\b[^.]{0,120}\b(send|need)\b/i, 'A stranger or online contact asks for emergency money'],
+  ['cheque_overpay', /\b(deposit|cheque|check)\b[^.]{0,80}\b(then|and)\b[^.]{0,30}\bpay\b|\bsent you\b[^.]{0,40}\bby mistake\b[^.]{0,60}\b(pay|send|return)\b/i, 'Cheque or overpayment trick'],
+  ['remote_access', /\bremote access\b|\b(virus|malware)\b[^.]{0,60}\bpay\b|\bpay\b[^.]{0,60}\b(virus|malware)\b/i, 'Tech-support scam: remote access or virus removal fee'],
+  ['wire_deposit', /\bwire\b[^.]{0,40}\bdeposit\b|\bdeposit\b[^.]{0,40}\bwire\b/i, 'Asks for a wire deposit before you see anything']
+];
+export function paymentRedFlags(text) {
+  const flags = RED_FLAGS.filter(([, re]) => re.test(text)).map(([type, , evidence]) => ({ type, evidence }));
+  // Look-alike sender: a known brand mixed with digits, a hyphenated add-on, or a swapped letter in the domain.
+  const hosts = [...text.matchAll(/(?:@|https?:\/\/)([a-z0-9.-]+\.[a-z]{2,})/gi)].map((m) => m[1].toLowerCase());
+  for (const host of hosts) {
+    const name = host.split('.').slice(-2, -1)[0] || '';
+    const fold = (x) => x.replace(/[1il]/g, 'l').replace(/0/g, 'o').replace(/\$/g, 's').replace(/rn/g, 'm');
+    const squashed = fold(name);
+    for (const b of BRANDS) {
+      const official = name === b;
+      const lookalike = !official && (squashed.includes(fold(b)) || name.includes(b + '-') || name.includes('-' + b));
+      if (lookalike) { flags.push({ type: 'lookalike_sender', evidence: `Sender or link "${host}" imitates "${b}"` }); break; }
+    }
+  }
+  const fakeCompany = /\b(paypal|amazon|netflix|microsoft|apple|irs)\b[^.]{0,80}\b(support|security|billing)\b|\b(support|security|billing)\b[^.]{0,20}\b(paypal|amazon|netflix|microsoft|apple)\b/i.test(text);
+  if (fakeCompany && /@(gmail|yahoo|outlook|hotmail)\.com/i.test(text)) flags.push({ type: 'brand_free_mail', evidence: 'Claims to be a company but asks you to pay a free-mail address' });
+  return flags;
 }
 
 function sign(payload) {
@@ -115,7 +147,7 @@ export function verifyToken(token) {
 }
 
 // verdict: result of combineEvidence. Returns the review shown to the payer.
-export async function reviewPaymentRequest(text, verdict, aiPromise) {
+export async function reviewPaymentRequest(text, verdict, aiPromise, reviewAiAnswered = true) {
   const rx = regexExtract(text);
   const ai = await (aiPromise || aiExtract(text));
   const merged = {
@@ -125,10 +157,16 @@ export async function reviewPaymentRequest(text, verdict, aiPromise) {
     purpose: ai?.purpose ?? null
   };
   const checkout = toCheckout(merged);
+  // Without the AI review the request has only had the rules. Do not unlock checkout on rules alone.
+  const degraded = !reviewAiAnswered;
+  if (checkout.ok && merged.payee) {
+    const demoNote = `Demo only: the sandbox payment goes to the ScamShield demo merchant, not to "${merged.payee}". The payee in the request is not verified.`;
+    checkout.note = checkout.note ? `${checkout.note} ${demoNote}` : demoNote;
+  }
   const blocked = verdict.riskLevel === 'HIGH_RISK' || verdict.riskLevel === 'SUSPICIOUS';
   const pressure = ai?.pressure || [];
   const missing = ai?.missing || [];
-  let canPay = checkout.ok && !blocked;
+  let canPay = checkout.ok && !blocked && !degraded;
   let token = null;
   if (canPay) {
     token = sign({
@@ -144,7 +182,8 @@ export async function reviewPaymentRequest(text, verdict, aiPromise) {
   return {
     request: merged,
     checkout: checkout.ok ? { amount: checkout.amount, currency: checkout.currency, note: checkout.note } : null,
-    checkoutProblem: checkout.ok ? null : checkout.reason,
+    checkoutProblem: checkout.ok ? (degraded && !blocked ? 'AI review did not answer, so checkout stays locked. Try the check again in a minute.' : null) : checkout.reason,
+    degraded,
     blocked,
     canPay,
     token,
