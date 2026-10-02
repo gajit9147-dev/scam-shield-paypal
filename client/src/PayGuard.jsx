@@ -109,7 +109,7 @@ export default function PayGuard() {
         <a href="/" className="text-sm text-white/60 hover:text-white">&larr; Back to Scam Shield</a>
         <h1 className="text-3xl font-semibold tracking-tight">Check before you pay</h1>
         <p className="text-white/60 text-sm">
-          Paste a payment request. AI and scam rules read it first. Only a request that is not flagged can open a PayPal
+          Paste a payment request. AI and scam rules read it first. Only a request that passes the automated checks can open a PayPal
           <b> sandbox</b> checkout. No real money moves.
         </p>
 
@@ -174,7 +174,7 @@ export default function PayGuard() {
 
             {review_.canPay && !paid && (
               <div className="space-y-2">
-                <p className="text-sm">Sandbox checkout: <b>{review_.checkout.amount} {review_.checkout.currency}</b>{review_.checkout.note ? ` (${review_.checkout.note})` : ''}</p>
+                <p className="text-sm">PayPal Sandbox, no real money: <b>{review_.checkout.amount} {review_.checkout.currency}</b>{review_.checkout.note ? ` (${review_.checkout.note})` : ''}</p>
                 {config && !config.configured && <p className="text-sm text-amber-200">PayPal sandbox keys are not set on this server yet.</p>}
                 <div ref={buttonsRef} />
               </div>

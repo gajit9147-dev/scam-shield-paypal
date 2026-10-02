@@ -137,6 +137,7 @@ export async function reviewPaymentRequest(text, verdict) {
       payee: merged.payee || '',
       purpose: merged.purpose || '',
       risk: verdict.riskLevel,
+      jti: randomBytes(12).toString('hex'),
       exp: Date.now() + TOKEN_TTL_MS
     });
   }
@@ -153,5 +154,29 @@ export async function reviewPaymentRequest(text, verdict) {
     aiUsed: Boolean(ai),
     // Honest wording: passing this review never means the seller is trustworthy.
     caution: 'This review cannot prove the seller is genuine. Pay only people you know, and only through the sandbox here.'
+  };
+}
+
+// One review token opens one PayPal order. Kept in memory, which is enough for a single demo server.
+const usedTokens = new Map();
+export function useTokenOnce(claim) {
+  const now = Date.now();
+  for (const [id, exp] of usedTokens) if (exp < now) usedTokens.delete(id);
+  if (!claim?.jti || usedTokens.has(claim.jti)) return false;
+  usedTokens.set(claim.jti, claim.exp);
+  return true;
+}
+
+// Small per-address limit so the AI and checkout endpoints cannot be hammered.
+const hits = new Map();
+export function rateLimit(max = 30, windowMs = 60000) {
+  return (req, res, next) => {
+    const now = Date.now();
+    const key = req.ip || 'unknown';
+    const list = (hits.get(key) || []).filter(t => now - t < windowMs);
+    if (list.length >= max) return res.status(429).json({ error: 'Too many requests. Wait a minute and try again.' });
+    list.push(now);
+    hits.set(key, list);
+    return next();
   };
 }

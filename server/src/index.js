@@ -9,12 +9,13 @@ import { detectLocalSignals } from './rules.js';
 import { combineEvidence } from './fusion.js';
 import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
 import { paypalConfigured, createOrder, captureOrder } from './paypal.js';
-import { reviewPaymentRequest, verifyToken } from './paymentReview.js';
+import { reviewPaymentRequest, verifyToken, useTokenOnce, rateLimit } from './paymentReview.js';
 import { randomUUID } from 'node:crypto';
 
 loadEnvFile();
 
 const app = express();
+app.set('trust proxy', 1);
 const port = Number(process.env.PORT) || 3001;
 
 // Allow CORS from localhost, configured origin, local network devices (e.g. mobile
@@ -117,7 +118,7 @@ app.post('/api/check-image', express.json({ limit: '6mb' }), async (req, res) =>
 });
 
 // Screenshot of a payment request: vision AI reads the text, then the same review runs on it.
-app.post('/api/payments/review-image', express.json({ limit: '6mb' }), async (req, res) => {
+app.post('/api/payments/review-image', rateLimit(15), express.json({ limit: '6mb' }), async (req, res) => {
   const mimeType = req.body?.mimeType;
   const data = typeof req.body?.image === 'string' ? req.body.image.replace(/[\r\n\s]+/g, '') : '';
   if (!data || typeof mimeType !== 'string' || !IMAGE_TYPES.includes(mimeType)
@@ -190,7 +191,7 @@ async function reviewRequestText(cleanText) {
   return { verdict, review };
 }
 
-app.post('/api/payments/review', async (req, res) => {
+app.post('/api/payments/review', rateLimit(30), async (req, res) => {
   const text = req.body?.text;
   if (typeof text !== 'string' || !text.trim() || text.length > 1000) {
     return res.status(400).json({ error: 'Paste a payment request of 1 to 1000 characters.' });
@@ -198,10 +199,13 @@ app.post('/api/payments/review', async (req, res) => {
   return res.json(await reviewRequestText(text.trim()));
 });
 
-app.post('/api/paypal/create-order', async (req, res) => {
+const expectedOrders = new Map();
+
+app.post('/api/paypal/create-order', rateLimit(20), async (req, res) => {
   if (!paypalConfigured()) return res.status(503).json({ error: 'PayPal sandbox is not set up on this server.' });
   const claim = verifyToken(req.body?.token);
   if (!claim) return res.status(403).json({ error: 'Review expired or missing. Check the request again before paying.' });
+  if (!useTokenOnce(claim)) return res.status(409).json({ error: 'This review was already used. Check the request again to pay.' });
   try {
     const order = await createOrder({
       amount: claim.amount,
@@ -209,21 +213,29 @@ app.post('/api/paypal/create-order', async (req, res) => {
       description: claim.purpose ? `Reviewed payment: ${claim.purpose}` : 'Reviewed payment',
       requestId: randomUUID()
     });
+    expectedOrders.set(order.id, { amount: claim.amount, currency: claim.currency });
     return res.json({ id: order.id });
   } catch (err) {
     return res.status(502).json({ error: err.message || 'Could not create the PayPal order.' });
   }
 });
 
-app.post('/api/paypal/capture-order', async (req, res) => {
+app.post('/api/paypal/capture-order', rateLimit(20), async (req, res) => {
   if (!paypalConfigured()) return res.status(503).json({ error: 'PayPal sandbox is not set up on this server.' });
   const orderId = req.body?.orderId;
   if (typeof orderId !== 'string' || !/^[A-Za-z0-9-]{8,40}$/.test(orderId)) {
     return res.status(400).json({ error: 'Missing order id.' });
   }
+  const expected = expectedOrders.get(orderId);
+  if (!expected) return res.status(403).json({ error: 'This order was not created by a reviewed request.' });
   try {
     const data = await captureOrder(orderId);
     const unit = data?.purchase_units?.[0]?.payments?.captures?.[0];
+    const paidOk = unit?.amount && Number(unit.amount.value) === Number(expected.amount) && unit.amount.currency_code === expected.currency;
+    if (data.status === 'COMPLETED' && !paidOk) {
+      return res.status(409).json({ error: 'The captured amount did not match the reviewed request.' });
+    }
+    expectedOrders.delete(orderId);
     return res.json({
       status: data.status,
       captureId: unit?.id || null,
