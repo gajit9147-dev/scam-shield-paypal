@@ -8,6 +8,9 @@ import { spamScore } from './classify.js';
 import { detectLocalSignals } from './rules.js';
 import { combineEvidence } from './fusion.js';
 import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
+import { paypalConfigured, createOrder, captureOrder } from './paypal.js';
+import { reviewPaymentRequest, verifyToken } from './paymentReview.js';
+import { randomUUID } from 'node:crypto';
 
 loadEnvFile();
 
@@ -145,6 +148,66 @@ app.post('/api/check', async (req, res) => {
   });
 
   return res.json(result);
+});
+
+
+// ---- PayPal sandbox: review a payment request first, then pay (sandbox only) ----
+app.get('/api/paypal/config', (_req, res) => {
+  res.json({ configured: paypalConfigured(), clientId: paypalConfigured() ? process.env.PAYPAL_CLIENT_ID : null, mode: 'sandbox' });
+});
+
+app.post('/api/payments/review', async (req, res) => {
+  const text = req.body?.text;
+  if (typeof text !== 'string' || !text.trim() || text.length > 1000) {
+    return res.status(400).json({ error: 'Paste a payment request of 1 to 1000 characters.' });
+  }
+  const cleanText = text.trim();
+  const localResult = detectLocalSignals(cleanText);
+  const score = spamScore(cleanText);
+  const ai = await aiReview(cleanText);
+  const verdict = combineEvidence({
+    rawText: cleanText, localResult, geminiResult: ai, spamScore: score,
+    isSpamFlagged: score >= model.spamThreshold, isImage: false
+  });
+  const review = await reviewPaymentRequest(cleanText, verdict);
+  return res.json({ verdict, review });
+});
+
+app.post('/api/paypal/create-order', async (req, res) => {
+  if (!paypalConfigured()) return res.status(503).json({ error: 'PayPal sandbox is not set up on this server.' });
+  const claim = verifyToken(req.body?.token);
+  if (!claim) return res.status(403).json({ error: 'Review expired or missing. Check the request again before paying.' });
+  try {
+    const order = await createOrder({
+      amount: claim.amount,
+      currency: claim.currency,
+      description: claim.purpose ? `Reviewed payment: ${claim.purpose}` : 'Reviewed payment',
+      requestId: randomUUID()
+    });
+    return res.json({ id: order.id });
+  } catch (err) {
+    return res.status(502).json({ error: err.message || 'Could not create the PayPal order.' });
+  }
+});
+
+app.post('/api/paypal/capture-order', async (req, res) => {
+  if (!paypalConfigured()) return res.status(503).json({ error: 'PayPal sandbox is not set up on this server.' });
+  const orderId = req.body?.orderId;
+  if (typeof orderId !== 'string' || !/^[A-Za-z0-9-]{8,40}$/.test(orderId)) {
+    return res.status(400).json({ error: 'Missing order id.' });
+  }
+  try {
+    const data = await captureOrder(orderId);
+    const unit = data?.purchase_units?.[0]?.payments?.captures?.[0];
+    return res.json({
+      status: data.status,
+      captureId: unit?.id || null,
+      amount: unit?.amount || null,
+      payerName: data?.payer?.name?.given_name || null
+    });
+  } catch (err) {
+    return res.status(502).json({ error: err.message || 'Could not capture the PayPal payment.' });
+  }
 });
 
 app.post('/api/chat', async (req, res) => {

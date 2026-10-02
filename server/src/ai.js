@@ -27,7 +27,7 @@ const TIMEOUT_MS = 8000;
 // Reading an image takes longer than reading text.
 const IMAGE_TIMEOUT_MS = 15000;
 
-function extractJson(raw) {
+export function extractJson(raw) {
   const cleaned = raw.replace(/```json|```/gi, '').trim();
   const start = cleaned.indexOf('{');
   const end = cleaned.lastIndexOf('}');
@@ -40,9 +40,9 @@ function extractJson(raw) {
 }
 
 // Models retire fast; try the configured/default model, then known fallbacks.
-const MODEL_FALLBACKS = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
+export const MODEL_FALLBACKS = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
 
-async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS) {
+export async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {

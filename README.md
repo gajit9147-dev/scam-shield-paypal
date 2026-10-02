@@ -127,3 +127,24 @@ free web service on Render.
 
 Free-tier notes: the service sleeps after 15 idle minutes, so the first visit
 after a quiet period can take 30-60 seconds to wake. Later visits are instant.
+
+## Check before you pay (PayPal AI Hackathon update)
+
+New in October 2026: a payment-protection flow built on the existing scam checker and the PayPal sandbox. Open `/pay` (for example http://localhost:5173/pay).
+
+1. Paste a payment request (invoice, seller message, "please pay" note).
+2. The AI reviewer (Gemini, optional) and the local scam rules read it. The AI pulls out who is asking for money, how much, and what pressure or missing invoice details it sees.
+3. A scam or suspicious verdict locks checkout. The server refuses to create a PayPal order without a signed, short-lived review token, and it never issues one for a flagged request.
+4. A request that is not flagged opens PayPal sandbox checkout (Orders API v2: create and capture) for the reviewed amount. INR amounts are shown in USD at a fixed demo rate. No real money moves.
+
+Passing the review never proves a seller is genuine. The app says so on screen.
+
+Set sandbox keys in `server/.env` (never commit it), or in your host's environment settings:
+
+```
+PAYPAL_CLIENT_ID=your-sandbox-client-id
+PAYPAL_CLIENT_SECRET=your-sandbox-secret
+GEMINI_API_KEY=optional
+```
+
+Get sandbox keys at https://developer.paypal.com (Apps and Credentials, Sandbox). Test payments use a sandbox buyer account from the same dashboard. Run `cd server && npm test` for the checks, including the mocked PayPal calls.
