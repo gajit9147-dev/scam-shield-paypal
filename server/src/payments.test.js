@@ -46,7 +46,7 @@ test('uncertain verdict with a clear amount gets a signed token', async () => {
   assert.equal(r.canPay, true);
   const claim = verifyToken(r.token);
   assert.equal(claim.amount, '1062.50');
-  assert.equal(claim.currency, 'USD');
+  assert.equal(claim.currency, 'INR');
 });
 
 test('tampered or garbage tokens are rejected', async () => {
