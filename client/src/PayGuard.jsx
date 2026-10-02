@@ -356,7 +356,7 @@ export default function PayGuard() {
             {paid && (
               <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-100 space-y-1">
                 <p className="font-semibold">Sandbox payment {paid.status}. {paid.amount ? `${paid.amount.value} ${paid.amount.currency_code}. ` : ''}Receipt id: {paid.captureId}</p>
-                <p className="text-xs text-emerald-100/80">Verified to pay: risk score {review_.riskScore}/100, {verdict.label || verdict.riskLevel}. Order {paid.orderId}. {paid.paidAt ? new Date(paid.paidAt).toLocaleString() : ''}. No real money moved.</p>
+                <p className="text-xs text-emerald-100/80">Passed the automated checks: risk score {review_.riskScore}/100, {verdict.label || verdict.riskLevel}. Order {paid.orderId}. {paid.paidAt ? new Date(paid.paidAt).toLocaleString() : ''}. No real money moved.</p>
               </div>
             )}
             <button type="button" onClick={() => downloadReport(result, result.transcript || checkedText)} className="rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Download evidence report</button>

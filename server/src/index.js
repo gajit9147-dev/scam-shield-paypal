@@ -42,7 +42,7 @@ app.use((req, res, next) => cors(corsOptions(req))(req, res, next));
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // Screenshots arrive base64 inside JSON
-app.post('/api/check-image', express.json({ limit: '6mb' }), async (req, res) => {
+app.post('/api/check-image', rateLimit(15), express.json({ limit: '6mb' }), async (req, res) => {
   const image = req.body?.image;
   const mimeType = req.body?.mimeType;
   const clientOcrText = typeof req.body?.ocrText === 'string' ? req.body.ocrText.trim() : '';
@@ -144,7 +144,7 @@ app.use(express.json({ limit: '128kb' }));
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
-app.post('/api/check', async (req, res) => {
+app.post('/api/check', rateLimit(30), async (req, res) => {
   const text = req.body?.text;
   if (typeof text !== 'string' || !text.trim() || text.length > 1000) {
     return res.status(400).json({ error: 'Enter a message of 1 to 1000 characters.' });
@@ -285,7 +285,7 @@ app.post('/api/paypal/capture-order', rateLimit(20), async (req, res) => {
   }
 });
 
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', rateLimit(30), async (req, res) => {
   const message = req.body?.message;
   const context = req.body?.context;
   const language = req.body?.language;

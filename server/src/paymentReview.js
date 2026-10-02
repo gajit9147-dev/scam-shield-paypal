@@ -176,7 +176,7 @@ const hits = new Map();
 export function rateLimit(max = 30, windowMs = 60000) {
   return (req, res, next) => {
     const now = Date.now();
-    const key = req.ip || 'unknown';
+    const key = `${req.ip || 'unknown'}:${req.path}`;
     const list = (hits.get(key) || []).filter(t => now - t < windowMs);
     if (list.length >= max) return res.status(429).json({ error: 'Too many requests. Wait a minute and try again.' });
     list.push(now);
