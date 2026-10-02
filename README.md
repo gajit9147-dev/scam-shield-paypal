@@ -1,6 +1,10 @@
 # ScamShield
 
-A defensive student prototype for merchant-support triage of suspicious UPI/payment messages, built for the Razorpay AI Buildathon. **The prototype uses a measured English general-spam model and cautious payment-warning rules, not a validated UPI scam detector.** No output proves a payment message is safe.
+ScamShield checks a payment request with AI before you pay. You paste the request or upload a screenshot of it. Gemini and a set of scam rules read it and give a risk score (0-100, risk signals, not a probability), what the AI detected, and why. A risky request is BLOCKED and the server will not create a PayPal order. A clean request is CLEARED and unlocks a PayPal **sandbox** checkout (no real money). The server then captures the payment only if PayPal says COMPLETED and the amount matches the review, and shows a "Verified to pay" receipt.
+
+Built for the PayPal AI Hackathon. Live demo: https://scam-shield-paypal.onrender.com/pay (free server, first load can take about a minute).
+
+**Honest limits:** a CLEARED result means the request did not match our blocking rules. It does not verify the seller, and no output proves a payment is safe. The project started as an earlier UPI scam-message checker for India (the UPI evaluation docs below are from that earlier work); the PayPal flow, screenshot review, risk panels and payment gating are the new work for this hackathon.
 
 ## Run locally
 

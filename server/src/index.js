@@ -225,6 +225,11 @@ app.post('/api/payments/review', rateLimit(30), async (req, res) => {
 });
 
 const expectedOrders = new Map();
+const ORDER_TTL_MS = 60 * 60 * 1000;
+function cleanOldOrders() {
+  const now = Date.now();
+  for (const [id, o] of expectedOrders) if (now - o.at > ORDER_TTL_MS) expectedOrders.delete(id);
+}
 
 app.post('/api/paypal/create-order', rateLimit(20), async (req, res) => {
   if (!paypalConfigured()) return res.status(503).json({ error: 'PayPal sandbox is not set up on this server.' });
@@ -238,7 +243,8 @@ app.post('/api/paypal/create-order', rateLimit(20), async (req, res) => {
       description: claim.purpose ? `Reviewed payment: ${claim.purpose}` : 'Reviewed payment',
       requestId: randomUUID()
     });
-    expectedOrders.set(order.id, { amount: claim.amount, currency: claim.currency });
+    cleanOldOrders();
+    expectedOrders.set(order.id, { amount: claim.amount, currency: claim.currency, at: Date.now() });
     return res.json({ id: order.id });
   } catch (err) {
     releaseToken(claim);
