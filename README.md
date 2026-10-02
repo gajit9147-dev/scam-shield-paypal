@@ -47,9 +47,9 @@ The synthetic pilot scores 42 frozen, hand-written Hindi/Hinglish/English cases 
 
 ## Screenshots
 
-| English verdict | Hindi verdict | Payment receipt check | Mobile (390px) |
+| Payment blocked | Cleared to pay | Verified receipt | Mobile (390px) |
 | --- | --- | --- | --- |
-| ![HIGH RISK verdict with masked lookalike-domain evidence](docs/screenshots/en-high-risk-verdict.png) | ![Fully Hindi HIGH RISK verdict](docs/screenshots/hi-high-risk-verdict.png) | ![Completed payment checked honestly - no scam signals, still not called safe](docs/screenshots/recovery-money-sent-path.png) | ![Mobile verdict for the PIN-to-receive trick](docs/screenshots/mobile-pin-to-receive-verdict.png) |
+| ![Scam Shield blocks a risky payment before PayPal opens](docs/screenshots/live-scam.png) | ![A clean request is cleared and the PayPal button unlocks](docs/screenshots/live-cleared.png) | ![PayPal sandbox payment captured and a Verified to pay receipt shown](docs/screenshots/live-paid.png) | ![Mobile main page](docs/screenshots/final-main-m.png) |
 
 For a local UI check, leave the server and Vite running, then try **made-up** messages: `Share OTP 123456 to claim your refund` and `Pay a fee via https://example.invalid to receive your cashback` should show a `scam` warning. `Your payment of INR 300 was completed` should show `uncertain`, not `safe`. Submitting an empty chat message is blocked in the UI; the API separately rejects blank input with HTTP 400. A standalone link without a matching suspicious request may be `uncertain`: the tool does not check whether links are safe. These are synthetic integration cases, not UPI performance measurements.
 
