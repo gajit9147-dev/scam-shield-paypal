@@ -7,14 +7,14 @@ A defensive student prototype for merchant-support triage of suspicious UPI/paym
 Install Node.js 20.19+ or 22.12+ and npm. Clone this repo and open two terminal windows in its root folder:
 
 ```bash
-git clone https://github.com/gajit9147-dev/upi-scam-shield.git
-cd upi-scam-shield
+git clone https://github.com/gajit9147-dev/scam-shield-paypal.git
+cd scam-shield-paypal
 cd server
 npm ci
 npm run dev
 ```
 
-In the second terminal, from `upi-scam-shield`:
+In the second terminal, from `scam-shield-paypal`:
 
 ```bash
 cd client
@@ -135,7 +135,7 @@ New in October 2026: a payment-protection flow built on the existing scam checke
 1. Paste a payment request (invoice, seller message, "please pay" note).
 2. The AI reviewer (Gemini, optional) and the local scam rules read it. The AI pulls out who is asking for money, how much, and what pressure or missing invoice details it sees.
 3. A scam or suspicious verdict locks checkout. The server refuses to create a PayPal order without a signed, short-lived review token, and it never issues one for a flagged request.
-4. A request that is not flagged opens PayPal sandbox checkout (Orders API v2: create and capture) for the reviewed amount. INR amounts are shown in USD at a fixed demo rate. No real money moves.
+4. A request that passes the automated checks opens PayPal sandbox checkout (Orders API v2: create and capture) for the reviewed amount. Each review token opens one order only, and the captured amount is checked against the reviewed request. You can also upload a screenshot of the request: Gemini vision reads it and the same review runs. INR amounts are shown in USD at a fixed demo rate. No real money moves.
 
 Passing the review never proves a seller is genuine. The app says so on screen.
 
