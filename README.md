@@ -152,3 +152,10 @@ GEMINI_API_KEY=optional
 ```
 
 Get sandbox keys at https://developer.paypal.com (Apps and Credentials, Sandbox). Test payments use a sandbox buyer account from the same dashboard. Run `cd server && npm test` for the checks, including the mocked PayPal calls.
+
+### Known limits of the demo
+
+- Review tokens and expected orders are kept in server memory. This is fine for the single-instance sandbox deployment. A real product would move that state to a shared database.
+- INR to USD uses a fixed demo rate.
+- "Signal strength" is a simple read of the risk score and number of signals. It is not a calibrated probability.
+- "Attack the shield" runs 4 bypass attempts: edited amount, expired token, reused token and a fake payment id.

@@ -46,7 +46,7 @@ function confidenceLine(review, verdict) {
   const n = (verdict?.evidence || []).length;
   const agree = review.aiUsed ? 'AI and rules both ran' : 'rules only, AI did not answer';
   const level = review.riskScore >= 70 || review.riskScore <= 10 ? 'High' : 'Medium';
-  return `Decision confidence: ${level}. ${n} signal${n === 1 ? '' : 's'} found, ${agree}. This is a risk check, not proof.`;
+  return `Signal strength: ${level}. ${n} signal${n === 1 ? '' : 's'} found, ${agree}. This is a risk check, not proof.`;
 }
 
 function downloadReport(result, shownText) {
