@@ -116,6 +116,28 @@ app.post('/api/check-image', express.json({ limit: '6mb' }), async (req, res) =>
   });
 });
 
+// Screenshot of a payment request: vision AI reads the text, then the same review runs on it.
+app.post('/api/payments/review-image', express.json({ limit: '6mb' }), async (req, res) => {
+  const mimeType = req.body?.mimeType;
+  const data = typeof req.body?.image === 'string' ? req.body.image.replace(/[\r\n\s]+/g, '') : '';
+  if (!data || typeof mimeType !== 'string' || !IMAGE_TYPES.includes(mimeType)
+    || data.length < 100 || data.length > 5600000 || !/^[A-Za-z0-9+/=]+$/.test(data)) {
+    return res.status(400).json({ error: 'Send a JPEG, PNG or WebP screenshot.' });
+  }
+  let seen = null;
+  try {
+    seen = await aiReviewImage({ data, mimeType });
+  } catch {
+    seen = null;
+  }
+  const transcript = (seen?.transcript || '').trim().slice(0, 1000);
+  if (!transcript) {
+    return res.status(422).json({ error: 'Could not read a payment request in that screenshot. Try a clearer one or paste the text.' });
+  }
+  const out = await reviewRequestText(transcript);
+  return res.json({ ...out, transcript });
+});
+
 app.use(express.json({ limit: '128kb' }));
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
@@ -156,12 +178,7 @@ app.get('/api/paypal/config', (_req, res) => {
   res.json({ configured: paypalConfigured(), clientId: paypalConfigured() ? process.env.PAYPAL_CLIENT_ID : null, mode: 'sandbox' });
 });
 
-app.post('/api/payments/review', async (req, res) => {
-  const text = req.body?.text;
-  if (typeof text !== 'string' || !text.trim() || text.length > 1000) {
-    return res.status(400).json({ error: 'Paste a payment request of 1 to 1000 characters.' });
-  }
-  const cleanText = text.trim();
+async function reviewRequestText(cleanText) {
   const localResult = detectLocalSignals(cleanText);
   const score = spamScore(cleanText);
   const ai = await aiReview(cleanText);
@@ -170,7 +187,15 @@ app.post('/api/payments/review', async (req, res) => {
     isSpamFlagged: score >= model.spamThreshold, isImage: false
   });
   const review = await reviewPaymentRequest(cleanText, verdict);
-  return res.json({ verdict, review });
+  return { verdict, review };
+}
+
+app.post('/api/payments/review', async (req, res) => {
+  const text = req.body?.text;
+  if (typeof text !== 'string' || !text.trim() || text.length > 1000) {
+    return res.status(400).json({ error: 'Paste a payment request of 1 to 1000 characters.' });
+  }
+  return res.json(await reviewRequestText(text.trim()));
 });
 
 app.post('/api/paypal/create-order', async (req, res) => {
