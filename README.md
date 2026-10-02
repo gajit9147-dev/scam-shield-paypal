@@ -6,11 +6,13 @@ Built for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/).
 Live demo: https://scam-shield-paypal.onrender.com/pay (free server, the first load can take up to a minute).
 Demo video (2 min 23 s): https://youtu.be/EQYg1HCnSXk
 
-![ScamShield blocks a risky payment before PayPal opens](docs/screenshots/blocked.png)
-
-| Cleared, PayPal sandbox unlocked | Mobile |
-| --- | --- |
-| ![A clean request is cleared](docs/screenshots/cleared.png) | ![Mobile view](docs/screenshots/mobile.png) |
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/blocked.png" alt="Blocked: a risky payment request" width="260"><br><sub>Blocked, PayPal never opens</sub></td>
+    <td align="center"><img src="docs/screenshots/cleared.png" alt="Cleared: PayPal sandbox unlocked" width="260"><br><sub>Cleared, sandbox checkout unlocks</sub></td>
+    <td align="center"><img src="docs/screenshots/mobile.png" alt="Mobile view" width="140"><br><sub>Mobile</sub></td>
+  </tr>
+</table>
 
 ## How it works
 
