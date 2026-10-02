@@ -90,7 +90,7 @@ export async function aiReview(text) {
   let raw = null;
   for (const model of models) {
     const res = await callModel(model, key, [{ text: prompt }]);
-    if (res?.isQuotaError) break;
+    if (res?.isQuotaError) continue;
     if (res?.text) {
       raw = res.text;
       break;
@@ -141,7 +141,7 @@ export async function aiReviewImage({ data, mimeType }) {
   let raw = null;
   for (const model of models) {
     const res = await callModel(model, key, parts, IMAGE_TIMEOUT_MS);
-    if (res?.isQuotaError) break;
+    if (res?.isQuotaError) continue;
     if (res?.text) {
       raw = res.text;
       break;
@@ -287,7 +287,7 @@ export async function aiChat({ message, context, language = 'en', detectionResul
   let raw = null;
   for (const model of models) {
     const res = await callModel(model, key, [{ text: prompt }]);
-    if (res?.isQuotaError) break;
+    if (res?.isQuotaError) continue;
     if (res?.text) {
       raw = res.text;
       break;

@@ -56,7 +56,7 @@ export async function aiExtract(text) {
   ].join('\n');
   for (const model of [...new Set([process.env.GEMINI_MODEL, ...MODEL_FALLBACKS].filter(Boolean))]) {
     const res = await callModel(model, key, [{ text: prompt }]);
-    if (res?.isQuotaError) return null;
+    if (res?.isQuotaError) continue;
     if (res?.text) {
       const p = extractJson(res.text);
       if (!p) return null;
