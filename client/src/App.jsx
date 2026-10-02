@@ -48,7 +48,7 @@ export default function App() {
 
   // Visual Theme (light / dark)
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('upi_shield_theme') || 'light';
+    return localStorage.getItem('upi_shield_theme') || 'dark';
   });
 
   // Navigation
@@ -574,6 +574,14 @@ export default function App() {
                   <span className="text-base">⚙️</span>
                   <span>{t.navSettings}</span>
                 </button>
+
+                <a
+                  href="/pay"
+                  className="mt-2 flex items-center gap-3 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold transition cursor-pointer text-left border border-slate-300/70 dark:border-white/25 bg-white/70 dark:bg-white/10 text-slate-800 dark:text-white hover:bg-white dark:hover:bg-white/20"
+                >
+                  <span className="text-base">💳</span>
+                  <span>Check before you pay</span>
+                </a>
               </nav>
             </div>
 

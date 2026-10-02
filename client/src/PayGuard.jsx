@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 
 const SAMPLES = [
-  'Invoice 88 from Blue Cafe Vadodara: please pay $12.50 for catering order 88. Thanks!',
-  'URGENT! Pay Rs 2,000 to refund.desk@okaxis in 10 minutes to release your cashback or account will be blocked'
+  ['Normal invoice', 'Invoice 88 from Blue Cafe Vadodara: please pay $12.50 for catering order 88. Thanks!'],
+  ['Refund scam', 'URGENT! Pay Rs 2,000 to refund.desk@okaxis in 10 minutes to release your cashback or account will be blocked'],
+  ['OTP theft', 'Your bank account is locked. Share the OTP 483920 sent to your phone with our agent to unlock it today'],
+  ['Fake prize', 'Congratulations! You won a $500 gift card. Pay a $15 delivery fee at https://claim-prize.example.invalid to get it'],
+  ['Friend payback', 'Hey, here are the tickets from last night. Please send me $20 for your share, thanks!'],
+  ['Fake support', 'PayPal support: your account is limited. Pay a $30 verification fee now to support-help@gmail.com or lose access']
 ];
 
 function loadPayPal(clientId) {
@@ -21,6 +25,64 @@ async function postJson(url, body) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Something went wrong.');
   return data;
+}
+
+function Steps({ review }) {
+  const blocked = review.blocked;
+  const steps = [
+    ['1', 'AI + rules read it', 'done'],
+    ['2', 'Review verdict', blocked ? 'stop' : 'done'],
+    ['3', '15 min authorization', blocked ? 'off' : review.canPay ? 'done' : 'off'],
+    ['4', 'PayPal Sandbox', blocked ? 'off' : review.canPay ? 'next' : 'off']
+  ];
+  const tone = { done: 'bg-emerald-400/20 text-emerald-100 border-emerald-300/30', stop: 'bg-rose-500/25 text-rose-100 border-rose-300/40', next: 'bg-sky-400/20 text-sky-100 border-sky-300/30', off: 'bg-white/5 text-white/35 border-white/10' };
+  return (
+    <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      {steps.map(([n, label, st]) => (
+        <li key={n} className={`rounded-xl border px-3 py-2 text-xs ${tone[st]}`}>
+          <span className="font-semibold">{n}</span> {label}
+          {st === 'stop' && <div className="mt-0.5 font-semibold">Stopped here</div>}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function AiPanel({ verdict, review }) {
+  const signals = Array.isArray(verdict.signals) ? verdict.signals : [];
+  const ruleHits = signals.filter(x => x.source === 'local_rules').length;
+  const aiHits = signals.filter(x => x.source === 'gemini').length;
+  const agree = review.aiUsed ? (ruleHits > 0 && aiHits > 0 ? 'AI and rules both found warning signs' : ruleHits === 0 && aiHits === 0 ? 'AI and rules found no strong signs' : 'AI and rules differ, so the stricter one counts') : 'AI did not answer this time, rules only';
+  const rows = [
+    ['Amount', review.request.amount ? `${review.request.amount} ${review.request.currency || ''}` : 'Not found'],
+    ['Pay to', review.request.payee || 'Not stated'],
+    ['For', review.request.purpose || 'Not stated'],
+    ['Pressure signs', review.pressure.length ? review.pressure.join('; ') : 'None found'],
+    ['Missing from invoice', review.missing.length ? review.missing.join('; ') : 'Nothing obvious'],
+    ['AI vs rules', agree]
+  ];
+  return (
+    <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/50">What AI detected</p>
+      <dl className="space-y-1.5 text-sm">
+        {rows.map(([k, v]) => (<div key={k} className="flex justify-between gap-4"><dt className="text-white/45">{k}</dt><dd className="text-right">{v}</dd></div>))}
+      </dl>
+    </div>
+  );
+}
+
+function WhyBlocked({ verdict }) {
+  const signals = (Array.isArray(verdict.signals) ? verdict.signals : []).filter(x => x.evidence).slice(0, 6);
+  return (
+    <div className="rounded-2xl border border-rose-300/30 bg-rose-500/10 p-4">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-rose-200">Why this was blocked</p>
+      {verdict.categoryLabel && <p className="mb-2 text-sm font-medium">{verdict.categoryLabel}</p>}
+      <ul className="list-disc space-y-1 pl-5 text-sm text-rose-100/90">
+        {signals.map((x, i) => (<li key={i}>{x.evidence} <span className="text-white/40">({x.source === 'gemini' ? 'AI' : 'rule'})</span></li>))}
+      </ul>
+      {verdict.safeAction && <p className="mt-2 text-sm text-white/75">{verdict.safeAction}</p>}
+    </div>
+  );
 }
 
 export default function PayGuard() {
@@ -121,13 +183,14 @@ export default function PayGuard() {
           placeholder="Paste an invoice, seller message or payment request"
           className="w-full rounded-2xl bg-black/30 border border-white/15 p-4 text-sm placeholder-white/30 focus:outline-none focus:border-white/50 backdrop-blur"
         />
+        <p className="text-xs text-white/40">Demo examples below are fictional.</p>
         <div className="flex flex-wrap gap-2">
           <button onClick={review} disabled={busy || !text.trim()} className="rounded-full bg-white text-black hover:bg-white/85 disabled:opacity-40 px-6 py-2.5 text-sm font-semibold">
             {busy && !shot ? 'Checking...' : 'Check request'}
           </button>
-          {SAMPLES.map((s, i) => (
+          {SAMPLES.map(([label, s], i) => (
             <button key={i} onClick={() => setText(s)} className="rounded-full border border-white/20 bg-white/5 px-4 py-2.5 text-xs text-white/80 hover:bg-white/15">
-              Example {i + 1}
+              {label}
             </button>
           ))}
         </div>
@@ -152,22 +215,30 @@ export default function PayGuard() {
 
         {result && (
           <div className="rounded-2xl border border-white/15 bg-black/30 p-5 space-y-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
+            <div className={`rounded-2xl border px-4 py-3 ${review_.blocked ? 'border-rose-300/40 bg-rose-500/15' : 'border-emerald-300/30 bg-emerald-400/10'}`}>
+              <p className={`text-lg font-semibold tracking-tight ${review_.blocked ? 'text-rose-100' : 'text-emerald-100'}`}>
+                {review_.blocked ? 'BLOCKED: suspicious payment request' : review_.canPay ? 'CLEARED: PayPal Sandbox unlocked' : 'NOT PAYABLE: checkout could not be prepared'}
+              </p>
+              <p className="text-xs text-white/60">{review_.blocked ? 'The server will not open checkout for this request.' : 'It passed the automated checks. That does not prove the seller is genuine.'}</p>
+            </div>
+            <Steps review={review_} />
+            <div>
+              <div className="flex justify-between text-xs text-white/60"><span>Risk signals (not a probability)</span><span>{review_.riskScore}/100</span></div>
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
+                <div className={`h-full rounded-full ${review_.riskScore >= 55 ? 'bg-rose-400' : review_.riskScore >= 25 ? 'bg-amber-300' : 'bg-emerald-300'}`} style={{ width: `${review_.riskScore}%` }} />
+              </div>
+            </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-white/60">Verdict</span>
               <span className={`rounded-full px-3 py-1 text-xs font-semibold ${review_.blocked ? 'bg-rose-500/20 text-rose-200' : 'bg-amber-500/20 text-amber-200'}`}>
                 {verdict.label || verdict.riskLevel}
               </span>
             </div>
-            {result.transcript && <p className="text-xs text-white/50">Read from screenshot: {result.transcript}</p>}
+            {result.transcript && <p className="text-xs text-white/50 break-words">Read from screenshot: {result.transcript.length > 220 ? `${result.transcript.slice(0, 220)}...` : result.transcript}</p>}
             <p className="text-sm">{verdict.summary || verdict.reason}</p>
-            <dl className="grid grid-cols-2 gap-2 text-sm">
-              <div><dt className="text-white/45">Pay to</dt><dd>{review_.request.payee || 'Not stated'}</dd></div>
-              <div><dt className="text-white/45">Amount asked</dt><dd>{review_.request.amount ? `${review_.request.amount} ${review_.request.currency || ''}` : 'Not found'}</dd></div>
-              <div className="col-span-2"><dt className="text-white/45">For</dt><dd>{review_.request.purpose || 'Not stated'}</dd></div>
-            </dl>
-            {review_.pressure.length > 0 && <p className="text-sm text-rose-200">Pressure signs: {review_.pressure.join('; ')}</p>}
-            {review_.missing.length > 0 && <p className="text-sm text-amber-200">Missing from a normal invoice: {review_.missing.join('; ')}</p>}
-            {review_.advice && <p className="text-sm text-white/75">{review_.advice}</p>}
+            <AiPanel verdict={verdict} review={review_} />
+            {review_.blocked && <WhyBlocked verdict={verdict} />}
+                                    {review_.advice && <p className="text-sm text-white/75">{review_.advice}</p>}
 
             {review_.blocked && <p className="text-sm font-medium text-rose-200">Checkout is locked. Do not pay this request.</p>}
             {!review_.blocked && review_.checkoutProblem && <p className="text-sm text-amber-200">{review_.checkoutProblem}</p>}
@@ -181,8 +252,9 @@ export default function PayGuard() {
             )}
 
             {paid && (
-              <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-100">
-                Sandbox payment {paid.status}. {paid.amount ? `${paid.amount.value} ${paid.amount.currency_code}. ` : ''}Receipt id: {paid.captureId}
+              <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-100 space-y-1">
+                <p className="font-semibold">Sandbox payment {paid.status}. {paid.amount ? `${paid.amount.value} ${paid.amount.currency_code}. ` : ''}Receipt id: {paid.captureId}</p>
+                <p className="text-xs text-emerald-100/80">Verified to pay: risk score {review_.riskScore}/100, {verdict.label || verdict.riskLevel}. Order {paid.orderId}. {paid.paidAt ? new Date(paid.paidAt).toLocaleString() : ''}. No real money moved.</p>
               </div>
             )}
             <p className="text-xs text-white/45">{review_.caution}</p>

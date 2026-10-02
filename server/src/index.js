@@ -9,7 +9,7 @@ import { detectLocalSignals } from './rules.js';
 import { combineEvidence } from './fusion.js';
 import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
 import { paypalConfigured, createOrder, captureOrder } from './paypal.js';
-import { aiExtract, reviewPaymentRequest, verifyToken, useTokenOnce, rateLimit } from './paymentReview.js';
+import { aiExtract, reviewPaymentRequest, verifyToken, useTokenOnce, releaseToken, rateLimit } from './paymentReview.js';
 import { randomUUID } from 'node:crypto';
 
 loadEnvFile();
@@ -179,6 +179,19 @@ app.get('/api/paypal/config', (_req, res) => {
   res.json({ configured: paypalConfigured(), clientId: paypalConfigured() ? process.env.PAYPAL_CLIENT_ID : null, mode: 'sandbox' });
 });
 
+// 0 to 100 score from the evidence found. Rules and AI both count; the verdict level sets a floor.
+function riskScore(verdict, review) {
+  const weight = { high: 35, medium: 18, low: 7 };
+  const signals = Array.isArray(verdict.signals) ? verdict.signals : [];
+  let score = signals.reduce((sum, x) => sum + (weight[x.severity] || 5), 0);
+  score += Math.min(15, (review.pressure?.length || 0) * 5) + Math.min(10, (review.missing?.length || 0) * 3);
+  const floor = verdict.riskLevel === 'HIGH_RISK' ? 80 : verdict.riskLevel === 'SUSPICIOUS' ? 55 : 0;
+  return Math.max(floor, Math.min(100, score));
+}
+
+// Payment-specific rule: asking for a fee before giving you something is the classic advance-fee scam.
+const ADVANCE_FEE = /\b(verification|delivery|processing|release|unlock|claim|customs|clearance|handling)\s+(fee|charge)\b|\bpay\b[^.]{0,60}\bto\s+(get|claim|receive|release|unlock|collect)\b/i;
+
 async function reviewRequestText(cleanText) {
   const localResult = detectLocalSignals(cleanText);
   const score = spamScore(cleanText);
@@ -188,7 +201,15 @@ async function reviewRequestText(cleanText) {
     rawText: cleanText, localResult, geminiResult: ai, spamScore: score,
     isSpamFlagged: score >= model.spamThreshold, isImage: false
   });
+  if (ADVANCE_FEE.test(cleanText) && verdict.riskLevel !== 'HIGH_RISK' && verdict.riskLevel !== 'SUSPICIOUS') {
+    verdict.riskLevel = 'SUSPICIOUS';
+    verdict.label = 'scam';
+    verdict.categoryLabel = verdict.categoryLabel || 'Advance fee scam';
+    verdict.summary = 'Suspicious: it asks you to pay a fee before you get anything. Real prizes, refunds and accounts do not work that way.';
+    verdict.signals = [...(Array.isArray(verdict.signals) ? verdict.signals : []), { source: 'local_rules', type: 'advance_fee', severity: 'high', evidence: 'Asks for a fee before giving you a prize, refund or access' }];
+  }
   const review = await reviewPaymentRequest(cleanText, verdict, extracting);
+  review.riskScore = riskScore(verdict, review);
   return { verdict, review };
 }
 
@@ -217,6 +238,7 @@ app.post('/api/paypal/create-order', rateLimit(20), async (req, res) => {
     expectedOrders.set(order.id, { amount: claim.amount, currency: claim.currency });
     return res.json({ id: order.id });
   } catch (err) {
+    releaseToken(claim);
     return res.status(502).json({ error: err.message || 'Could not create the PayPal order.' });
   }
 });
@@ -233,12 +255,14 @@ app.post('/api/paypal/capture-order', rateLimit(20), async (req, res) => {
     const data = await captureOrder(orderId);
     const unit = data?.purchase_units?.[0]?.payments?.captures?.[0];
     const paidOk = unit?.amount && Number(unit.amount.value) === Number(expected.amount) && unit.amount.currency_code === expected.currency;
-    if (data.status === 'COMPLETED' && !paidOk) {
-      return res.status(409).json({ error: 'The captured amount did not match the reviewed request.' });
+    if (data.status !== 'COMPLETED' || !paidOk) {
+      return res.status(409).json({ error: 'The payment could not be verified against the reviewed request.' });
     }
     expectedOrders.delete(orderId);
     return res.json({
       status: data.status,
+      orderId,
+      paidAt: new Date().toISOString(),
       captureId: unit?.id || null,
       amount: unit?.amount || null,
       payerName: data?.payer?.name?.given_name || null

@@ -167,6 +167,10 @@ export function useTokenOnce(claim) {
   return true;
 }
 
+export function releaseToken(claim) {
+  if (claim?.jti) usedTokens.delete(claim.jti);
+}
+
 // Small per-address limit so the AI and checkout endpoints cannot be hammered.
 const hits = new Map();
 export function rateLimit(max = 30, windowMs = 60000) {
