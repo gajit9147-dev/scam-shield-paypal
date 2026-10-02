@@ -82,13 +82,15 @@ export function toCheckout({ amount, currency }) {
   if (!cur) return { ok: false, reason: 'No supported currency found. Use $, EUR, GBP or INR.' };
   let value = amount;
   let note = null;
-  if (cur === 'INR') {
-    value = amount / INR_PER_USD;
-    cur = 'USD';
-    note = `Sandbox demo converts INR at ${INR_PER_USD} per USD.`;
+  if (cur !== 'INR') {
+    // The sandbox India merchant takes INR only, so other currencies are shown in rupees.
+    const perUsd = { USD: 1, EUR: 1.08, GBP: 1.27, CAD: 0.73, AUD: 0.66 }[cur] || 1;
+    value = amount * perUsd * INR_PER_USD;
+    note = `Sandbox demo converts ${cur} to INR at ${INR_PER_USD} per USD.`;
+    cur = 'INR';
   }
-  value = Math.max(0.01, Math.round(value * 100) / 100);
-  if (cur === 'USD' && value > MAX_USD) return { ok: false, reason: `Sandbox demo is capped at ${MAX_USD} USD.` };
+  value = Math.max(1, Math.round(value * 100) / 100);
+  if (value > MAX_USD * INR_PER_USD) return { ok: false, reason: `Sandbox demo is capped at ${MAX_USD * INR_PER_USD} INR.` };
   return { ok: true, amount: value.toFixed(2), currency: cur, note };
 }
 
