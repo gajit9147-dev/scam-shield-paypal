@@ -2,7 +2,7 @@
 # which serves both the API and the built client from the same origin.
 services:
   - type: web
-    name: upi-scam-shield
+    name: scam-shield-paypal
     runtime: node
     plan: free
     buildCommand: cd client && npm ci && npm run build && cd ../server && npm ci
@@ -12,4 +12,10 @@ services:
       # The app works without it (local rules + model). Set the real value in
       # the Render dashboard after the first deploy - never commit it here.
       - key: GEMINI_API_KEY
+        sync: false
+      # PayPal sandbox keys from developer.paypal.com (Apps and Credentials, Sandbox).
+      # Set both in the Render dashboard, never commit them.
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
         sync: false
