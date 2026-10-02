@@ -240,11 +240,19 @@ export default function PayGuard() {
         {result && (
           <div className="rounded-2xl border border-white/15 bg-black/30 p-5 space-y-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
             <div className={`rounded-2xl border px-4 py-3 ${review_.blocked ? 'border-rose-300/40 bg-rose-500/15' : 'border-emerald-300/30 bg-emerald-400/10'}`}>
-              <p className={`text-lg font-semibold tracking-tight ${review_.blocked ? 'text-rose-100' : 'text-emerald-100'}`}>
+              <p className={`text-2xl font-semibold tracking-tight ${review_.blocked ? 'text-rose-100' : 'text-emerald-100'}`}>
                 {review_.blocked ? 'BLOCKED: suspicious payment request' : review_.canPay ? 'CLEARED: PayPal Sandbox unlocked' : 'NOT PAYABLE: checkout could not be prepared'}
               </p>
               <p className="text-xs text-white/60">{review_.blocked ? 'The server will not open checkout for this request.' : 'It passed the automated checks. That does not prove the seller is genuine.'}</p>
+              <p className="mt-1 text-sm text-white/85">
+                {review_.request?.amount ? `${review_.request.amount} ${review_.request.currency || ''}` : 'Amount not found'}
+                {review_.request?.payee ? ` to ${review_.request.payee}` : ''}
+                {` | risk ${review_.riskScore}/100`}
+              </p>
             </div>
+            <details className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm">
+              <summary className="cursor-pointer text-white/70">How it was checked (steps and risk bar)</summary>
+              <div className="mt-3 space-y-3">
             <Steps review={review_} />
             <div>
               <div className="flex justify-between text-xs text-white/60"><span>Risk signals (not a probability)</span><span>{review_.riskScore}/100</span></div>
@@ -258,6 +266,8 @@ export default function PayGuard() {
                 {verdict.label || verdict.riskLevel}
               </span>
             </div>
+              </div>
+            </details>
             {result.transcript && <p className="text-xs text-white/50 break-words">Read from screenshot: {result.transcript.length > 220 ? `${result.transcript.slice(0, 220)}...` : result.transcript}</p>}
             <p className="text-sm">{verdict.summary || verdict.reason}</p>
             <AiPanel verdict={verdict} review={review_} />
