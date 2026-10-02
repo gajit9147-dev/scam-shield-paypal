@@ -10,7 +10,7 @@ import { combineEvidence } from './fusion.js';
 import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
 import { paypalConfigured, createOrder, captureOrder } from './paypal.js';
 import { aiStatus } from './ai.js';
-import { aiExtract, reviewPaymentRequest, verifyToken, useTokenOnce, releaseToken, rateLimit } from './paymentReview.js';
+import { aiExtract, reviewPaymentRequest, verifyToken, useTokenOnce, releaseToken, rateLimit, runAttackDemo } from './paymentReview.js';
 import { randomUUID } from 'node:crypto';
 
 loadEnvFile();
@@ -250,6 +250,10 @@ app.post('/api/paypal/create-order', rateLimit(20), async (req, res) => {
     releaseToken(claim);
     return res.status(502).json({ error: err.message || 'Could not create the PayPal order.' });
   }
+});
+
+app.get('/api/payments/attack-demo', rateLimit(20), (req, res) => {
+  res.json({ results: runAttackDemo((id) => expectedOrders.has(id)) });
 });
 
 app.post('/api/paypal/capture-order', rateLimit(20), async (req, res) => {

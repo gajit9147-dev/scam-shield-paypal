@@ -93,6 +93,13 @@ export default function PayGuard() {
   const [config, setConfig] = useState(null);
   const [paid, setPaid] = useState(null);
   const [shot, setShot] = useState(null);
+  const [attacks, setAttacks] = useState(null);
+  async function runAttacks() {
+    try {
+      const r = await fetch('/api/payments/attack-demo');
+      setAttacks((await r.json()).results || []);
+    } catch { setAttacks([]); }
+  }
   const buttonsRef = useRef(null);
   const fileRef = useRef(null);
 
@@ -211,6 +218,23 @@ export default function PayGuard() {
           </div>
         </div>
 
+
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-white/70">Think you can cheat it? Try to bypass ScamShield.</p>
+            <button type="button" onClick={runAttacks} className="rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Attack the shield</button>
+          </div>
+          {attacks && attacks.length > 0 && (
+            <ul className="space-y-2 text-sm">
+              {attacks.map((a) => (
+                <li key={a.attack} className="rounded-xl bg-white/5 p-2">
+                  <span className={a.blocked ? 'text-emerald-300 font-semibold' : 'text-rose-300 font-semibold'}>{a.blocked ? 'REJECTED' : 'GOT THROUGH'}</span> {a.attack}
+                  <span className="block text-xs text-white/50">{a.why}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         {error && <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</div>}
 
         {result && (

@@ -184,3 +184,28 @@ export function rateLimit(max = 30, windowMs = 60000) {
     return next();
   };
 }
+
+// Runs four real attacks against the real checks, without calling PayPal.
+// orderKnown(id) tells whether an order id came from a reviewed request.
+export function runAttackDemo(orderKnown) {
+  const make = (extra = {}) => sign({ amount: 12.5, currency: 'USD', payee: 'Demo Cafe', purpose: 'attack demo', risk: 'UNCERTAIN', jti: randomBytes(12).toString('hex'), exp: Date.now() + 60000, ...extra });
+  const results = [];
+
+  const good = make();
+  const [body, mac] = good.split('.');
+  const edited = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
+  edited.amount = 125;
+  const forged = `${Buffer.from(JSON.stringify(edited)).toString('base64url')}.${mac}`;
+  results.push({ attack: 'Change the amount after review: 12.50 to 125.00', blocked: verifyToken(forged) === null, why: 'The review token is signed. Any edit breaks the signature.' });
+
+  results.push({ attack: 'Use an old review token', blocked: verifyToken(make({ exp: Date.now() - 1000 })) === null, why: 'Review tokens expire after 15 minutes.' });
+
+  const once = verifyToken(make());
+  const first = useTokenOnce(once);
+  const second = useTokenOnce(once);
+  releaseToken(once);
+  results.push({ attack: 'Reuse one review token for a second payment', blocked: first === true && second === false, why: 'One review opens one PayPal order.' });
+
+  results.push({ attack: 'Capture an order that was never reviewed', blocked: !orderKnown('FAKE-ORDER-123456'), why: 'The server only captures orders it created from a reviewed request.' });
+  return results;
+}
