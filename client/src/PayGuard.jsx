@@ -146,6 +146,23 @@ export default function PayGuard() {
   const [shot, setShot] = useState(null);
   const [attacks, setAttacks] = useState(null);
   const [scanIdx, setScanIdx] = useState(0);
+  const [hook, setHook] = useState('');
+  useEffect(() => {
+    if (!paid?.orderId) { setHook(''); return undefined; }
+    let stop = false;
+    setHook('waiting');
+    (async () => {
+      for (let i = 0; i < 8 && !stop; i += 1) {
+        await new Promise((r) => setTimeout(r, 2500));
+        try {
+          const r = await fetch(`/api/paypal/confirmation?orderId=${encodeURIComponent(paid.orderId)}`);
+          if ((await r.json()).confirmed) { if (!stop) setHook('confirmed'); return; }
+        } catch { /* try again */ }
+      }
+      if (!stop) setHook('none');
+    })();
+    return () => { stop = true; };
+  }, [paid]);
   const [checkedText, setCheckedText] = useState('');
   useEffect(() => {
     if (!busy) { setScanIdx(0); return undefined; }
@@ -360,6 +377,7 @@ export default function PayGuard() {
               <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-100 space-y-1">
                 <p className="font-semibold">Sandbox payment {paid.status}. {paid.amount ? `${paid.amount.value} ${paid.amount.currency_code}. ` : ''}Receipt id: {paid.captureId}</p>
                 <p className="text-xs text-emerald-100/80">Payment completed and the amount matched the review. Risk score {review_.riskScore}/100, {verdict.label || verdict.riskLevel}. Order {paid.orderId}. {paid.paidAt ? new Date(paid.paidAt).toLocaleString() : ''}. No real money moved.</p>
+                <p className="text-xs text-emerald-100/80">{hook === 'confirmed' ? 'PayPal webhook confirmed this capture (signature verified by PayPal).' : hook === 'waiting' ? 'Waiting for PayPal webhook confirmation...' : hook === 'none' ? 'PayPal webhook confirmation not received yet.' : ''}</p>
               </div>
             )}
             <button type="button" onClick={() => downloadReport(result, result.transcript || checkedText)} className="rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Download evidence report</button>

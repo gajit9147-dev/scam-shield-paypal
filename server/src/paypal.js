@@ -23,10 +23,10 @@ async function getAccessToken() {
   return cached.token;
 }
 
-async function paypalFetch(path, body, requestId) {
+async function paypalFetch(path, body, requestId, method = 'POST') {
   const token = await getAccessToken();
   const res = await fetch(`${BASE}${path}`, {
-    method: 'POST',
+    method,
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -56,4 +56,40 @@ export function createOrder({ amount, currency, description, requestId }) {
 
 export function captureOrder(orderId) {
   return paypalFetch(`/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`, null);
+}
+
+// Webhook support: PayPal tells the server about a finished capture on its own,
+// so the receipt does not rest only on what the browser says.
+let webhookId = process.env.PAYPAL_WEBHOOK_ID || null;
+
+export function getWebhookId() {
+  return webhookId;
+}
+
+export async function ensureWebhook(publicUrl) {
+  if (webhookId || !paypalConfigured() || !publicUrl) return webhookId;
+  const url = `${publicUrl.replace(/\/$/, '')}/api/paypal/webhook`;
+  const list = await paypalFetch('/v1/notifications/webhooks', null, undefined, 'GET');
+  const found = (list.webhooks || []).find((w) => w.url === url);
+  if (found) { webhookId = found.id; return webhookId; }
+  const made = await paypalFetch('/v1/notifications/webhooks', {
+    url,
+    event_types: [{ name: 'PAYMENT.CAPTURE.COMPLETED' }]
+  });
+  webhookId = made.id;
+  return webhookId;
+}
+
+export async function verifyWebhookSignature(headers, event) {
+  if (!webhookId) return false;
+  const data = await paypalFetch('/v1/notifications/verify-webhook-signature', {
+    auth_algo: headers['paypal-auth-algo'],
+    cert_url: headers['paypal-cert-url'],
+    transmission_id: headers['paypal-transmission-id'],
+    transmission_sig: headers['paypal-transmission-sig'],
+    transmission_time: headers['paypal-transmission-time'],
+    webhook_id: webhookId,
+    webhook_event: event
+  });
+  return data.verification_status === 'SUCCESS';
 }

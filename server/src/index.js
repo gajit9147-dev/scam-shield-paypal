@@ -8,7 +8,8 @@ import { spamScore } from './classify.js';
 import { detectLocalSignals } from './rules.js';
 import { combineEvidence } from './fusion.js';
 import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
-import { paypalConfigured, createOrder, captureOrder } from './paypal.js';
+import { paypalConfigured, createOrder, captureOrder, ensureWebhook, verifyWebhookSignature } from './paypal.js';
+import { processWebhook, confirmationFor } from './webhook.js';
 import { aiStatus } from './ai.js';
 import { aiExtract, reviewPaymentRequest, verifyToken, useTokenOnce, releaseToken, rateLimit, runAttackDemo } from './paymentReview.js';
 import { randomUUID } from 'node:crypto';
@@ -225,6 +226,7 @@ app.post('/api/payments/review', rateLimit(30), async (req, res) => {
 });
 
 const expectedOrders = new Map();
+const paidOrders = new Map();
 const ORDER_TTL_MS = 60 * 60 * 1000;
 function cleanOldOrders() {
   const now = Date.now();
@@ -272,6 +274,8 @@ app.post('/api/paypal/capture-order', rateLimit(20), async (req, res) => {
       return res.status(409).json({ error: 'The payment could not be verified against the reviewed request.' });
     }
     expectedOrders.delete(orderId);
+    paidOrders.set(orderId, { amount: expected.amount, currency: expected.currency });
+    if (paidOrders.size > 500) paidOrders.delete(paidOrders.keys().next().value);
     return res.json({
       status: data.status,
       orderId,
@@ -283,6 +287,21 @@ app.post('/api/paypal/capture-order', rateLimit(20), async (req, res) => {
   } catch (err) {
     return res.status(502).json({ error: err.message || 'Could not capture the PayPal payment.' });
   }
+});
+
+// PayPal calls this on its own when a capture finishes. The signature is checked with PayPal before anything is recorded.
+app.post('/api/paypal/webhook', rateLimit(120), async (req, res) => {
+  const out = await processWebhook({ headers: req.headers, event: req.body }, verifyWebhookSignature);
+  res.status(out.status).json(out.body);
+});
+
+// The page asks whether PayPal's own webhook confirmed a payment this server captured.
+app.get('/api/paypal/confirmation', rateLimit(60), (req, res) => {
+  const orderId = String(req.query.orderId || '');
+  const paid = paidOrders.get(orderId);
+  if (!paid) return res.json({ confirmed: false });
+  const c = confirmationFor(orderId, paid);
+  res.json({ confirmed: c.confirmed, captureId: c.captureId || null });
 });
 
 app.post('/api/chat', rateLimit(30), async (req, res) => {
@@ -337,4 +356,8 @@ app.use((err, _req, res, next) => {
   next(err);
 });
 
-app.listen(port, () => console.log(`API ready at http://localhost:${port}`));
+app.listen(port, () => {
+  console.log(`API ready at http://localhost:${port}`);
+  const publicUrl = process.env.PUBLIC_URL || process.env.RENDER_EXTERNAL_URL;
+  if (publicUrl) ensureWebhook(publicUrl).then((id) => id && console.log('PayPal webhook ready')).catch((e) => console.log(`PayPal webhook not set up: ${e.message}`));
+});

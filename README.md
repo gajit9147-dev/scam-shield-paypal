@@ -31,6 +31,7 @@ There is also a downloadable evidence report for every check.
 - The review token is HMAC-signed and holds the reviewed amount, currency, payee, purpose, risk level, a random id and an expiry (15 minutes). Any edit breaks the signature.
 - A token can be used once. A parallel second use is rejected.
 - Capture only works for an order the server created from a valid token, and the captured amount must match.
+- PayPal also confirms the capture on its own: the server registers a sandbox webhook (`PAYMENT.CAPTURE.COMPLETED`) at startup and only records an event after PayPal verifies its signature. The receipt shows when that confirmation arrived.
 - Screenshots are limited to PNG, JPEG or WebP and 6 MB. The check endpoints are rate limited per route.
 - Text and screenshots are sent to the AI as untrusted data. Instructions written inside them are ignored. The AI can only add risk signals. It cannot clear a request that the rules block.
 
@@ -38,6 +39,7 @@ There is also a downloadable evidence report for every check.
 
 - A CLEARED result means the request did not match our blocking rules. It does not prove the seller is genuine, and no output proves a payment is safe.
 - The sandbox order pays the app's own PayPal sandbox merchant, not the seller named in the request. It shows the gate, not a real seller payout.
+- Webhook confirmations are also kept in memory, and the server needs a public URL to register the webhook (Render sets it automatically).
 - Review tokens and expected orders live in server memory. That fits this single-instance sandbox demo. If the free server restarts, the user sees "Review expired or missing. Check the request again before paying". A real product would keep this state in a shared database.
 - INR amounts are converted to USD at a fixed demo rate.
 - "Signal strength" is a simple read of the risk score and the number of signals. It is not a calibrated probability.
