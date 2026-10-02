@@ -123,7 +123,7 @@ export default function PayGuard() {
         />
         <div className="flex flex-wrap gap-2">
           <button onClick={review} disabled={busy || !text.trim()} className="rounded-full bg-white text-black hover:bg-white/85 disabled:opacity-40 px-6 py-2.5 text-sm font-semibold">
-            {busy ? 'Checking...' : 'Check request'}
+            {busy && !shot ? 'Checking...' : 'Check request'}
           </button>
           {SAMPLES.map((s, i) => (
             <button key={i} onClick={() => setText(s)} className="rounded-full border border-white/20 bg-white/5 px-4 py-2.5 text-xs text-white/80 hover:bg-white/15">

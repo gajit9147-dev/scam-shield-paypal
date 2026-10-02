@@ -9,7 +9,7 @@ import { detectLocalSignals } from './rules.js';
 import { combineEvidence } from './fusion.js';
 import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
 import { paypalConfigured, createOrder, captureOrder } from './paypal.js';
-import { reviewPaymentRequest, verifyToken, useTokenOnce, rateLimit } from './paymentReview.js';
+import { aiExtract, reviewPaymentRequest, verifyToken, useTokenOnce, rateLimit } from './paymentReview.js';
 import { randomUUID } from 'node:crypto';
 
 loadEnvFile();
@@ -182,12 +182,13 @@ app.get('/api/paypal/config', (_req, res) => {
 async function reviewRequestText(cleanText) {
   const localResult = detectLocalSignals(cleanText);
   const score = spamScore(cleanText);
+  const extracting = aiExtract(cleanText).catch(() => null);
   const ai = await aiReview(cleanText);
   const verdict = combineEvidence({
     rawText: cleanText, localResult, geminiResult: ai, spamScore: score,
     isSpamFlagged: score >= model.spamThreshold, isImage: false
   });
-  const review = await reviewPaymentRequest(cleanText, verdict);
+  const review = await reviewPaymentRequest(cleanText, verdict, extracting);
   return { verdict, review };
 }
 

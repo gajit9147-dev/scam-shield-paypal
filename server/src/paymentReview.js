@@ -44,7 +44,7 @@ export function regexExtract(text) {
   };
 }
 
-async function aiExtract(text) {
+export async function aiExtract(text) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
   const prompt = [
@@ -115,9 +115,9 @@ export function verifyToken(token) {
 }
 
 // verdict: result of combineEvidence. Returns the review shown to the payer.
-export async function reviewPaymentRequest(text, verdict) {
+export async function reviewPaymentRequest(text, verdict, aiPromise) {
   const rx = regexExtract(text);
-  const ai = await aiExtract(text);
+  const ai = await (aiPromise || aiExtract(text));
   const merged = {
     amount: ai?.amount ?? rx.amount,
     currency: ai?.currency ?? rx.currency,
