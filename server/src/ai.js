@@ -42,6 +42,8 @@ export function extractJson(raw) {
 // Models retire fast; try the configured/default model, then known fallbacks.
 export const MODEL_FALLBACKS = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
 
+export const aiStatus = { lastStatus: null, lastModel: null, lastAt: null };
+
 export async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -55,6 +57,7 @@ export async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS) {
         generationConfig: { temperature: 0.1, maxOutputTokens: 1024, responseMimeType: 'application/json' }
       })
     });
+    aiStatus.lastStatus = response.status; aiStatus.lastModel = model; aiStatus.lastAt = new Date().toISOString();
     if (!response.ok) {
       if (response.status === 429) {
         return { isQuotaError: true };

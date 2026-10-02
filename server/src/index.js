@@ -9,6 +9,7 @@ import { detectLocalSignals } from './rules.js';
 import { combineEvidence } from './fusion.js';
 import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
 import { paypalConfigured, createOrder, captureOrder } from './paypal.js';
+import { aiStatus } from './ai.js';
 import { aiExtract, reviewPaymentRequest, verifyToken, useTokenOnce, releaseToken, rateLimit } from './paymentReview.js';
 import { randomUUID } from 'node:crypto';
 
@@ -175,6 +176,8 @@ app.post('/api/check', async (req, res) => {
 
 
 // ---- PayPal sandbox: review a payment request first, then pay (sandbox only) ----
+app.get('/api/ai-status', (_req, res) => res.json({ geminiKeySet: Boolean(process.env.GEMINI_API_KEY), ...aiStatus }));
+
 app.get('/api/paypal/config', (_req, res) => {
   res.json({ configured: paypalConfigured(), clientId: paypalConfigured() ? process.env.PAYPAL_CLIENT_ID : null, mode: 'sandbox' });
 });
