@@ -101,7 +101,7 @@ Labels are `scam` (suspicious request pattern) and `uncertain` (including appare
 - `docs/architecture.md` - workflow, label rules, privacy, evaluation plan
 - `docs/day5-upi-pilot-evaluation.md` - synthetic UPI pilot method, metrics and limits
 - `docs/day6-public-evaluation.md` - public downloaded-dataset evaluation, sources and limits
-- `docs/screenshots/` - app screenshots (English/Hindi verdicts, recovery panel, mobile)
+- `docs/screenshots/` - screenshots of the live app (blocked, cleared, receipt, mobile)
 - `.env.example` - example local configuration; `.gitignore` excludes secrets and downloaded data
 
 ## Build plan and limitations
