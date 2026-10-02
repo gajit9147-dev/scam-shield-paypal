@@ -11,13 +11,11 @@ test('reads rupee amount and payee', () => {
   assert.equal(r.payee, 'shop@okaxis');
 });
 
-test('INR stays in rupees and dollars are converted to rupees', () => {
-  const a = toCheckout({ amount: 850, currency: 'INR' });
-  assert.equal(a.currency, 'INR');
-  assert.equal(a.amount, '850.00');
-  const b = toCheckout({ amount: 10, currency: 'USD' });
-  assert.equal(b.currency, 'INR');
-  assert.equal(b.amount, '850.00');
+test('INR is converted to a sandbox USD amount', () => {
+  const c = toCheckout({ amount: 850, currency: 'INR' });
+  assert.equal(c.ok, true);
+  assert.equal(c.currency, 'USD');
+  assert.equal(c.amount, '10.00');
 });
 
 test('missing amount or currency cannot be paid', () => {
@@ -45,8 +43,8 @@ test('uncertain verdict with a clear amount gets a signed token', async () => {
   const r = await reviewPaymentRequest('Invoice 88 from Blue Cafe: $12.50', { riskLevel: 'UNCERTAIN' });
   assert.equal(r.canPay, true);
   const claim = verifyToken(r.token);
-  assert.equal(claim.amount, '1062.50');
-  assert.equal(claim.currency, 'INR');
+  assert.equal(claim.amount, '12.50');
+  assert.equal(claim.currency, 'USD');
 });
 
 test('tampered or garbage tokens are rejected', async () => {
@@ -72,10 +70,10 @@ test('PayPal order uses mocked sandbox API with the reviewed amount', async () =
     return new Response(JSON.stringify({ id: 'ORDER123456' }), { status: 201 });
   };
   try {
-    const o = await createOrder({ amount: '1062.50', currency: 'USD', description: 'x', requestId: 'r1' });
+    const o = await createOrder({ amount: '12.50', currency: 'USD', description: 'x', requestId: 'r1' });
     assert.equal(o.id, 'ORDER123456');
     const sent = JSON.parse(calls.find(c => c.url.endsWith('/v2/checkout/orders')).body);
-    assert.equal(sent.purchase_units[0].amount.value, '1062.50');
+    assert.equal(sent.purchase_units[0].amount.value, '12.50');
     assert.ok(calls[0].url.startsWith('https://api-m.sandbox.paypal.com'));
     const c = await captureOrder('ORDER123456');
     assert.equal(c.status, 'COMPLETED');
