@@ -27,6 +27,57 @@ async function postJson(url, body) {
   return data;
 }
 
+
+const FLAG_WORDS = /(\bwon\b|\bwinner\b|prize|lottery|gift card|claim|urgent|immediately|within \d+ (?:minutes|hours)|last chance|otp|pin\b|cvv|password|kyc|refund|cashback|fee|processing charge|verify|blocked|suspended|click|https?:\/\/\S+|bit\.ly\/\S+|gift\s?cards?|wire|crypto|bitcoin)/gi;
+
+function Highlighted({ text }) {
+  const parts = [];
+  let last = 0;
+  for (const m of text.matchAll(FLAG_WORDS)) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    parts.push(<mark key={m.index} className="rounded bg-rose-400/30 px-0.5 text-rose-100">{m[0]}</mark>);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return <p className="text-sm text-white/80 break-words">{parts}</p>;
+}
+
+function confidenceLine(review, verdict) {
+  const n = (verdict?.evidence || []).length;
+  const agree = review.aiUsed ? 'AI and rules both ran' : 'rules only, AI did not answer';
+  const level = review.riskScore >= 70 || review.riskScore <= 10 ? 'High' : 'Medium';
+  return `Decision confidence: ${level}. ${n} signal${n === 1 ? '' : 's'} found, ${agree}. This is a risk check, not proof.`;
+}
+
+function downloadReport(result, shownText) {
+  const r = result.review; const v = result.verdict;
+  const body = [
+    'ScamShield evidence report',
+    `Time: ${new Date().toISOString()}`,
+    `Decision: ${r.blocked ? 'BLOCKED' : r.canPay ? 'CLEARED for PayPal sandbox' : 'NOT PAYABLE'}`,
+    `Risk signals: ${r.riskScore}/100 (not a probability)`,
+    `Category: ${v.categoryLabel || v.category || 'n/a'}`,
+    `Amount: ${r.request?.amount ?? 'not found'} ${r.request?.currency || ''}`,
+    `Payee: ${r.request?.payee || 'not stated'}`,
+    '',
+    'Request text:',
+    shownText || '(not available)',
+    '',
+    'Evidence:',
+    ...(v.evidence || []).map((e) => `- ${e}`),
+    '',
+    `Summary: ${v.summary || v.reason || ''}`,
+    r.caution || ''
+  ].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([body], { type: 'text/plain' }));
+  a.download = 'scamshield-evidence-report.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+const SCAN_STEPS = ['Reading the request...', 'Checking pressure tactics...', 'Running the scam rules...', 'Asking the AI for a second opinion...'];
+
 function Steps({ review }) {
   const blocked = review.blocked;
   const steps = [
@@ -94,6 +145,13 @@ export default function PayGuard() {
   const [paid, setPaid] = useState(null);
   const [shot, setShot] = useState(null);
   const [attacks, setAttacks] = useState(null);
+  const [scanIdx, setScanIdx] = useState(0);
+  const [checkedText, setCheckedText] = useState('');
+  useEffect(() => {
+    if (!busy) { setScanIdx(0); return undefined; }
+    const t = setInterval(() => setScanIdx((i) => (i + 1) % SCAN_STEPS.length), 1200);
+    return () => clearInterval(t);
+  }, [busy]);
   async function runAttacks() {
     try {
       const r = await fetch('/api/payments/attack-demo');
@@ -110,6 +168,7 @@ export default function PayGuard() {
   async function review() {
     setBusy(true); setError(''); setResult(null); setPaid(null);
     try {
+      setCheckedText(text);
       setResult(await postJson('/api/payments/review', { text }));
     } catch (e) {
       setError(e.message);
@@ -136,7 +195,7 @@ export default function PayGuard() {
   }
 
   async function reviewShot() {
-    setBusy(true); setError(''); setResult(null); setPaid(null);
+    setBusy(true); setError(''); setResult(null); setPaid(null); setCheckedText('');
     try {
       const out = await postJson('/api/payments/review-image', { image: shot.image, mimeType: shot.mimeType });
       setResult(out);
@@ -219,6 +278,8 @@ export default function PayGuard() {
         </div>
 
 
+        {busy && <p className="text-xs text-white/60">{SCAN_STEPS[scanIdx]} After idle time the free server may need up to 30 seconds to wake up.</p>}
+
         <div className="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-2">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-white/70">Think you can cheat it? Try to bypass ScamShield.</p>
@@ -270,6 +331,13 @@ export default function PayGuard() {
             </details>
             {result.transcript && <p className="text-xs text-white/50 break-words">Read from screenshot: {result.transcript.length > 220 ? `${result.transcript.slice(0, 220)}...` : result.transcript}</p>}
             <p className="text-sm">{verdict.summary || verdict.reason}</p>
+            <p className="text-xs text-white/60">{confidenceLine(review_, verdict)}</p>
+            {(result.transcript || checkedText) && (
+              <div className="rounded-xl border border-white/10 bg-white/5 p-3 space-y-1">
+                <p className="text-xs uppercase tracking-wide text-white/50">Highlighted risky words</p>
+                <Highlighted text={result.transcript || checkedText} />
+              </div>
+            )}
             <AiPanel verdict={verdict} review={review_} />
             {review_.blocked && <WhyBlocked verdict={verdict} />}
                                     {review_.advice && <p className="text-sm text-white/75">{review_.advice}</p>}
@@ -291,6 +359,7 @@ export default function PayGuard() {
                 <p className="text-xs text-emerald-100/80">Verified to pay: risk score {review_.riskScore}/100, {verdict.label || verdict.riskLevel}. Order {paid.orderId}. {paid.paidAt ? new Date(paid.paidAt).toLocaleString() : ''}. No real money moved.</p>
               </div>
             )}
+            <button type="button" onClick={() => downloadReport(result, result.transcript || checkedText)} className="rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Download evidence report</button>
             <p className="text-xs text-white/45">{review_.caution}</p>
           </div>
         )}
