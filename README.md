@@ -47,9 +47,9 @@ The synthetic pilot scores 42 frozen, hand-written Hindi/Hinglish/English cases 
 
 ## Screenshots
 
-| Payment blocked | Cleared to pay | Verified receipt | Mobile (390px) |
+| Payment blocked | Cleared to pay | Screenshot review | Mobile (390px) |
 | --- | --- | --- | --- |
-| ![Scam Shield blocks a risky payment before PayPal opens](docs/screenshots/live-scam.png) | ![A clean request is cleared and the PayPal button unlocks](docs/screenshots/live-cleared.png) | ![PayPal sandbox payment captured and a Verified to pay receipt shown](docs/screenshots/live-paid.png) | ![Mobile main page](docs/screenshots/final-main-m.png) |
+| ![Scam Shield blocks a risky payment before PayPal opens](docs/screenshots/blocked.png) | ![A clean request is cleared and PayPal sandbox unlocks](docs/screenshots/cleared.png) | ![Gemini reads a payment screenshot and the request is checked](docs/screenshots/screenshot-upload.png) | ![Mobile view of a blocked refund scam](docs/screenshots/mobile.png) |
 
 For a local UI check, leave the server and Vite running, then try **made-up** messages: `Share OTP 123456 to claim your refund` and `Pay a fee via https://example.invalid to receive your cashback` should show a `scam` warning. `Your payment of INR 300 was completed` should show `uncertain`, not `safe`. Submitting an empty chat message is blocked in the UI; the API separately rejects blank input with HTTP 400. A standalone link without a matching suspicious request may be `uncertain`: the tool does not check whether links are safe. These are synthetic integration cases, not UPI performance measurements.
 
@@ -101,7 +101,7 @@ Labels are `scam` (suspicious request pattern) and `uncertain` (including appare
 - `docs/architecture.md` - workflow, label rules, privacy, evaluation plan
 - `docs/day5-upi-pilot-evaluation.md` - synthetic UPI pilot method, metrics and limits
 - `docs/day6-public-evaluation.md` - public downloaded-dataset evaluation, sources and limits
-- `docs/screenshots/` - screenshots of the live app (blocked, cleared, receipt, mobile)
+- `docs/screenshots/` - screenshots of the live app (blocked, cleared, screenshot review, mobile)
 - `.env.example` - example local configuration; `.gitignore` excludes secrets and downloaded data
 
 ## Build plan and limitations
