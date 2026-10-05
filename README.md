@@ -5,6 +5,7 @@ ScamShield checks a payment request with AI **before** you pay. Only a request t
 Built for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/).
 Live demo: https://scam-shield-paypal.onrender.com/pay (free server, the first load can take up to a minute).
 Demo video (2 min 24 s): https://youtu.be/piMQvRnr5xI
+Devpost entry (PayPal AI Hackathon): https://devpost.com/software/scamshield-kuvz8o
 
 <table>
   <tr>
