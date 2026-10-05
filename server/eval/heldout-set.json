@@ -1,0 +1,302 @@
+[
+ {
+  "id": "H01",
+  "expect": "scam",
+  "text": "Your FASTag balance is negative and your car will be blacklisted today. Recharge Rs 500 now via this link to avoid a penalty: http://fastag-kyc-update.in/pay"
+ },
+ {
+  "id": "H02",
+  "expect": "scam",
+  "text": "Congratulations! You won a Samsung phone in the Flipkart lucky draw. Pay Rs 99 delivery charge on UPI 98765xxxx@ybl to claim it within 1 hour."
+ },
+ {
+  "id": "H03",
+  "expect": "scam",
+  "text": "This is Mumbai Cyber Cell. A parcel in your name has drugs. To close the case pay Rs 25,000 as a verification deposit, refundable after clearance."
+ },
+ {
+  "id": "H04",
+  "expect": "scam",
+  "text": "Hi dear, I am a soldier posted abroad. I want to send you a gift parcel but need you to pay customs fee of $350 by Western Union first."
+ },
+ {
+  "id": "H05",
+  "expect": "scam",
+  "text": "Your Netflix account is on hold. Update payment at netflix-billing-help.com and pay $1 to verify your card, we will refund it."
+ },
+ {
+  "id": "H06",
+  "expect": "scam",
+  "text": "Work from home! Like YouTube videos and earn Rs 5,000 daily. Pay Rs 1,200 registration to join the Telegram task group."
+ },
+ {
+  "id": "H07",
+  "expect": "scam",
+  "text": "Sir your electricity connection will be cut at 9:30 PM since last bill is unpaid. Call 98XXXXXX12 now and pay Rs 10 to update."
+ },
+ {
+  "id": "H08",
+  "expect": "scam",
+  "text": "Bhai maine galti se tere account me Rs 8,000 bhej diye, please wapas bhej de is number pe, mere pe emergency hai."
+ },
+ {
+  "id": "H09",
+  "expect": "scam",
+  "text": "Dear customer your SBI YONO account is blocked. Click bit.ly/sbi-reactivate and enter your card number, CVV and OTP to unblock."
+ },
+ {
+  "id": "H10",
+  "expect": "scam",
+  "text": "Invest Rs 20,000 in our crypto pool and get Rs 60,000 back in 7 days, 100% guaranteed. Limited slots, pay today."
+ },
+ {
+  "id": "H11",
+  "expect": "scam",
+  "text": "We sent you a cheque of $4,800 for the car deposit, which is more than the price. Deposit it and send back the extra $1,800 by gift cards."
+ },
+ {
+  "id": "H12",
+  "expect": "scam",
+  "text": "IRS final notice: you owe back taxes. Pay $2,300 in Apple gift cards today or a warrant will be issued for your arrest."
+ },
+ {
+  "id": "H13",
+  "expect": "scam",
+  "text": "Your PayPal account has been limited. Log in at paypa1-secure.com and pay a $5 reactivation fee to restore access."
+ },
+ {
+  "id": "H14",
+  "expect": "scam",
+  "text": "Hello, I am Amazon support. We charged you $499 by mistake. Install AnyDesk so I can refund you and share the code with me."
+ },
+ {
+  "id": "H15",
+  "expect": "scam",
+  "text": "Interview selected! Pay Rs 3,500 as training kit and ID card fee on this UPI ID, you will get the offer letter after payment."
+ },
+ {
+  "id": "H16",
+  "expect": "scam",
+  "text": "To receive your Rs 5,000 cashback scan this QR code and enter your UPI PIN. Offer ends in 10 minutes."
+ },
+ {
+  "id": "H17",
+  "expect": "scam",
+  "text": "Your loan of Rs 50,000 is approved. Pay Rs 2,000 processing fee first on PhonePe and money will arrive in 5 minutes."
+ },
+ {
+  "id": "H18",
+  "expect": "scam",
+  "text": "Urgent: my son is in hospital after an accident, doctors need Rs 40,000 immediately. Please send on this QR, I will repay tomorrow."
+ },
+ {
+  "id": "H19",
+  "expect": "scam",
+  "text": "Your Aadhaar is linked to illegal activity. Send a photo of your Aadhaar and pay Rs 4,999 to the officer to avoid arrest."
+ },
+ {
+  "id": "H20",
+  "expect": "scam",
+  "text": "Pay the booking advance of $600 for the apartment today by Zelle to the owner, he is abroad so you cannot see it, but 5 others are interested."
+ },
+ {
+  "id": "H21",
+  "expect": "scam",
+  "text": "Your parcel is held at customs. Pay a Rs 85 re-delivery fee at http://india-post-track.xyz/fee within 2 hours or it will be returned."
+ },
+ {
+  "id": "H22",
+  "expect": "scam",
+  "text": "Exclusive stock tip from our Telegram group: put in Rs 10,000 today and receive Rs 30,000 by Friday, guaranteed by our SEBI expert."
+ },
+ {
+  "id": "H23",
+  "expect": "scam",
+  "text": "Microsoft warning: your computer has a virus. Call our toll free number and pay $199 for removal, do not shut down your PC."
+ },
+ {
+  "id": "H24",
+  "expect": "scam",
+  "text": "Hi, I found your wallet. Pay Rs 1,500 to this number for courier and I will send it, otherwise I will throw it away."
+ },
+ {
+  "id": "H25",
+  "expect": "scam",
+  "text": "Dear sir, your insurance bonus Rs 2 lakh is ready. Pay GST Rs 7,800 to the account below to release the bonus today."
+ },
+ {
+  "id": "H26",
+  "expect": "scam",
+  "text": "You have been shortlisted for a scholarship of Rs 50,000. Pay Rs 500 verification fee through UPI to confirm your seat."
+ },
+ {
+  "id": "H27",
+  "expect": "scam",
+  "text": "Your SIM will be deactivated in 2 hours due to KYC expiry. Pay Rs 20 on this link and share the OTP to continue service."
+ },
+ {
+  "id": "H28",
+  "expect": "scam",
+  "text": "Pay for the puppy shipping, $280 via Cash App, the puppy is free but the transport company needs the fee before delivery."
+ },
+ {
+  "id": "H29",
+  "expect": "scam",
+  "text": "Final reminder from the court: pay Rs 15,000 fine today by UPI to avoid arrest, do not tell anyone about this call."
+ },
+ {
+  "id": "H30",
+  "expect": "scam",
+  "text": "Verify your bank: we sent Rs 1 to your account. Share the UPI PIN you receive on SMS so we can confirm and release your reward."
+ },
+ {
+  "id": "H31",
+  "expect": "safe",
+  "text": "Hi, this is Meera from the Tennis Club. Annual fee is Rs 2,400, due by 15 Oct. You can pay at the club office or bank transfer to the club account listed on our website."
+ },
+ {
+  "id": "H32",
+  "expect": "safe",
+  "text": "Your Airtel postpaid bill of Rs 749 is generated for September. Pay from the Airtel Thanks app before 20 Oct."
+ },
+ {
+  "id": "H33",
+  "expect": "safe",
+  "text": "Thanks for your order #55872 at Bookworm. Total $34.50. Pay securely on our website at checkout."
+ },
+ {
+  "id": "H34",
+  "expect": "safe",
+  "text": "Split the Airbnb? your share is $186 for the weekend, I will send the Venmo request tonight."
+ },
+ {
+  "id": "H35",
+  "expect": "safe",
+  "text": "Reminder: your rent of Rs 14,000 for October is due on the 5th. Please transfer as usual and send me the screenshot."
+ },
+ {
+  "id": "H36",
+  "expect": "safe",
+  "text": "Invoice INV-2031 from Sharma Plumbers: tap repair Rs 850. Pay by cash or UPI to the number on the visiting card."
+ },
+ {
+  "id": "H37",
+  "expect": "safe",
+  "text": "Your college hostel fee receipt is attached. Balance due is Rs 6,000, payable at the accounts office with your student ID."
+ },
+ {
+  "id": "H38",
+  "expect": "safe",
+  "text": "Hey, can you pay the cab fare, it was Rs 320, I covered it last time. Thanks!"
+ },
+ {
+  "id": "H39",
+  "expect": "safe",
+  "text": "Electricity bill for Sep: Rs 1,420, due date 18 Oct. Pay on the official state electricity board portal or app."
+ },
+ {
+  "id": "H40",
+  "expect": "safe",
+  "text": "Gym membership renewal: Rs 3,000 for 3 months. Pay at the front desk or via the link in your member app."
+ },
+ {
+  "id": "H41",
+  "expect": "safe",
+  "text": "Your Zomato order of Rs 289 has been delivered. Rate your experience in the app."
+ },
+ {
+  "id": "H42",
+  "expect": "safe",
+  "text": "Class trip contribution: Rs 1,200 per student, pay to the class teacher by Friday. Receipt will be given."
+ },
+ {
+  "id": "H43",
+  "expect": "safe",
+  "text": "Freelance invoice #14: logo design, $250, net 15. Pay by bank transfer to the details on my previous invoice, thanks for the work."
+ },
+ {
+  "id": "H44",
+  "expect": "safe",
+  "text": "Dinner last night was Rs 2,100 total, so Rs 700 each. Send on GPay whenever, no rush."
+ },
+ {
+  "id": "H45",
+  "expect": "safe",
+  "text": "Your insurance premium of Rs 11,800 is due on 30 Oct. Pay through the official insurer website or your agent's receipt."
+ },
+ {
+  "id": "H46",
+  "expect": "safe",
+  "text": "Hi Sam, the tutoring fee for October is Rs 2,000. You can pay at the next class, I will give you a receipt."
+ },
+ {
+  "id": "H47",
+  "expect": "safe",
+  "text": "Amazon order shipped: your package will arrive Thursday. Track it in the Amazon app. No action needed."
+ },
+ {
+  "id": "H48",
+  "expect": "safe",
+  "text": "Water bill Rs 380 for the quarter. Pay online at the municipal website or at the ward office counter."
+ },
+ {
+  "id": "H49",
+  "expect": "safe",
+  "text": "Hey, borrowed Rs 500 for lunch yesterday. Sending it back now on UPI, check your app."
+ },
+ {
+  "id": "H50",
+  "expect": "safe",
+  "text": "Your Coursera subscription renews on 12 Oct for $49. Manage or cancel anytime in your account settings."
+ },
+ {
+  "id": "H51",
+  "expect": "safe",
+  "text": "Birthday gift pool for Rahul, Rs 400 each. I will collect cash at the office tomorrow."
+ },
+ {
+  "id": "H52",
+  "expect": "safe",
+  "text": "Payment received: Rs 5,000 from Anita for the sofa. Thank you, the sofa will be delivered Saturday."
+ },
+ {
+  "id": "H53",
+  "expect": "safe",
+  "text": "Doctor's appointment confirmed Friday 4 PM. Consultation fee Rs 600, payable at the clinic reception."
+ },
+ {
+  "id": "H54",
+  "expect": "safe",
+  "text": "Your Uber trip receipt: Rs 214. Thanks for riding. No payment needed, charged to your saved card."
+ },
+ {
+  "id": "H55",
+  "expect": "safe",
+  "text": "PTA meeting on Monday. Annual day donation is optional, any amount, drop it at the school office."
+ },
+ {
+  "id": "H56",
+  "expect": "safe",
+  "text": "Hi, your courier will be delivered tomorrow between 10 and 2. Please keep Rs 150 cash ready for cash on delivery as per the order."
+ },
+ {
+  "id": "H57",
+  "expect": "safe",
+  "text": "Reminder from the society: maintenance of Rs 2,500 for Q3 is due. Pay at the society office or via the society's official app."
+ },
+ {
+  "id": "H58",
+  "expect": "safe",
+  "text": "Dear customer, your SBI statement for September is ready on the official SBI net banking site. Never share your OTP with anyone."
+ },
+ {
+  "id": "H59",
+  "expect": "safe",
+  "text": "Wedding return gift order: 20 boxes, Rs 9,600 total, 50 percent advance by UPI to the shop's registered number, balance on pickup, bill attached."
+ },
+ {
+  "id": "H60",
+  "expect": "safe",
+  "text": "Can you pay the electrician Rs 1,100 when he comes tomorrow? I am out of town. I told him you will pay cash."
+ }
+]
