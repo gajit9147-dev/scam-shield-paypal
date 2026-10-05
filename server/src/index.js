@@ -253,7 +253,7 @@ app.post('/api/paypal/create-order', rateLimit(20), async (req, res) => {
     const order = await createOrder({
       amount: claim.amount,
       currency: claim.currency,
-      description: claim.purpose ? `Reviewed payment: ${claim.purpose}` : 'Reviewed payment',
+      description: `${claim.purpose ? `Reviewed payment: ${claim.purpose}` : 'Reviewed payment'}${claim.payee ? ` (payee named in request: ${String(claim.payee).slice(0, 60)}, not verified)` : ''}`.slice(0, 120),
       requestId: claim.jti || randomUUID()
     });
     cleanOldOrders();

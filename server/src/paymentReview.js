@@ -151,8 +151,26 @@ const RED_FLAGS = [
   ['virus_fee', /\b(virus|malware|infected)\b[\s\S]{0,120}\bpay\b|\bpay\b[\s\S]{0,120}\b(virus|malware)\b/i, 'Tech-support scam: pay to remove a virus'],
   ['hinglish_wrong_transfer', /\bgalti se\b[^.]{0,80}\b(bhej|transfer|send)\b[^.]{0,80}\b(wapas|return|back)\b/i, 'Says money was sent by mistake and asks you to return it'],
   ['interview_fee', /\b(interview|selected|shortlisted|offer letter)\b[\s\S]{0,120}\b(pay|fee)\b[\s\S]{0,80}\b(kit|id card|training|registration)\b|\b(kit|training|id card)\b[^.]{0,30}\bfee\b[^.]{0,80}\boffer letter\b/i, 'Asks for a fee before a job offer letter'],
+  ['pre_joining_payment', /\b(selected|shortlisted|congratulations)\b[\s\S]{0,160}\b(complete|pay|payment|deposit)\b[^.]{0,60}\b(insurance|laptop|kit|uniform|security|registration|training)\b|\b(insurance|laptop|kit|uniform|security)\b[^.]{0,30}\bpayment\b[^.]{0,30}\bbefore joining\b/i, 'Asks for a payment before a job starts'],
+  ['easy_online_earning', /\b(work online|earn)\b[^.]{0,60}\b(\d[\d,-]*\s*(rs|rupees|inr)?\s*(a|per|\/)\s*day|daily)\b|\bwithout investment\b[^.]{0,60}\bearn\b/i, 'Promises easy daily earnings for online work'],
+  ['unexpected_wallet_credit', /\b(receive|credited|bonus)\b[^.]{0,40}\b(rs\.?\s?[\d,o]+|\u20b9\s?[\d,]+)\b[^.]{0,40}\b(wallet|account)\b[\s\S]{0,80}(https?:\/\/|\b[a-z0-9]+\.(in|im|co|ly)\/)/i, 'Says money is credited or waiting, with a link to claim it'],
+  ['wallet_kyc_lock', /\b(wallet|upi|bhim|paytm|phonepe)\b[^.]{0,60}\bkyc\b[^.]{0,80}\b(locked|blocked|suspended|freeze|frozen)\b|\bkyc\b[^.]{0,40}\bpending\b[^.]{0,80}\b(locked|blocked|suspended)\b/i, 'KYC pending threat to lock a wallet or UPI account'],
+  ['loan_ready_link', /\bloan\b[^.]{0,60}\b(approved|ready|processed|application)\b[^.]{0,80}\b(direct transfer|click|link)\b[\s\S]{0,60}https?:\/\//i, 'Loan offer pushing a link for a direct transfer'],
   ['outside_app', /\b(pay|transfer|send)\b[^.]{0,30}\boutside\b[^.]{0,15}\b(app|platform|site)\b/i, 'Asks to pay outside the app or platform'],
 ];
+// Checks only what can be checked without a bank or PayPal lookup: whether the payee named in the request is well formed
+// and whether it imitates a known brand. It never says a payee is genuine.
+export function payeeCheck(payee) {
+  if (!payee) return { status: 'none', note: 'No payee found in the request, so there is nothing to compare.' };
+  const p = String(payee).trim();
+  const lookalike = paymentRedFlags(`pay ${p}`).some((f) => f.type === 'lookalike_sender');
+  if (lookalike) return { status: 'suspicious', note: `"${p}" imitates a well-known brand. Do not pay it.` };
+  const emailOk = /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i.test(p);
+  const upiOk = /^[a-z0-9._-]{2,}@[a-z]{2,}$/i.test(p);
+  if (emailOk || upiOk) return { status: 'format_ok_unverified', note: `"${p}" is well formed, but who owns it is not verified. The sandbox payment does not go to it.` };
+  return { status: 'unclear', note: `"${p}" does not look like an email or UPI address.` };
+}
+
 export function paymentRedFlags(text) {
   const flags = RED_FLAGS.filter(([, re]) => re.test(text)).map(([type, , evidence]) => ({ type, evidence }));
   // Look-alike sender: a known brand mixed with digits, a hyphenated add-on, or a swapped letter in the domain.
@@ -214,6 +232,7 @@ export async function reviewPaymentRequest(text, verdict, aiPromise, reviewAiAns
     payee: ai?.payee ?? rx.payee,
     purpose: ai?.purpose ?? null
   };
+  const payeeStatus = payeeCheck(merged.payee);
   const checkout = toCheckout(merged);
   // Without the AI review the request has only had the rules. Do not unlock checkout on rules alone.
   const degraded = !reviewAiAnswered;
@@ -221,7 +240,7 @@ export async function reviewPaymentRequest(text, verdict, aiPromise, reviewAiAns
     const demoNote = `Demo only: the sandbox payment goes to the ScamShield demo merchant, not to "${merged.payee}". The payee in the request is not verified.`;
     checkout.note = checkout.note ? `${checkout.note} ${demoNote}` : demoNote;
   }
-  const blocked = verdict.riskLevel === 'HIGH_RISK' || verdict.riskLevel === 'SUSPICIOUS';
+  const blocked = verdict.riskLevel === 'HIGH_RISK' || verdict.riskLevel === 'SUSPICIOUS' || payeeStatus.status === 'suspicious';
   const pressure = ai?.pressure || [];
   const missing = ai?.missing || [];
   let canPay = checkout.ok && !blocked && !degraded;
@@ -231,6 +250,7 @@ export async function reviewPaymentRequest(text, verdict, aiPromise, reviewAiAns
       amount: checkout.amount,
       currency: checkout.currency,
       payee: merged.payee || '',
+      payeeStatus: payeeStatus.status,
       purpose: merged.purpose || '',
       risk: verdict.riskLevel,
       jti: randomBytes(12).toString('hex'),
@@ -239,6 +259,7 @@ export async function reviewPaymentRequest(text, verdict, aiPromise, reviewAiAns
   }
   return {
     request: merged,
+    payeeCheck: payeeStatus,
     checkout: checkout.ok ? { amount: checkout.amount, currency: checkout.currency, note: checkout.note } : null,
     checkoutProblem: checkout.ok ? (degraded && !blocked ? 'AI review did not answer, so checkout stays locked. Try the check again in a minute.' : null) : checkout.reason,
     degraded,
