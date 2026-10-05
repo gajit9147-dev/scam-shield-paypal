@@ -167,7 +167,7 @@ function AiFeedbackMarquee() {
   const items = [...AI_FEEDBACK, ...AI_FEEDBACK];
   return (
     <section aria-label="AI-generated feedback on this project" className="mt-8 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-3">
-      <p className="mb-2 text-xs uppercase tracking-wide text-white/60">AI-generated feedback (ChatGPT and Gemini) on this project. Not from human users.</p>
+      <p className="mb-2 text-xs uppercase tracking-wide text-white/60">Feedback and suggestions taken from AI (ChatGPT and Gemini), not from human users. Real scores, copied word for word.</p>
       <div className="ai-marquee flex gap-4 whitespace-nowrap">
         {items.map((f, i) => (
           <figure key={i} className="inline-block shrink-0 rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-white/80">

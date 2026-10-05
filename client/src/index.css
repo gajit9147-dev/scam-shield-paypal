@@ -223,7 +223,7 @@ html.dark .glass-bubble,
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), inset 8px 8px 20px rgba(255, 255, 255, 0.25);
 }
 
-.ai-marquee { width: max-content; animation: ai-marquee 60s linear infinite; }
+.ai-marquee { width: max-content; animation: ai-marquee 120s linear infinite; }
 .ai-marquee:hover { animation-play-state: paused; }
 @keyframes ai-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .ai-marquee { animation: none; width: auto; flex-wrap: wrap; white-space: normal; } }
