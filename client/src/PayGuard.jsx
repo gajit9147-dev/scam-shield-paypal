@@ -354,7 +354,7 @@ export default function PayGuard() {
         <div id="attack" className="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-2">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-white/70">Think you can cheat it? Try to bypass ScamShield.</p>
-            <button type="button" onClick={runAttacks} className="rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Attack the shield</button>
+            <button type="button" onClick={runAttacks} className="shrink-0 whitespace-nowrap rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Attack the shield</button>
           </div>
           {attacks && attacks.length > 0 && (
             <ul className="space-y-2 text-sm">
