@@ -150,6 +150,36 @@ function WhyBlocked({ verdict }) {
   );
 }
 
+
+// Verbatim excerpts from AI reviews of this project. They are AI output, not feedback from human users, and are labeled that way.
+const AI_FEEDBACK = [
+  { who: 'ChatGPT, first review', score: '8.3/10', text: 'Technically impressive and demoable with unusually strong security controls, but limited by detection generalization, payee verification, and sandbox-only realism.' },
+  { who: 'ChatGPT, first review', score: '8.3/10', text: 'Strong security architecture for a hackathon: server-side blocking, signed short-lived single-use tokens, amount binding, capture checks, and PayPal webhook verification.' },
+  { who: 'ChatGPT, first review', score: '8.3/10', text: 'Payee verification is absent, despite being central to payment safety.' },
+  { who: 'ChatGPT, second review after fixes', score: '8.4/10', text: 'Technically serious and unusually well-engineered for a hackathon, but validation/generalization and the limited real-world payment-verification scope prevent it from reaching top-tier scores.' },
+  { who: 'ChatGPT, second review after fixes', score: '8.4/10', text: 'Excellent transparency: you openly disclose sandbox/payee-verification limitations and the 30-message development-set contamination.' },
+  { who: 'ChatGPT, second review after fixes', score: '8.4/10', text: 'The PayPal integration is ultimately a sandbox gate, not verification that money is going to the extracted seller.' },
+  { who: 'Gemini Pro review', score: '8/10', text: 'Highly impressive technical foundation, security architecture, and testing, but the AI integration currently creates false positives and it lacks crucial payee-level verification.' },
+  { who: 'Gemini Pro review', score: '8/10', text: 'Architecture: The pre-creation gatekeeper model using signed 15-minute, single-use tokens is a secure, well-engineered approach to payment friction.' }
+];
+
+function AiFeedbackMarquee() {
+  const items = [...AI_FEEDBACK, ...AI_FEEDBACK];
+  return (
+    <section aria-label="AI-generated feedback on this project" className="mt-8 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-3">
+      <p className="mb-2 text-xs uppercase tracking-wide text-white/60">AI-generated feedback (ChatGPT and Gemini) on this project. Not from human users.</p>
+      <div className="ai-marquee flex gap-4 whitespace-nowrap">
+        {items.map((f, i) => (
+          <figure key={i} className="inline-block shrink-0 rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-white/80">
+            <blockquote>&ldquo;{f.text}&rdquo;</blockquote>
+            <figcaption className="mt-1 text-xs text-white/50">AI-generated: {f.who}, score {f.score}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function PayGuard() {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -402,6 +432,7 @@ export default function PayGuard() {
           </div>
         )}
       </div>
+      <AiFeedbackMarquee />
     </div>
   );
 }
