@@ -170,7 +170,7 @@ const AI_FEEDBACK = [
 function AiFeedbackMarquee() {
   const items = [...AI_FEEDBACK, ...AI_FEEDBACK];
   return (
-    <section aria-label="AI-generated feedback on this project" className="mt-8 overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-3">
+    <section aria-label="AI-generated feedback on this project" className="mx-auto mt-6 max-w-xl md:max-w-3xl lg:max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-3">
       <p className="mb-2 text-xs uppercase tracking-wide text-white/60">Feedback and suggestions taken from AI (ChatGPT and Gemini), not from human users. Real scores, copied word for word.</p>
       <div className="ai-marquee flex gap-4 whitespace-nowrap">
         {items.map((f, i) => (
@@ -299,7 +299,7 @@ export default function PayGuard() {
       <div aria-hidden className="pointer-events-none absolute -top-24 -left-20 h-72 w-72 rounded-full bg-gradient-to-br from-slate-100 via-slate-400 to-slate-700 opacity-25 blur-[2px]" />
       <div aria-hidden className="pointer-events-none absolute top-1/3 -right-24 h-80 w-80 rotate-12 rounded-[3rem] bg-gradient-to-tr from-slate-300 via-slate-500 to-slate-900 opacity-20" />
       <div aria-hidden className="pointer-events-none absolute -bottom-28 left-1/4 h-64 w-64 rounded-full bg-gradient-to-tl from-slate-200 via-slate-600 to-slate-900 opacity-20" />
-      <div className="relative mx-auto max-w-xl space-y-5 tracking-[0.01em] rounded-[2rem] border border-white/20 bg-white/[0.07] p-6 sm:p-8 shadow-[0_8px_60px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-2xl">
+      <div className="relative mx-auto max-w-xl md:max-w-3xl lg:max-w-4xl space-y-5 tracking-[0.01em] rounded-[2rem] border border-white/20 bg-white/[0.07] p-6 sm:p-8 shadow-[0_8px_60px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-2xl">
         <a href="/" className="text-sm text-white/60 hover:text-white">&larr; Back to ScamShield</a>
         <h1 className="text-3xl font-semibold tracking-tight">Check before you pay</h1>
         <p className="text-white/60 text-sm">
