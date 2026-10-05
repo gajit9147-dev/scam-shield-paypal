@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 const base = process.argv[2] || 'http://localhost:8787';
 const gap = Number(process.env.GAP_MS || 0);
-const cases = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'paraphrase-set.json'), 'utf8'));
+const cases = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), process.env.SET || 'paraphrase-set.json'), 'utf8'));
 const rows = [];
 for (const c of cases) {
   const res = await fetch(`${base}/api/payments/review`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: c.text }) });

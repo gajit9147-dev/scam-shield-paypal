@@ -3,7 +3,10 @@
 // may be opened. A scam verdict blocks checkout on the server, so the
 // PayPal step cannot be reached without passing the AI + rules review.
 
-import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
+import { createHmac, createHash, timingSafeEqual, randomBytes } from 'node:crypto';
+import { readFileSync, appendFileSync, mkdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { callModel, extractJson, MODEL_FALLBACKS } from './ai.js';
 
 const SUPPORTED = ['USD', 'EUR', 'GBP', 'CAD', 'AUD'];
@@ -28,7 +31,14 @@ export function startInrRateRefresh() {
   setInterval(refreshInrRate, 6 * 60 * 60 * 1000).unref();
 }
 
-const SECRET = process.env.REVIEW_TOKEN_SECRET || randomBytes(32).toString('hex');
+// The signing secret must stay the same across restarts, or every review token and order ticket dies with the process.
+// Use REVIEW_TOKEN_SECRET if set; otherwise derive one from the private PayPal client secret; only then fall back to a random one.
+export function deriveSecret(env = process.env) {
+  if (env.REVIEW_TOKEN_SECRET) return env.REVIEW_TOKEN_SECRET;
+  if (env.PAYPAL_CLIENT_SECRET) return createHash('sha256').update(`scamshield-review-token:${env.PAYPAL_CLIENT_SECRET}`).digest('hex');
+  return randomBytes(32).toString('hex');
+}
+const SECRET = deriveSecret();
 const TOKEN_TTL_MS = 15 * 60 * 1000;
 const MAX_USD = 500; // sandbox demo cap
 
@@ -133,12 +143,20 @@ const RED_FLAGS = [
   ['guaranteed_payout', /\b(invest|deposit)\b[^.]{0,60}\b(get|earn|receive)\b[^.]{0,30}\d[\d,]*[^.]{0,30}\b(in|within)\s+\d+\s+(days?|hours?|weeks?)\b/i, 'Promises a fixed big payout in days for an investment'],
   ['identity_documents', /\b(photo|picture|copy|image|scan)\b[^.]{0,25}\b(aadhaar|pan|card|passport)\b|\b(share|send|give|provide)\b[^.]{0,30}\b(card number|cvv|expiry|aadhaar number)\b/i, 'Asks for ID documents or card details by message'],
   ['urgent_money_ask', /\b(urgent|emergency|hospital|accident)\b[\s\S]{0,120}\b(send|bhej|transfer|scan)\b[^.]{0,80}\b(qr|upi|rs\.?|\u20b9|\d{3,})/i, 'Urgent request to send money, often with a QR code'],
+  ['refundable_verification', /\b(verification|verify|security|reactivation|processing)\s+(deposit|fee|charge)\b|\bpay\b[^.]{0,20}\$?\s?\d[\d,]*\b[^.]{0,40}\bto verify\b|\bwe (will|shall) refund\b/i, 'Asks for a small fee or deposit to verify or reactivate, with a promise to refund'],
+  ['authority_threat_fee', /\b(cyber cell|cyber crime|customs|narcotics|police|court|cbi|arrest)\b[\s\S]{0,160}\bpay\b|\bpay\b[\s\S]{0,160}\b(to (close|avoid) the case|avoid (an )?arrest|warrant)\b/i, 'Uses a police, court or customs threat to demand payment'],
+  ['pet_or_parcel_fee', /\b(puppy|kitten|pet|parcel|gift|package)\b[^.]{0,80}\b(shipping|customs|transport|delivery|courier)\b[^.]{0,40}\b(fee|charge|payment)\b[^.]{0,80}|\bpay\b[^.]{0,40}\b(shipping|customs|courier)\b[^.]{0,60}\b(puppy|parcel|gift|wallet)\b|\b(puppy|wallet|parcel)\b[^.]{0,80}\bpay\b[^.]{0,40}\b(courier|shipping|customs)\b/i, 'Asks you to pay a shipping or courier fee first for something you were promised'],
+  ['unseen_rental_advance', /\b(advance|deposit)\b[^.]{0,50}\b(apartment|flat|house|room|rental)\b[^.]{0,120}\b(abroad|cannot see|can't see|others are interested|other people are interested)\b|\b(owner|landlord)\b[^.]{0,40}\babroad\b/i, 'Asks for a rental advance for a place you cannot see'],
+  ['telegram_tip', /\b(telegram|whatsapp)\b[^.]{0,80}\b(tip|group|expert)\b[\s\S]{0,160}\b(guaranteed|assured|receive|get)\b/i, 'Stock tip from a messaging group with guaranteed profit'],
+  ['virus_fee', /\b(virus|malware|infected)\b[\s\S]{0,120}\bpay\b|\bpay\b[\s\S]{0,120}\b(virus|malware)\b/i, 'Tech-support scam: pay to remove a virus'],
+  ['hinglish_wrong_transfer', /\bgalti se\b[^.]{0,80}\b(bhej|transfer|send)\b[^.]{0,80}\b(wapas|return|back)\b/i, 'Says money was sent by mistake and asks you to return it'],
+  ['interview_fee', /\b(interview|selected|shortlisted|offer letter)\b[\s\S]{0,120}\b(pay|fee)\b[\s\S]{0,80}\b(kit|id card|training|registration)\b|\b(kit|training|id card)\b[^.]{0,30}\bfee\b[^.]{0,80}\boffer letter\b/i, 'Asks for a fee before a job offer letter'],
   ['outside_app', /\b(pay|transfer|send)\b[^.]{0,30}\boutside\b[^.]{0,15}\b(app|platform|site)\b/i, 'Asks to pay outside the app or platform'],
 ];
 export function paymentRedFlags(text) {
   const flags = RED_FLAGS.filter(([, re]) => re.test(text)).map(([type, , evidence]) => ({ type, evidence }));
   // Look-alike sender: a known brand mixed with digits, a hyphenated add-on, or a swapped letter in the domain.
-  const hosts = [...text.matchAll(/(?:@|https?:\/\/)([a-z0-9.-]+\.[a-z]{2,})/gi)].map((m) => m[1].toLowerCase());
+  const hosts = [...text.matchAll(/(?:@|https?:\/\/|\b)([a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)*\.(?:com|net|org|in|co|io|xyz|info|biz|help|link|top|online|site))\b/gi)].map((m) => m[1].toLowerCase());
   for (const host of hosts) {
     const name = host.split('.').slice(-2, -1)[0] || '';
     const fold = (x) => x.replace(/[1il]/g, 'l').replace(/0/g, 'o').replace(/\$/g, 's').replace(/rn/g, 'm');
@@ -236,13 +254,23 @@ export async function reviewPaymentRequest(text, verdict, aiPromise, reviewAiAns
   };
 }
 
-// One review token opens one PayPal order. Kept in memory, which is enough for a single demo server.
+// One review token opens one PayPal order. Used ids are kept in memory and also written to a small file,
+// so a plain restart of the process does not let a token be used twice. A redeploy on a host with a temporary disk can still clear the file.
+const USED_FILE = process.env.USED_TOKENS_FILE || join(tmpdir(), 'scamshield-used-tokens.log');
 const usedTokens = new Map();
+try {
+  for (const line of readFileSync(USED_FILE, 'utf8').split('\n')) {
+    const [id, exp] = line.split(' ');
+    if (id && Number(exp) > Date.now()) usedTokens.set(id, Number(exp));
+  }
+} catch { /* no file yet */ }
+function persistUsed(id, exp) { try { mkdirSync(join(USED_FILE, '..'), { recursive: true }); appendFileSync(USED_FILE, `${id} ${exp}\n`); } catch { /* memory still protects this process */ } }
 export function useTokenOnce(claim) {
   const now = Date.now();
   for (const [id, exp] of usedTokens) if (exp < now) usedTokens.delete(id);
   if (!claim?.jti || usedTokens.has(claim.jti)) return false;
   usedTokens.set(claim.jti, claim.exp);
+  persistUsed(claim.jti, claim.exp);
   return true;
 }
 
