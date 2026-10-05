@@ -160,7 +160,11 @@ const AI_FEEDBACK = [
   { who: 'ChatGPT, second review after fixes', score: '8.4/10', text: 'Excellent transparency: you openly disclose sandbox/payee-verification limitations and the 30-message development-set contamination.' },
   { who: 'ChatGPT, second review after fixes', score: '8.4/10', text: 'The PayPal integration is ultimately a sandbox gate, not verification that money is going to the extracted seller.' },
   { who: 'Gemini Pro review', score: '8/10', text: 'Highly impressive technical foundation, security architecture, and testing, but the AI integration currently creates false positives and it lacks crucial payee-level verification.' },
-  { who: 'Gemini Pro review', score: '8/10', text: 'Architecture: The pre-creation gatekeeper model using signed 15-minute, single-use tokens is a secure, well-engineered approach to payment friction.' }
+  { who: 'Gemini Pro review', score: '8/10', text: 'Architecture: The pre-creation gatekeeper model using signed 15-minute, single-use tokens is a secure, well-engineered approach to payment friction.' },
+  { who: 'ChatGPT, third review after more fixes', score: '8.0/10', text: 'Technically thoughtful and well-demonstrated, but the evidence for real-world scam-detection effectiveness is still too limited for a top-tier security product.' },
+  { who: 'ChatGPT, third review after more fixes', score: '8.0/10', text: 'Rules-only testing shows substantial misses: 41-48% recall on the public dataset.' },
+  { who: 'Gemini review (Flash-Lite model)', score: '7.5/10', text: 'Outstanding engineering depth and honesty, but held back by merchant payout flow limitations.' },
+  { who: 'Gemini review (Flash-Lite model)', score: '7.5/10', text: 'Payee verification is rudimentary and fails to reliably verify unknown merchants from text.' }
 ];
 
 function AiFeedbackMarquee() {
