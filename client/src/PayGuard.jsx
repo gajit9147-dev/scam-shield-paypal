@@ -245,10 +245,11 @@ export default function PayGuard() {
     let cancelled = false;
     loadPayPal(config.clientId).then((paypal) => {
       if (cancelled || !buttonsRef.current) return;
+      let orderTicket = null;
       buttons = paypal.Buttons({
         style: { layout: 'vertical', shape: 'rect' },
-        createOrder: async () => (await postJson('/api/paypal/create-order', { token })).id,
-        onApprove: async (data) => setPaid(await postJson('/api/paypal/capture-order', { orderId: data.orderID })),
+        createOrder: async () => { const o = await postJson('/api/paypal/create-order', { token }); orderTicket = o.orderTicket; return o.id; },
+        onApprove: async (data) => setPaid(await postJson('/api/paypal/capture-order', { orderId: data.orderID, orderTicket })),
         onError: () => setError('PayPal could not finish this sandbox payment.')
       });
       buttons.render(buttonsRef.current);

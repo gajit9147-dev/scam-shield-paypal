@@ -81,3 +81,27 @@ test('PayPal order uses mocked sandbox API with the reviewed amount', async () =
     globalThis.fetch = realFetch;
   }
 });
+
+import { signOrderTicket, verifyOrderTicket, refreshInrRate, currentInrRate } from './paymentReview.js';
+
+test('an order ticket survives without server memory and only fits its own order', () => {
+  const t = signOrderTicket({ orderId: 'ORDER-ABCDEFG1', amount: '12.50', currency: 'USD' });
+  assert.equal(verifyOrderTicket(t, 'ORDER-ABCDEFG1').amount, '12.50');
+  assert.equal(verifyOrderTicket(t, 'ORDER-OTHER1234'), null);
+  assert.equal(verifyOrderTicket(undefined, 'ORDER-ABCDEFG1'), null);
+});
+
+test('the live INR rate is used when the API answers and the fixed rate when it does not', async () => {
+  const fail = async () => { throw new Error('offline'); };
+  assert.equal(await refreshInrRate(fail), false);
+  assert.equal(currentInrRate().live, false);
+  assert.match(toCheckout({ amount: 850, currency: 'INR' }).note, /fixed demo rate/);
+  const ok = async () => ({ ok: true, json: async () => ({ result: 'success', rates: { INR: 100 } }) });
+  assert.equal(await refreshInrRate(ok), true);
+  const c = toCheckout({ amount: 1000, currency: 'INR' });
+  assert.equal(c.amount, '10.00');
+  assert.match(c.note, /live rate/);
+  const bad = async () => ({ ok: true, json: async () => ({ result: 'success', rates: { INR: 5 } }) });
+  await refreshInrRate(bad);
+  assert.equal(currentInrRate().value, 100);
+});

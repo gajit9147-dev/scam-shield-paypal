@@ -11,7 +11,7 @@ import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
 import { paypalConfigured, createOrder, captureOrder, ensureWebhook, verifyWebhookSignature } from './paypal.js';
 import { processWebhook, confirmationFor } from './webhook.js';
 import { aiStatus } from './ai.js';
-import { aiExtract, paymentRedFlags, reviewPaymentRequest, verifyToken, useTokenOnce, releaseToken, rateLimit, runAttackDemo } from './paymentReview.js';
+import { aiExtract, paymentRedFlags, reviewPaymentRequest, verifyToken, signOrderTicket, verifyOrderTicket, startInrRateRefresh, useTokenOnce, releaseToken, rateLimit, runAttackDemo } from './paymentReview.js';
 import { randomUUID } from 'node:crypto';
 
 loadEnvFile();
@@ -254,11 +254,11 @@ app.post('/api/paypal/create-order', rateLimit(20), async (req, res) => {
       amount: claim.amount,
       currency: claim.currency,
       description: claim.purpose ? `Reviewed payment: ${claim.purpose}` : 'Reviewed payment',
-      requestId: randomUUID()
+      requestId: claim.jti || randomUUID()
     });
     cleanOldOrders();
     expectedOrders.set(order.id, { amount: claim.amount, currency: claim.currency, at: Date.now() });
-    return res.json({ id: order.id });
+    return res.json({ id: order.id, orderTicket: signOrderTicket({ orderId: order.id, amount: claim.amount, currency: claim.currency }) });
   } catch (err) {
     releaseToken(claim);
     return res.status(502).json({ error: err.message || 'Could not create the PayPal order.' });
@@ -266,7 +266,7 @@ app.post('/api/paypal/create-order', rateLimit(20), async (req, res) => {
 });
 
 app.get('/api/payments/attack-demo', rateLimit(20), (req, res) => {
-  res.json({ results: runAttackDemo((id) => expectedOrders.has(id)) });
+  res.json({ results: runAttackDemo() });
 });
 
 app.post('/api/paypal/capture-order', rateLimit(20), async (req, res) => {
@@ -275,7 +275,7 @@ app.post('/api/paypal/capture-order', rateLimit(20), async (req, res) => {
   if (typeof orderId !== 'string' || !/^[A-Za-z0-9-]{8,40}$/.test(orderId)) {
     return res.status(400).json({ error: 'Missing order id.' });
   }
-  const expected = expectedOrders.get(orderId);
+  const expected = verifyOrderTicket(req.body?.orderTicket, orderId) || expectedOrders.get(orderId);
   if (!expected) return res.status(403).json({ error: 'This order was not created by a reviewed request.' });
   try {
     const data = await captureOrder(orderId);
@@ -369,6 +369,7 @@ app.use((err, _req, res, next) => {
   next(err);
 });
 
+startInrRateRefresh();
 app.listen(port, () => {
   console.log(`API ready at http://localhost:${port}`);
   const publicUrl = process.env.PUBLIC_URL || process.env.RENDER_EXTERNAL_URL;

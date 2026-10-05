@@ -7,7 +7,27 @@ import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
 import { callModel, extractJson, MODEL_FALLBACKS } from './ai.js';
 
 const SUPPORTED = ['USD', 'EUR', 'GBP', 'CAD', 'AUD'];
-const INR_PER_USD = Number(process.env.DEMO_INR_PER_USD) || 85;
+const FALLBACK_INR_PER_USD = Number(process.env.DEMO_INR_PER_USD) || 85;
+// Live INR rate from a free public API, refreshed every 6 hours. If it cannot be fetched, the fixed demo rate is used and the screen says so.
+const rate = { value: FALLBACK_INR_PER_USD, live: false, at: null };
+export function currentInrRate() { return { ...rate }; }
+export async function refreshInrRate(fetchImpl = fetch) {
+  try {
+    const res = await fetchImpl('https://open.er-api.com/v6/latest/USD', { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    const v = Number(data?.rates?.INR);
+    if (res.ok && data?.result === 'success' && v > 40 && v < 200) {
+      rate.value = v; rate.live = true; rate.at = new Date().toISOString();
+      return true;
+    }
+  } catch { /* keep the previous rate */ }
+  return false;
+}
+export function startInrRateRefresh() {
+  refreshInrRate();
+  setInterval(refreshInrRate, 6 * 60 * 60 * 1000).unref();
+}
+
 const SECRET = process.env.REVIEW_TOKEN_SECRET || randomBytes(32).toString('hex');
 const TOKEN_TTL_MS = 15 * 60 * 1000;
 const MAX_USD = 500; // sandbox demo cap
@@ -85,9 +105,11 @@ export function toCheckout({ amount, currency }) {
   let value = amount;
   let note = null;
   if (cur === 'INR') {
-    value = amount / INR_PER_USD;
+    value = amount / rate.value;
     cur = 'USD';
-    note = `INR is converted at a fixed demo rate of ${INR_PER_USD} INR = 1 USD, not a live exchange rate. The PayPal sandbox charges in USD.`;
+    note = rate.live
+      ? `INR is converted at ${rate.value.toFixed(2)} INR = 1 USD (live rate from open.er-api.com, fetched ${rate.at.slice(0, 16).replace('T', ' ')} UTC). The PayPal sandbox charges in USD.`
+      : `INR is converted at a fixed demo rate of ${rate.value} INR = 1 USD because the live rate could not be fetched. The PayPal sandbox charges in USD.`;
   }
   value = Math.max(0.01, Math.round(value * 100) / 100);
   if (cur === 'USD' && value > MAX_USD) return { ok: false, reason: `Sandbox demo is capped at ${MAX_USD} USD.` };
@@ -98,12 +120,20 @@ export function toCheckout({ amount, currency }) {
 const BRANDS = ['paypal', 'amazon', 'netflix', 'microsoft', 'apple', 'google', 'dhl', 'fedex', 'usps', 'irs', 'sbi', 'hdfc', 'icici', 'paytm'];
 const RED_FLAGS = [
   ['outside_platform', /\b(skip|avoid|without)\b[^.]{0,40}\b(platform|marketplace|site)\b[^.]{0,20}\bfees?\b|\bpay\b[^.]{0,40}\bdirectly\b[^.]{0,40}\b(personal|my)\b|\bdo not tell\b|\bkeep (it|this) (a )?secret\b/i, 'Asks you to pay outside the platform or keep it secret'],
-  ['gift_card', /\bgift cards?\b[^.]{0,80}\b(pay|buy|send|need)|\b(pay|buy|send|need)\b[^.]{0,80}\bgift cards?\b/i, 'Asks for payment in gift cards'],
+  ['gift_card', /\bgift cards?\b[^.]{0,80}\b(pay|buy|send|need)|\b(pay|paid|payable|buy|send|need)\b[^.]{0,80}\bgift cards?\b/i, 'Asks for payment in gift cards'],
   ['crypto_returns', /\b(guaranteed|assured)\b[^.]{0,40}\b(returns?|profit)\b|\b\d+x\b[^.]{0,20}\breturns?\b|\bdouble your (money|investment)\b/i, 'Promises guaranteed investment returns'],
   ['stranger_emergency', /\b(stuck|stranded)\b[^.]{0,60}\b(need|send)\b[^.]{0,40}\$?\d|\bmy love\b[^.]{0,120}\b(send|need)\b/i, 'A stranger or online contact asks for emergency money'],
   ['cheque_overpay', /\b(deposit|cheque|check)\b[^.]{0,80}\b(then|and)\b[^.]{0,30}\bpay\b|\bsent you\b[^.]{0,40}\bby mistake\b[^.]{0,60}\b(pay|send|return)\b/i, 'Cheque or overpayment trick'],
   ['remote_access', /\bremote access\b|\b(virus|malware)\b[^.]{0,60}\bpay\b|\bpay\b[^.]{0,60}\b(virus|malware)\b/i, 'Tech-support scam: remote access or virus removal fee'],
-  ['wire_deposit', /\bwire\b[^.]{0,40}\bdeposit\b|\bdeposit\b[^.]{0,40}\bwire\b/i, 'Asks for a wire deposit before you see anything']
+  ['wire_deposit', /\bwire\b[^.]{0,40}\bdeposit\b|\bdeposit\b[^.]{0,40}\bwire\b/i, 'Asks for a wire deposit before you see anything'],
+  ['cashback_pin', /\b(cashback|reward)\b[^.]{0,80}\bpin\b|\bpin\b[^.]{0,40}\b(accept|claim|receive)\b/i, 'Says a PIN is needed to receive cashback or a reward, but a PIN only sends money'],
+  ['advance_fee', /\b(deposit|pay|send)\b[^.]{0,30}\d[\d,]*[^.]{0,60}\b(first|to (confirm|start|join|activate|unlock)|task account|registration|joining)\b/i, 'Asks for money first before a job, task or payout'],
+  ['utility_threat', /\b(electricity|power|gas|sim|card)\b[^.]{0,50}\b(cut|disconnect\w*|block\w*|frozen|freeze|deactivat\w*)\b[^.]{0,60}\b(tonight|today|immediately|within|hours?|minutes?|\d{1,2}:\d{2})/i, 'Threatens to cut a service within hours to force a payment or call'],
+  ['mistaken_transfer', /\b(sent|transferred)\b[^.]{0,30}\b(by mistake|accidentally|wrong(ly)?)\b[^.]{0,80}\b(return|send back|refund|wapas)\b|\b(by mistake|accidentally|wrongly)\b[^.]{0,30}\b(sent|transferred)\b[\s\S]{0,100}\b(return|send back|refund|wapas)\b/i, 'Says money was sent by mistake and asks for it back'],
+  ['guaranteed_payout', /\b(invest|deposit)\b[^.]{0,60}\b(get|earn|receive)\b[^.]{0,30}\d[\d,]*[^.]{0,30}\b(in|within)\s+\d+\s+(days?|hours?|weeks?)\b/i, 'Promises a fixed big payout in days for an investment'],
+  ['identity_documents', /\b(photo|picture|copy|image|scan)\b[^.]{0,25}\b(aadhaar|pan|card|passport)\b|\b(share|send|give|provide)\b[^.]{0,30}\b(card number|cvv|expiry|aadhaar number)\b/i, 'Asks for ID documents or card details by message'],
+  ['urgent_money_ask', /\b(urgent|emergency|hospital|accident)\b[\s\S]{0,120}\b(send|bhej|transfer|scan)\b[^.]{0,80}\b(qr|upi|rs\.?|\u20b9|\d{3,})/i, 'Urgent request to send money, often with a QR code'],
+  ['outside_app', /\b(pay|transfer|send)\b[^.]{0,30}\boutside\b[^.]{0,15}\b(app|platform|site)\b/i, 'Asks to pay outside the app or platform'],
 ];
 export function paymentRedFlags(text) {
   const flags = RED_FLAGS.filter(([, re]) => re.test(text)).map(([type, , evidence]) => ({ type, evidence }));
@@ -128,6 +158,16 @@ function sign(payload) {
   const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
   const mac = createHmac('sha256', SECRET).update(body).digest('base64url');
   return `${body}.${mac}`;
+}
+
+// A signed order ticket lets the server remember which PayPal order it created without keeping state, so a restart does not lose it.
+export function signOrderTicket({ orderId, amount, currency }) {
+  return sign({ kind: 'order', orderId, amount, currency, exp: Date.now() + 60 * 60 * 1000 });
+}
+export function verifyOrderTicket(ticket, orderId) {
+  const c = verifyToken(ticket);
+  if (!c || c.kind !== 'order' || c.orderId !== orderId) return null;
+  return c;
 }
 
 export function verifyToken(token) {
@@ -226,7 +266,7 @@ export function rateLimit(max = 30, windowMs = 60000) {
 
 // Runs four real attacks against the real checks, without calling PayPal.
 // orderKnown(id) tells whether an order id came from a reviewed request.
-export function runAttackDemo(orderKnown) {
+export function runAttackDemo(orderKnown = () => false) {
   const make = (extra = {}) => sign({ amount: 12.5, currency: 'USD', payee: 'Demo Cafe', purpose: 'attack demo', risk: 'UNCERTAIN', jti: randomBytes(12).toString('hex'), exp: Date.now() + 60000, ...extra });
   const results = [];
 
@@ -245,6 +285,6 @@ export function runAttackDemo(orderKnown) {
   releaseToken(once);
   results.push({ attack: 'Reuse one review token for a second payment', blocked: first === true && second === false, why: 'One review opens one PayPal order.' });
 
-  results.push({ attack: 'Capture an order that was never reviewed', blocked: !orderKnown('FAKE-ORDER-123456'), why: 'The server only captures orders it created from a reviewed request.' });
+  results.push({ attack: 'Capture an order that was never reviewed', blocked: verifyOrderTicket(undefined, 'FAKE-ORDER-123456') === null && verifyOrderTicket(signOrderTicket({ orderId: 'REAL-ORDER-111111', amount: '12.50', currency: 'USD' }), 'FAKE-ORDER-123456') === null && !orderKnown('FAKE-ORDER-123456'), why: 'The server only captures orders it created from a reviewed request.' });
   return results;
 }

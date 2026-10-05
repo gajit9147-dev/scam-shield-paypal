@@ -42,7 +42,7 @@ There is also a downloadable evidence report for every check.
 - The sandbox order pays the app's own PayPal sandbox merchant, not the seller named in the request. The payee in the text is read but not verified, and the checkout line says so. It shows the gate, not a real seller payout.
 - Webhook confirmations are also kept in memory, and the server needs a public URL to register the webhook (Render sets it automatically).
 - Review tokens and expected orders live in server memory. That fits this single-instance sandbox demo. If the free server restarts, the user sees "Review expired or missing. Check the request again before paying". A real product would keep this state in a shared database.
-- INR amounts are converted to USD at a fixed demo rate of 85 INR = 1 USD (set with `DEMO_INR_PER_USD`). It is not a live exchange rate. The PayPal sandbox charges in USD, so the screen shows the USD amount and says so.
+- INR amounts are converted to USD at the live rate from open.er-api.com (refreshed every 6 hours). If it cannot be fetched, a fixed demo rate of 85 INR = 1 USD is used (`DEMO_INR_PER_USD`) and the screen says so. The PayPal sandbox charges in USD.
 - If the AI review does not answer, the screen says "NOT CLEARED: AI review unavailable" and checkout stays locked. Rules alone never unlock checkout.
 - "Signal strength" is a simple read of the risk score and the number of signals. It is not a calibrated probability.
 - The older chat page (`/`) has an optional OCR fallback that loads Tesseract from a CDN. The `/pay` flow does not use it.
