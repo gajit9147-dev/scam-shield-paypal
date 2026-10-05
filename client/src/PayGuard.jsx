@@ -1,11 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { whyRisky } from './whyRisky.js';
+
 const SAMPLES = [
   ['Normal invoice', 'Invoice 88 from Blue Cafe Vadodara: please pay $12.50 for catering order 88. Thanks!'],
   ['Refund scam', 'URGENT! Pay $25 to refund.desk@paypa1-help.com in 10 minutes to release your refund or your account will be blocked'],
   ['OTP theft', 'Your bank account is locked. Share the OTP 483920 sent to your phone with our agent to unlock it today'],
   ['Fake prize', 'Congratulations! You won a $500 gift card. Pay a $15 delivery fee at https://claim-prize.example.invalid to get it'],
   ['Friend payback', 'Hey, here are the tickets from last night. Please send me $20 for your share, thanks!'],
+  ['India: fake KYC', 'Dear customer, your KYC is expired and your account will be blocked today. Update KYC now at http://sbi-kyc-update.example.invalid or call 9876543210'],
+  ['India: QR refund', 'Hi, I will refund your Rs 4,999 order. Scan this QR code and enter your UPI PIN to receive the money'],
+  ['India: job fee', 'Work from home job offer, earn Rs 5000 daily. Pay a Rs 999 registration fee to confirm your joining today'],
+  ['India: UPI collect', 'You have a UPI collect request of Rs 9,999 from Cashback Rewards. Approve it to receive your cashback now'],
   ['Fake support', 'PayPal support: your account is limited. Pay a $30 verification fee now to support-help@gmail.com or lose access']
 ];
 
@@ -123,11 +129,19 @@ function AiPanel({ verdict, review }) {
 }
 
 function WhyBlocked({ verdict }) {
+  const [lang, setLang] = useState('en');
   const signals = (Array.isArray(verdict.signals) ? verdict.signals : []).filter(x => x.evidence).slice(0, 6);
   return (
     <div className="rounded-2xl border border-rose-300/30 bg-rose-500/10 p-4">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-rose-200">Why this was blocked</p>
       {verdict.categoryLabel && <p className="mb-2 text-sm font-medium">{verdict.categoryLabel}</p>}
+      <div className="mb-3 rounded-xl bg-black/20 p-3">
+        <div className="mb-1 flex items-center justify-between">
+          <span className="text-xs font-semibold uppercase tracking-wide text-white/60">In simple words</span>
+          <button type="button" onClick={() => setLang(lang === 'en' ? 'hi' : 'en')} className="rounded-full border border-white/25 px-2.5 py-0.5 text-xs text-white/80 hover:bg-white/10">{lang === 'en' ? 'Hinglish' : 'English'}</button>
+        </div>
+        <p className="text-sm text-white/90">{whyRisky(verdict.category, lang)}</p>
+      </div>
       <ul className="list-disc space-y-1 pl-5 text-sm text-rose-100/90">
         {signals.map((x, i) => (<li key={i}>{x.evidence} <span className="text-white/40">({x.source === 'gemini' ? 'AI' : 'rule'})</span></li>))}
       </ul>
@@ -299,6 +313,8 @@ export default function PayGuard() {
 
 
         {busy && <p className="text-xs text-white/60">{SCAN_STEPS[scanIdx]} After idle time the free server may need up to 30 seconds to wake up.</p>}
+
+        <p className="text-xs text-white/60">Why this matters in India: banks reported 2,93,239 digital payment frauds worth Rs 2,060.75 crore in FY 2023-24 (RBI data given to Lok Sabha, Aug 2026). <a href="https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AU3487_CUPVNR.pdf" target="_blank" rel="noreferrer" className="underline">Source</a>. Only frauds banks reported, so the real number is higher.</p>
 
         <div id="attack" className="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-2">
           <div className="flex items-center justify-between gap-3">
