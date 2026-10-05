@@ -44,7 +44,17 @@ export const MODEL_FALLBACKS = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-
 
 export const aiStatus = { lastStatus: null, lastModel: null, lastAt: null };
 
-export async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS) {
+// One short retry on a busy or failing answer (429, 5xx, network error). The free Gemini tier rejects bursts for a moment, and a real safe request should not be locked only because of that.
+export async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS, retryDelayMs = 1500) {
+  const first = await callModelOnce(model, key, parts, timeoutMs);
+  if (first && !first.isQuotaError && first.text) return first;
+  if (first && first.noRetry) return first;
+  await new Promise((ok) => setTimeout(ok, retryDelayMs));
+  const second = await callModelOnce(model, key, parts, timeoutMs);
+  return second || first;
+}
+
+async function callModelOnce(model, key, parts, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -62,7 +72,7 @@ export async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS) {
       if (response.status === 429) {
         return { isQuotaError: true };
       }
-      return null;
+      return response.status >= 500 ? null : { noRetry: true, text: null };
     }
     const payload = await response.json();
     return { text: payload?.candidates?.[0]?.content?.parts?.[0]?.text || null };

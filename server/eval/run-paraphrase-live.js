@@ -11,9 +11,9 @@ for (const c of cases) {
   const res = await fetch(`${base}/api/payments/review`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: c.text }) });
   const d = await res.json();
   const r = d.review || {};
-  rows.push({ id: c.id, expect: c.expect, canPay: Boolean(r.canPay), blocked: Boolean(r.blocked), aiUsed: Boolean(r.aiUsed), status: res.status });
+  rows.push({ reason: r.blocked ? 'scam-block' : r.degraded ? 'ai-unavailable' : (!r.canPay ? 'no-checkout' : 'cleared'), id: c.id, expect: c.expect, canPay: Boolean(r.canPay), blocked: Boolean(r.blocked), aiUsed: Boolean(r.aiUsed), status: res.status });
   if (gap) await new Promise((ok) => setTimeout(ok, gap));
 }
 const misses = rows.filter((r) => r.expect === 'scam' && r.canPay);
 const falseBlocks = rows.filter((r) => r.expect === 'safe' && !r.canPay);
-console.log(JSON.stringify({ total: rows.length, aiAnswered: rows.filter((r) => r.aiUsed).length, scamsBlocked: rows.filter((r) => r.expect === 'scam' && !r.canPay).length, scams: rows.filter((r) => r.expect === 'scam').length, safeCleared: rows.filter((r) => r.expect === 'safe' && r.canPay).length, safe: rows.filter((r) => r.expect === 'safe').length, misses: misses.map((r) => r.id), falseBlocks: falseBlocks.map((r) => r.id), httpErrors: rows.filter((r) => r.status !== 200).length }));
+console.log(JSON.stringify({ total: rows.length, aiAnswered: rows.filter((r) => r.aiUsed).length, scamsBlocked: rows.filter((r) => r.expect === 'scam' && !r.canPay).length, scams: rows.filter((r) => r.expect === 'scam').length, safeCleared: rows.filter((r) => r.expect === 'safe' && r.canPay).length, safe: rows.filter((r) => r.expect === 'safe').length, misses: misses.map((r) => r.id), falseBlocks: falseBlocks.map((r) => r.id + ":" + r.reason), httpErrors: rows.filter((r) => r.status !== 200).length }));
