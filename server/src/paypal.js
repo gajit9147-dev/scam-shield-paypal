@@ -9,8 +9,8 @@ export function paypalConfigured() {
 
 let cached = { token: null, expiresAt: 0 };
 
-async function getAccessToken() {
-  if (cached.token && Date.now() < cached.expiresAt - 30000) return cached.token;
+async function getAccessToken(fresh = false) {
+  if (!fresh && cached.token && Date.now() < cached.expiresAt - 30000) return cached.token;
   const auth = Buffer.from(`${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`).toString('base64');
   const res = await fetch(`${BASE}/v1/oauth2/token`, {
     method: 'POST',
@@ -24,8 +24,8 @@ async function getAccessToken() {
 }
 
 async function paypalFetch(path, body, requestId, method = 'POST') {
-  const token = await getAccessToken();
-  const res = await fetch(`${BASE}${path}`, {
+  let token = await getAccessToken();
+  const send = () => fetch(`${BASE}${path}`, {
     method,
     headers: {
       Authorization: `Bearer ${token}`,
@@ -34,6 +34,12 @@ async function paypalFetch(path, body, requestId, method = 'POST') {
     },
     body: body ? JSON.stringify(body) : undefined
   });
+  let res = await send();
+  if (res.status === 401 || res.status === 403) {
+    // The app may have gained a permission since the token was issued, so try once with a new token.
+    token = await getAccessToken(true);
+    res = await send();
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const err = new Error(data?.message || `PayPal request failed (${res.status})`);
