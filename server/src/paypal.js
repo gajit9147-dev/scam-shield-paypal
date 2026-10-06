@@ -93,3 +93,8 @@ export async function verifyWebhookSignature(headers, event) {
   });
   return data.verification_status === 'SUCCESS';
 }
+
+// Read one invoice from the PayPal sandbox Invoicing API (used to check a pasted invoice).
+export function getInvoice(invoiceId) {
+  return paypalFetch(`/v2/invoicing/invoices/${encodeURIComponent(invoiceId)}`, null, undefined, 'GET');
+}

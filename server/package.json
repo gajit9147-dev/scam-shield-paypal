@@ -11,8 +11,12 @@
     "eval:public": "node eval/run-public-eval.js"
   },
   "dependencies": {
+    "@ai-sdk/google": "^1.2.22",
+    "@paypal/agent-toolkit": "^1.11.0",
+    "ai": "^4.3.19",
     "cors": "^2.8.5",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "zod": "^3.25.76"
   },
   "engines": {
     "node": ">=20"

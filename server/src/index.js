@@ -8,7 +8,9 @@ import { spamScore } from './classify.js';
 import { detectLocalSignals } from './rules.js';
 import { combineEvidence } from './fusion.js';
 import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
-import { paypalConfigured, createOrder, captureOrder, ensureWebhook, verifyWebhookSignature } from './paypal.js';
+import { buildGuardedTools, runAgent, pickModels, googleModel } from './agent.js';
+import { verifyInvoice } from './invoiceCheck.js';
+import { paypalConfigured, getInvoice, createOrder, captureOrder, ensureWebhook, verifyWebhookSignature } from './paypal.js';
 import { processWebhook, confirmationFor, recentEvents } from './webhook.js';
 import { aiStatus } from './ai.js';
 import { aiExtract, paymentRedFlags, reviewPaymentRequest, verifyToken, signOrderTicket, verifyOrderTicket, startInrRateRefresh, useTokenOnce, releaseToken, rateLimit, runAttackDemo } from './paymentReview.js';
@@ -310,6 +312,70 @@ app.post('/api/paypal/webhook', rateLimit(120), async (req, res) => {
 app.get('/api/paypal/webhook-events', rateLimit(60), (_req, res) => res.json({ registered: webhookState.registered, events: recentEvents() }));
 
 app.get('/api/paypal/webhook-events', rateLimit(60), (req, res) => res.json({ registered: webhookState.registered, events: recentEvents() }));
+
+// ---- Agent mode: PayPal Agent Toolkit tools behind the ScamShield check ----
+let toolkitCache = null;
+async function paypalToolkitTools() {
+  if (toolkitCache) return toolkitCache;
+  const { PayPalAgentToolkit } = await import('@paypal/agent-toolkit/ai-sdk');
+  const kit = new PayPalAgentToolkit({
+    clientId: process.env.PAYPAL_CLIENT_ID,
+    clientSecret: process.env.PAYPAL_CLIENT_SECRET,
+    configuration: {
+      actions: { orders: { create: true, get: true }, invoices: { list: true, get: true }, transactions: { list: true } },
+      context: { sandbox: true }
+    }
+  });
+  toolkitCache = kit.getTools();
+  return toolkitCache;
+}
+
+app.post('/api/agent/run', rateLimit(6), async (req, res) => {
+  const prompt = req.body?.prompt;
+  if (typeof prompt !== 'string' || prompt.trim().length < 3 || prompt.length > 1200) {
+    return res.status(400).json({ error: 'Give the agent a task of 3 to 1200 characters.' });
+  }
+  if (!paypalConfigured()) return res.status(503).json({ error: 'PayPal sandbox is not set up on this server.' });
+  if (!process.env.GEMINI_API_KEY) return res.status(503).json({ error: 'The agent needs the AI key, which is not set on this server.' });
+  const events = [];
+  const orders = [];
+  try {
+    const toolkitTools = await paypalToolkitTools();
+    const tools = buildGuardedTools({
+      toolkitTools,
+      review: reviewRequestText,
+      log: (e) => events.push({ ...e, args: undefined, at: new Date().toISOString() }),
+      onOrderCreated: ({ id, amount, currency }) => {
+        cleanOldOrders();
+        expectedOrders.set(id, { amount, currency, at: Date.now() });
+        const orderTicket = signOrderTicket({ orderId: id, amount, currency });
+        orders.push({ id, amount, currency, orderTicket });
+        return orderTicket;
+      }
+    });
+    let lastErr;
+    for (const name of pickModels()) {
+      try {
+        const out = await runAgent({ prompt: prompt.trim(), tools, model: googleModel(name) });
+        return res.json({ answer: out.answer, steps: events, orders, model: name });
+      } catch (err) { lastErr = err; events.length = 0; orders.length = 0; }
+    }
+    throw lastErr || new Error('agent failed');
+  } catch (err) {
+    console.log(`agent run failed: ${String(err.message || err).slice(0, 200)}`);
+    return res.status(502).json({ error: 'The agent could not finish. Try again in a minute.' });
+  }
+});
+
+app.post('/api/invoices/verify', rateLimit(20), async (req, res) => {
+  const { text, invoiceId } = req.body || {};
+  if (typeof text !== 'string' || text.length > 2000 || (invoiceId != null && (typeof invoiceId !== 'string' || invoiceId.length > 60))) {
+    return res.status(400).json({ error: 'Send the pasted invoice text (up to 2000 characters) and optionally the PayPal invoice ID.' });
+  }
+  if (!paypalConfigured()) return res.status(503).json({ error: 'PayPal sandbox is not set up on this server.' });
+  return res.json(await verifyInvoice({ text, invoiceId }, { getInvoice }));
+});
+
 app.get('/api/paypal/webhook-status', (req, res) => res.json({ registered: webhookState.registered, error: webhookState.error }));
 
 app.get('/api/paypal/confirmation', rateLimit(60), (req, res) => {
