@@ -304,3 +304,34 @@ html.dark .glass-bubble,
 .pg-panel{padding:18px;border-radius:24px}.pg-dark{padding:22px;border-radius:24px}.pg-example{grid-template-columns:1fr}
 .pg-steps{grid-template-columns:1fr}.pg-btn{padding:15px 24px;font-size:16px}.pg-tab{padding:9px 16px;font-size:14px}
 .pg-big{font-size:30px}}
+
+/* ---- ScamShield prism look for the main app ("/"), light mode ---- */
+.ss-serif{font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-style:italic;font-weight:400}
+html:not(.dark) h1, html:not(.dark) h2, html:not(.dark) h3, html:not(.dark) h4, html:not(.dark) h5, html:not(.dark) .font-heading{font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+html:not(.dark) body{background:#fff;color:#262930}
+html:not(.dark) .glass-canvas{
+  background-color:#fff;
+  background-image:radial-gradient(1000px 520px at 50% -60px,#e9ecff 0,#f6f8ff 45%,#fff 100%);
+  background-repeat:no-repeat;background-attachment:scroll;color:#262930}
+html:not(.dark) .glass-bubble{
+  background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(170,180,255,.35) 40%,rgba(255,150,110,.35));
+  border:2px solid rgba(255,255,255,.9);
+  box-shadow:inset 0 0 60px rgba(255,255,255,.9),0 30px 80px rgba(120,130,255,.22);backdrop-filter:blur(6px)}
+html:not(.dark) .glass-panel,
+html:not(.dark) .glass-panel-elevated{
+  background:#f8f8fb;border:1px solid #e4e7ef;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;border-radius:32px}
+html:not(.dark) aside.glass-panel{background:#fff}
+html:not(.dark) .glass-nav-active{background:#262930;border:1px solid #262930;color:#fff;box-shadow:none}
+html:not(.dark) .btn-vibrant-gradient{background:#262930;color:#fff;box-shadow:none}
+html:not(.dark) .btn-vibrant-gradient:hover:not(:disabled){filter:none;background:#000;transform:none;box-shadow:none}
+html:not(.dark) h2.font-heading{font-weight:500;letter-spacing:-.02em}
+html:not(.dark) main h2.font-heading{font-size:clamp(30px,4vw,48px);line-height:1.1}
+html:not(.dark) main h2 .ss-serif{font-size:1.06em}
+/* black result band, also used for the risk overview card */
+.ss-band,html:not(.dark) .ss-band{background:#000!important;color:#fff!important;border:0!important;box-shadow:none!important;border-radius:32px!important}
+.ss-footer{position:relative;z-index:10;background:#000;color:#fff;text-align:center;padding:60px 20px 44px;margin-top:40px}
+.ss-footer-big{font-size:clamp(28px,4vw,44px)}
+.ss-footer p{color:#8b90a0;margin:16px 0 0;font-size:15px}
+.ss-footer-badge{display:inline-block;margin-top:22px;border:1px solid #444;border-radius:99px;padding:10px 22px;font-size:14px;color:#fff}
+html.dark .ss-footer{background:#000}
+html:not(.dark) .glass-bubble:nth-child(n+2){display:none}

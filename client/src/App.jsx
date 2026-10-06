@@ -48,7 +48,7 @@ export default function App() {
 
   // Visual Theme (light / dark)
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('upi_shield_theme') || 'dark';
+    return localStorage.getItem('ss_theme_v2') || 'light';
   });
 
   // Navigation
@@ -102,7 +102,7 @@ export default function App() {
     } else {
       document.documentElement.classList.remove('dark');
     }
-    localStorage.setItem('upi_shield_theme', theme);
+    localStorage.setItem('ss_theme_v2', theme);
   }, [theme]);
 
   // Handle language switch
@@ -662,11 +662,11 @@ export default function App() {
                     <div className="px-1">
                       <h2 className="font-heading font-extrabold text-2xl sm:text-3xl lg:text-[32px] tracking-tight text-slate-900 dark:text-white leading-tight">
                         {t.heroTitlePrefix}{' '}
-                        <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        <span className="ss-serif">
                           {t.heroTitleMessage}
                         </span>{' '}
                         {t.heroTitleOr}{' '}
-                        <span className="bg-gradient-to-r from-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
+                        <span className="ss-serif">
                           {t.heroTitleScreenshot}
                         </span>
                       </h2>
@@ -888,7 +888,7 @@ export default function App() {
                     {latestVerdict && (
                       <div
                         ref={resultCardRef}
-                        className="p-5 sm:p-6 rounded-[28px] glass-panel-elevated flex flex-col gap-4 border border-white/95 shadow-[0_20px_45px_-12px_rgba(244,63,94,0.08)] relative overflow-hidden"
+                        className="ss-band dark dark-theme p-5 sm:p-6 rounded-[28px] glass-panel-elevated flex flex-col gap-4 border border-white/95 shadow-[0_20px_45px_-12px_rgba(244,63,94,0.08)] relative overflow-hidden"
                       >
                         {/* Soft red glow on top left if High Risk */}
                         {isHighRisk && (
@@ -1456,7 +1456,7 @@ export default function App() {
               <aside className="xl:col-span-4 flex flex-col gap-4 min-w-0">
                 
                 {/* Card 1: Risk Overview (Exact Side-by-Side Dimensional Match) */}
-                <div className="p-5 rounded-[28px] glass-panel flex flex-col gap-3">
+                <div className="ss-band dark dark-theme p-5 rounded-[28px] glass-panel flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-blue-500 text-base">📊</span>
@@ -1792,6 +1792,11 @@ export default function App() {
           </div>
         </div>
       )}
+      <footer className="ss-footer">
+        <div className="ss-footer-big">Check before <span className="ss-serif">you pay.</span></div>
+        <p>Rules plus AI review, then a PayPal sandbox payment guard.</p>
+        <a href="/pay" className="ss-footer-badge">Built for PayPal AI Hackathon</a>
+      </footer>
     </div>
   );
 }
