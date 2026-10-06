@@ -53,6 +53,8 @@ export default function App() {
 
   // Navigation
   const [currentNav, setCurrentNav] = useState('check');
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => { setMenuOpen(false); }, [currentNav]);
   const [activeTab, setActiveTab] = useState('text'); // 'text' | 'image'
 
   // Input states
@@ -484,10 +486,29 @@ export default function App() {
           {/* ========================================================
               LEFT SIDEBAR: Unified Single Tall Card (Exact reference match)
              ======================================================== */}
-          <aside className="w-full lg:w-[220px] xl:w-[235px] shrink-0 p-5 rounded-[28px] glass-panel flex flex-col justify-between self-stretch min-h-[660px]">
+          <div className="lg:hidden w-full flex items-center justify-between gap-3 px-4 py-3 rounded-full glass-panel">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white text-base font-bold">✓</div>
+              <span className="font-heading font-extrabold text-[15px] text-slate-900 dark:text-white truncate">{t.brandName}</span>
+            </div>
+            <button
+              type="button"
+              aria-label="Menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((v) => !v)}
+              className="grid h-10 w-10 place-items-center rounded-full border border-slate-300/70 dark:border-white/25 text-slate-800 dark:text-white cursor-pointer"
+            >
+              <span className="flex flex-col gap-[5px]">
+                <span className={`block h-[2px] w-5 bg-current transition ${menuOpen ? 'translate-y-[7px] rotate-45' : ''}`} />
+                <span className={`block h-[2px] w-5 bg-current transition ${menuOpen ? 'opacity-0' : ''}`} />
+                <span className={`block h-[2px] w-5 bg-current transition ${menuOpen ? '-translate-y-[7px] -rotate-45' : ''}`} />
+              </span>
+            </button>
+          </div>
+          <aside className={`${menuOpen ? 'flex' : 'hidden'} lg:flex w-full lg:w-[220px] xl:w-[235px] shrink-0 p-5 rounded-[28px] glass-panel flex-col justify-between self-stretch lg:min-h-[660px]`}>
             <div className="flex flex-col gap-6">
               {/* Top Logo & Title */}
-              <div className="flex items-center gap-3">
+              <div className="hidden lg:flex items-center gap-3">
                 <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25 text-xl font-bold">
                   ✓
                 </div>
@@ -586,7 +607,7 @@ export default function App() {
             </div>
 
             {/* Bottom Mission Card (Integrated inside sidebar like reference image) */}
-            <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-col gap-2">
+            <div className="hidden lg:flex pt-4 border-t border-slate-100 dark:border-white/10 flex-col gap-2">
               <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/20 text-sm font-bold">
                 ✓
               </div>
@@ -608,7 +629,7 @@ export default function App() {
             {/* Top Header Row (Spanning across workspace) */}
             <header className="flex flex-wrap items-center justify-between gap-3">
               {/* Left Pill Badge */}
-              <div className="flex items-center gap-2.5 px-4 py-2 rounded-full glass-panel text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">
+              <div className="hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-full glass-panel text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">
                 <span className="text-base text-indigo-500 animate-pulse">✨</span>
                 <span className="font-bold text-slate-900 dark:text-white">{t.headerBadge}</span>
                 <span className="hidden sm:inline text-slate-400 font-normal">
