@@ -363,7 +363,7 @@ app.post('/api/agent/run', rateLimit(6), async (req, res) => {
     throw lastErr || new Error('agent failed');
   } catch (err) {
     console.log(`agent run failed: ${String(err.message || err).slice(0, 200)}`);
-    return res.status(502).json({ error: 'The agent could not finish. Try again in a minute.' });
+    return res.status(502).json({ error: 'The agent could not finish. Try again in a minute.', code: err.status || err.statusCode || err.name || 'error' });
   }
 });
 

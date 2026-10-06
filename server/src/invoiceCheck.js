@@ -25,7 +25,9 @@ export async function verifyInvoice({ text, invoiceId }, { getInvoice }) {
   try {
     invoice = await getInvoice(wantedId);
   } catch (err) {
-    return unverified(err.status === 404 ? 'PayPal has no invoice with that ID in this sandbox.' : 'Could not reach PayPal to check the invoice.');
+    if (err.status === 404) return unverified('PayPal has no invoice with that ID in this sandbox.');
+    if (err.status === 401 || err.status === 403) return unverified(`PayPal refused the invoice lookup (${err.status}). The sandbox app may need the Invoicing permission.`);
+    return unverified(`Could not check the invoice with PayPal${err.status ? ` (PayPal answered ${err.status})` : ''}.`);
   }
   const real = invoiceFacts(invoice);
   if (pasted.amount == null || !pasted.currency) {
