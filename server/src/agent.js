@@ -23,15 +23,24 @@ function parseJson(s) {
 // (or a fake in tests). review(text) is the ScamShield payment review.
 export function buildGuardedTools({ toolkitTools, review, onOrderCreated, log }) {
   const out = {};
+  // Our own small input schemas. The toolkit's own schemas use constructs Gemini rejects (for example "not"),
+  // and a narrow schema also limits what the model can ask for.
+  const readSpecs = {
+    get_order: { description: 'Get a PayPal sandbox order by its order ID.', parameters: z.object({ id: z.string().regex(/^[A-Z0-9]{17,32}$/) }), map: (a) => ({ id: a.id }) },
+    get_invoice: { description: 'Get a PayPal sandbox invoice by its invoice ID.', parameters: z.object({ invoice_id: z.string().regex(/^[A-Za-z0-9_-]{1,127}$/) }), map: (a) => ({ invoice_id: a.invoice_id }) },
+    list_invoices: { description: 'List recent PayPal sandbox invoices (first page).', parameters: z.object({ page_size: z.number().int().min(1).max(20).optional() }), map: (a) => ({ page: 1, page_size: a.page_size || 10, total_required: false }) },
+    list_transactions: { description: 'List PayPal sandbox transactions from the last few days.', parameters: z.object({ days: z.number().int().min(1).max(30).optional() }), map: (a) => ({ transaction_status: 'S', start_date: new Date(Date.now() - (a.days || 7) * 86400000).toISOString(), end_date: new Date().toISOString(), page_size: 20, page: 1 }) }
+  };
   for (const name of READ_TOOLS) {
     const t = toolkitTools[name];
     if (!t) continue;
+    const spec = readSpecs[name];
     out[name] = tool({
-      description: t.description,
-      parameters: t.parameters,
+      description: spec.description,
+      parameters: spec.parameters,
       execute: async (args) => {
-        const result = await t.execute(args, { toolCallId: name, messages: [] });
-        log?.({ tool: name, args, outcome: 'ran' });
+        const result = await t.execute(spec.map(args), { toolCallId: name, messages: [] });
+        log?.({ tool: name, outcome: 'ran' });
         return clip(result);
       }
     });

@@ -49,6 +49,15 @@ test('non-USD cleared requests are refused', async () => {
   assert.equal(out.created, false);
 });
 
+test('read tools have plain schemas and map to toolkit calls', async () => {
+  const tools = buildGuardedTools({ toolkitTools: fakeKit(), review: async () => ok });
+  await tools.list_transactions.execute({ days: 3 });
+  const c = calls.find((x) => x.name === 'list_transactions').a;
+  assert.equal(c.page_size, 20);
+  assert.ok(new Date(c.end_date) > new Date(c.start_date));
+  assert.equal(tools.get_order.parameters.safeParse({ id: 'bad' }).success, false);
+});
+
 test('runAgent passes only the guarded tools and a system prompt that treats text as data', async () => {
   let got;
   const generate = async (opts) => { got = opts; return { text: 'done', steps: [1, 2] }; };
