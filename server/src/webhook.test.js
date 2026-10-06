@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { processWebhook, confirmationFor, confirmations } from './webhook.js';
+import { processWebhook, confirmationFor, confirmations, recentEvents, resetWebhookState } from './webhook.js';
 
 const event = (over = {}) => ({
   event_type: 'PAYMENT.CAPTURE.COMPLETED',
@@ -51,4 +51,26 @@ test('a confirmed amount that differs from the reviewed amount is not accepted',
 test('junk bodies are rejected', async () => {
   const r = await processWebhook({ headers: {}, event: 'nope' }, async () => true);
   assert.equal(r.status, 400);
+});
+
+test('a repeated event id is not applied twice', async () => {
+  resetWebhookState();
+  const ev = event(); ev.id = 'WH-DUP-1';
+  const first = await processWebhook({ headers: {}, event: ev }, async () => true);
+  assert.equal(first.body.recorded, true);
+  const again = await processWebhook({ headers: {}, event: ev }, async () => true);
+  assert.equal(again.body.duplicate, true);
+  assert.deepEqual(recentEvents().map((e) => e.result), ['duplicate', 'recorded']);
+});
+
+test('a rejected event is logged and never recorded', async () => {
+  resetWebhookState();
+  const ev = event(); ev.id = 'WH-BAD-1';
+  const r = await processWebhook({ headers: {}, event: ev }, async () => false);
+  assert.equal(r.status, 401);
+  assert.equal(recentEvents()[0].result, 'rejected');
+  assert.equal(confirmationFor('ORDER-WEBHOOK-1').confirmed, false);
+  // a bad signature must not use up the event id: the real delivery still counts
+  const ok = await processWebhook({ headers: {}, event: ev }, async () => true);
+  assert.equal(ok.body.recorded, true);
 });

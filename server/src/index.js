@@ -9,7 +9,7 @@ import { detectLocalSignals } from './rules.js';
 import { combineEvidence } from './fusion.js';
 import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
 import { paypalConfigured, createOrder, captureOrder, ensureWebhook, verifyWebhookSignature } from './paypal.js';
-import { processWebhook, confirmationFor } from './webhook.js';
+import { processWebhook, confirmationFor, recentEvents } from './webhook.js';
 import { aiStatus } from './ai.js';
 import { aiExtract, paymentRedFlags, reviewPaymentRequest, verifyToken, signOrderTicket, verifyOrderTicket, startInrRateRefresh, useTokenOnce, releaseToken, rateLimit, runAttackDemo } from './paymentReview.js';
 import { randomUUID } from 'node:crypto';
@@ -307,6 +307,9 @@ app.post('/api/paypal/webhook', rateLimit(120), async (req, res) => {
 });
 
 // The page asks whether PayPal's own webhook confirmed a payment this server captured.
+app.get('/api/paypal/webhook-events', rateLimit(60), (_req, res) => res.json({ registered: webhookState.registered, events: recentEvents() }));
+
+app.get('/api/paypal/webhook-events', rateLimit(60), (req, res) => res.json({ registered: webhookState.registered, events: recentEvents() }));
 app.get('/api/paypal/webhook-status', (req, res) => res.json({ registered: webhookState.registered, error: webhookState.error }));
 
 app.get('/api/paypal/confirmation', rateLimit(60), (req, res) => {
