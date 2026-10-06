@@ -40,6 +40,12 @@ function prepareImage(file) {
   });
 }
 
+const SHORT_LABELS = {
+  en: { check: 'Check', history: 'History', examples: 'Examples', tips: 'Tips' },
+  hinglish: { check: 'Check', history: 'History', examples: 'Examples', tips: 'Tips' },
+  hi: { check: 'जाँचें', history: 'इतिहास', examples: 'उदाहरण', tips: 'सुझाव' },
+};
+
 export default function App() {
   // Localization (persisted)
   const [language, setLanguage] = useState(() => {
@@ -53,8 +59,7 @@ export default function App() {
 
   // Navigation
   const [currentNav, setCurrentNav] = useState('check');
-  const [menuOpen, setMenuOpen] = useState(false);
-  useEffect(() => { setMenuOpen(false); }, [currentNav]);
+  const SHORT = SHORT_LABELS[language] || SHORT_LABELS.en;
   const [activeTab, setActiveTab] = useState('text'); // 'text' | 'image'
 
   // Input states
@@ -479,33 +484,14 @@ export default function App() {
       </div>
 
       {/* Main Container */}
-      <div className="relative z-10 max-w-[1520px] mx-auto p-4 sm:p-6 lg:p-7 min-h-screen flex flex-col gap-5">
+      <div className="relative z-10 max-w-[1520px] mx-auto p-4 sm:p-6 lg:p-7 min-h-screen flex flex-col gap-5 pb-28 lg:pb-7">
         {/* Responsive Layout Grid */}
         <div className="flex flex-col lg:flex-row gap-5 lg:gap-6 flex-1 items-start">
           
           {/* ========================================================
               LEFT SIDEBAR: Unified Single Tall Card (Exact reference match)
              ======================================================== */}
-          <div className="lg:hidden w-full flex items-center justify-between gap-3 px-4 py-3 rounded-full glass-panel">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white text-base font-bold">✓</div>
-              <span className="font-heading font-extrabold text-[15px] text-slate-900 dark:text-white truncate">{t.brandName}</span>
-            </div>
-            <button
-              type="button"
-              aria-label="Menu"
-              aria-expanded={menuOpen}
-              onClick={() => setMenuOpen((v) => !v)}
-              className="grid h-10 w-10 place-items-center rounded-full border border-slate-300/70 dark:border-white/25 text-slate-800 dark:text-white cursor-pointer"
-            >
-              <span className="flex flex-col gap-[5px]">
-                <span className={`block h-[2px] w-5 bg-current transition ${menuOpen ? 'translate-y-[7px] rotate-45' : ''}`} />
-                <span className={`block h-[2px] w-5 bg-current transition ${menuOpen ? 'opacity-0' : ''}`} />
-                <span className={`block h-[2px] w-5 bg-current transition ${menuOpen ? '-translate-y-[7px] -rotate-45' : ''}`} />
-              </span>
-            </button>
-          </div>
-          <aside className={`${menuOpen ? 'flex' : 'hidden'} lg:flex w-full lg:w-[220px] xl:w-[235px] shrink-0 p-5 rounded-[28px] glass-panel flex-col justify-between self-stretch lg:min-h-[660px]`}>
+          <aside className={`hidden lg:flex w-full lg:w-[220px] xl:w-[235px] shrink-0 p-5 rounded-[28px] glass-panel flex-col justify-between self-stretch lg:min-h-[660px]`}>
             <div className="flex flex-col gap-6">
               {/* Top Logo & Title */}
               <div className="hidden lg:flex items-center gap-3">
@@ -628,6 +614,11 @@ export default function App() {
             
             {/* Top Header Row (Spanning across workspace) */}
             <header className="flex flex-wrap items-center justify-between gap-3">
+              {/* Phone brand (the sidebar is hidden on phones) */}
+              <div className="sm:hidden flex items-center gap-2 min-w-0">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white text-base font-bold">✓</div>
+                <span className="font-heading font-extrabold text-[15px] text-slate-900 dark:text-white hidden min-[430px]:inline">{t.brandName}</span>
+              </div>
               {/* Left Pill Badge */}
               <div className="hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-full glass-panel text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200">
                 <span className="text-base text-indigo-500 animate-pulse">✨</span>
@@ -659,12 +650,15 @@ export default function App() {
                   label={t.theme}
                 />
 
-                <div
-                  title={t.profile}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-sm shadow-md shadow-indigo-500/20 cursor-default"
+                <button
+                  type="button"
+                  title={t.navSettings}
+                  aria-label={t.navSettings}
+                  onClick={() => setCurrentNav('settings')}
+                  className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-sm shadow-md shadow-indigo-500/20 cursor-pointer lg:cursor-default"
                 >
                   A
-                </div>
+                </button>
               </div>
             </header>
 
@@ -1813,6 +1807,31 @@ export default function App() {
           </div>
         </div>
       )}
+      {/* Phone bottom bar: pill highlight on the active tab */}
+      <nav aria-label="Main Navigation" className="ss-bottomnav lg:hidden">
+        {[
+          { id: 'check', label: SHORT.check, icon: (<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12Z"/></svg>) },
+          { id: 'history', label: SHORT.history, icon: (<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>) },
+          { id: 'examples', label: SHORT.examples, icon: (<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 10v4M12 17h.01"/></svg>) },
+          { id: 'tips', label: SHORT.tips, icon: (<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 7.8 8 9 4.6-1.2 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>) },
+        ].map((it) => (
+          <button
+            key={it.id}
+            type="button"
+            onClick={() => setCurrentNav(it.id)}
+            aria-current={currentNav === it.id ? 'page' : undefined}
+            className={`ss-bn-item ${currentNav === it.id ? 'is-active' : ''}`}
+          >
+            <span className="ss-bn-pill">{it.icon}</span>
+            <span className="ss-bn-label">{it.label}</span>
+          </button>
+        ))}
+        <a href="/pay" className="ss-bn-item">
+          <span className="ss-bn-pill"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 10h18M7 15h3"/></svg></span>
+          <span className="ss-bn-label">Pay</span>
+        </a>
+      </nav>
+
       <footer className="ss-footer">
         <div className="ss-footer-big">Check before <span className="ss-serif">you pay.</span></div>
         <p>Rules plus AI review, then a PayPal sandbox payment guard.</p>

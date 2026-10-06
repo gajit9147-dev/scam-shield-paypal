@@ -335,3 +335,16 @@ html:not(.dark) main h2 .ss-serif{font-size:1.06em}
 .ss-footer-badge{display:inline-block;margin-top:22px;border:1px solid #444;border-radius:99px;padding:10px 22px;font-size:14px;color:#fff}
 html.dark .ss-footer{background:#000}
 html:not(.dark) .glass-bubble:nth-child(n+2){display:none}
+
+/* Phone bottom bar (pill highlight) */
+.ss-bottomnav { position: fixed; left: 10px; right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 50; display: flex; justify-content: space-around; align-items: stretch; padding: 6px 4px; border-radius: 26px; background: rgba(255,255,255,.92); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid rgba(15,23,42,.08); box-shadow: 0 10px 30px rgba(30,27,75,.16); }
+.dark .ss-bottomnav { background: rgba(20,18,38,.92); border-color: rgba(255,255,255,.14); }
+.ss-bn-item { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 2px 0; background: none; border: 0; color: #64748b; font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+.dark .ss-bn-item { color: #a8a3c7; }
+.ss-bn-pill { display: grid; place-items: center; width: 52px; height: 32px; border-radius: 999px; transition: background .2s, color .2s; }
+.ss-bn-item.is-active { color: #4f46e5; }
+.dark .ss-bn-item.is-active { color: #fff; }
+.ss-bn-item.is-active .ss-bn-pill { background: #e0e0ff; }
+.dark .ss-bn-item.is-active .ss-bn-pill { background: rgba(124,92,255,.35); }
+.ss-bn-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px; }
+@media (max-width: 1023px) { .ss-footer { padding-bottom: 96px; } }
