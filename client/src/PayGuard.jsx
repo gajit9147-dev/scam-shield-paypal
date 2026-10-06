@@ -294,82 +294,95 @@ export default function PayGuard() {
   const review_ = result?.review;
   const verdict = result?.verdict;
 
+  const [mode, setMode] = useState('Message');
+  const MODES = {
+    Message: 'Paste the message you received here...',
+    Link: 'Paste the link you were sent...',
+    Email: 'Paste the email text or the payment request in it...',
+    Phone: 'Type what the caller or the SMS asked you to pay...',
+    Screenshot: '',
+    UPI: 'Paste the UPI ID, collect request or payment message...'
+  };
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#05060a] text-slate-100 px-4 py-10 sm:py-16">
-      <div aria-hidden className="pointer-events-none absolute -top-24 -left-20 h-72 w-72 rounded-full bg-gradient-to-br from-slate-100 via-slate-400 to-slate-700 opacity-25 blur-[2px]" />
-      <div aria-hidden className="pointer-events-none absolute top-1/3 -right-24 h-80 w-80 rotate-12 rounded-[3rem] bg-gradient-to-tr from-slate-300 via-slate-500 to-slate-900 opacity-20" />
-      <div aria-hidden className="pointer-events-none absolute -bottom-28 left-1/4 h-64 w-64 rounded-full bg-gradient-to-tl from-slate-200 via-slate-600 to-slate-900 opacity-20" />
-      <div className="relative mx-auto max-w-xl md:max-w-3xl lg:max-w-4xl space-y-5 tracking-[0.01em] rounded-[2rem] border border-white/20 bg-white/[0.07] p-6 sm:p-8 shadow-[0_8px_60px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-2xl">
-        <a href="/" className="text-sm text-white/60 hover:text-white">&larr; Back to ScamShield</a>
-        <h1 className="text-3xl font-semibold tracking-tight">Check before you pay</h1>
-        <p className="text-white/60 text-sm">
-          Paste a payment request. AI and scam rules read it first. Only a request that passes the automated checks can open a PayPal
-          <b> sandbox</b> checkout. No real money moves.
-        </p>
-
-        <p className="text-xs text-white/70">1 Check &rarr; 2 Verdict &rarr; 3 PayPal sandbox. Powered by Gemini and the PayPal sandbox. <a href="#attack" className="underline">Try to bypass it</a></p>
-
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          maxLength={1000}
-          rows={5}
-          placeholder="Paste an invoice, seller message or payment request"
-          className="w-full rounded-2xl bg-black/30 border border-white/15 p-4 text-sm placeholder-white/55 focus:outline-none focus:border-white/50 backdrop-blur"
-        />
-        <p className="text-xs text-white/65">Demo examples below are fictional.</p>
-        <button onClick={review} disabled={busy || !text.trim()} className="w-full rounded-full bg-gradient-to-r from-sky-400 to-indigo-500 text-white shadow-lg shadow-indigo-500/30 hover:brightness-110 disabled:opacity-50 disabled:shadow-none px-6 py-3 text-sm font-semibold">
-          {busy && !shot ? 'Checking...' : 'Check request'}
-        </button>
-        {!text.trim() && !busy && <p className="text-xs text-white/65">Paste text or pick an example below.</p>}
-        <div className="flex flex-wrap gap-2">
-          {SAMPLES.map(([label, s], i) => (
-            <button key={i} onClick={() => setText(s)} className="rounded-full border border-white/20 bg-white/5 px-4 py-2.5 text-xs text-white/80 hover:bg-white/15">
-              {label}
-            </button>
-          ))}
+    <div className="pg">
+      <nav className="pg-nav">
+        <a href="#top" className="pg-logo"><span className="pg-mark" />SCAMSHIELD</a>
+        <div className="pg-links"><a href="#checker">Checker</a><a href="#how">How it works</a><a href="#evidence">Evidence</a></div>
+        <a href="#checker" className="pg-btn-o">Try the demo</a>
+      </nav>
+      <header id="top" className="pg-hero">
+        <div className="pg-prism" aria-hidden />
+        <div className="pg-eyebrow">AI scam check for payments</div>
+        <h1>Check before<span className="pg-serif">you pay.</span></h1>
+        <p className="pg-sub">Paste a message, link or invoice. ScamShield scores the risk in seconds and only opens PayPal checkout when the request looks safe.</p>
+        <a href="#checker" className="pg-btn">Check a request &rarr;</a>
+        <div className="pg-stats">
+          <div><b>0 / 20</b><span>scams passed in our test set</span></div>
+          <div><b>1.3s</b><span>median check time</span></div>
+          <div><b>40</b><span>labeled test requests</span></div>
         </div>
-
-        <div className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-4 space-y-3">
-          <p className="text-sm text-white/60">Or upload a screenshot of the payment request. AI reads it and runs the same check.</p>
-          <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={pickFile} className="hidden" />
-          {shot && <img src={shot.url} alt="Selected screenshot" className="max-h-48 rounded-xl border border-white/15" />}
-          <div className="flex flex-wrap gap-2">
-            <button onClick={() => fileRef.current?.click()} className="rounded-full border border-white/20 bg-white/5 px-4 py-2.5 text-xs text-white/80 hover:bg-white/15">
-              {shot ? 'Choose another' : 'Upload screenshot'}
-            </button>
-            {shot && (
-              <button onClick={reviewShot} disabled={busy} className="rounded-full bg-white text-black hover:bg-white/85 disabled:opacity-40 px-5 py-2.5 text-xs font-semibold">
-                {busy ? 'Reading...' : 'Check screenshot'}
-              </button>
-            )}
-          </div>
-        </div>
-
-
-        {busy && <p className="text-xs text-white/60">{SCAN_STEPS[scanIdx]} After idle time the free server may need up to 30 seconds to wake up.</p>}
-
-        <p className="text-xs text-white/60">Why this matters in India: banks reported 2,93,239 digital payment frauds worth Rs 2,060.75 crore in FY 2023-24 (RBI data given to Lok Sabha, Aug 2026). <a href="https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AU3487_CUPVNR.pdf" target="_blank" rel="noreferrer" className="underline">Source</a>. Only frauds banks reported, so the real number is higher.</p>
-
-        <div id="attack" className="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-2">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-white/70">Think you can cheat it? Try to bypass ScamShield.</p>
-            <button type="button" onClick={runAttacks} className="shrink-0 whitespace-nowrap rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Attack the shield</button>
-          </div>
-          {attacks && attacks.length > 0 && (
-            <ul className="space-y-2 text-sm">
-              {attacks.map((a) => (
-                <li key={a.attack} className="rounded-xl bg-white/5 p-2">
-                  <span className={a.blocked ? 'text-emerald-300 font-semibold' : 'text-rose-300 font-semibold'}>{a.blocked ? 'REJECTED' : 'GOT THROUGH'}</span> {a.attack}
-                  <span className="block text-xs text-white/50">{a.why}</span>
-                </li>
+      </header>
+      <div className="pg-wrap">
+        <section id="checker" className="pg-sec">
+          <h2>Live <span className="pg-serif">checker</span></h2>
+          <p className="pg-lead">Pick what you received, paste it, get a verdict. No real money moves: checkout is a PayPal sandbox.</p>
+          <div className="pg-panel">
+            <div className="pg-tabs" role="tablist">
+              {Object.keys(MODES).map((m) => (
+                <button key={m} role="tab" aria-selected={mode === m} onClick={() => setMode(m)} className={`pg-tab ${mode === m ? 'on' : ''}`}>{m}</button>
               ))}
-            </ul>
-          )}
-        </div>
-        {error && <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</div>}
+            </div>
+            {mode !== 'Screenshot' ? (
+              <>
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  maxLength={1000}
+                  rows={5}
+                  placeholder={MODES[mode]}
+                  className="pg-box"
+                />
+                <div className="pg-chips">
+                  {SAMPLES.map(([label, s], i) => (
+                    <button key={i} onClick={() => setText(s)} className="pg-chip">{label}</button>
+                  ))}
+                </div>
+                <div className="pg-row">
+                  <span className="pg-hint">{!text.trim() && !busy ? 'Paste text or pick a fictional example above. ' : ''}Nothing is stored. Results are guidance, not a guarantee.</span>
+                  <button onClick={review} disabled={busy || !text.trim()} className="pg-btn">{busy && !shot ? 'Checking...' : 'Check now \u2192'}</button>
+                </div>
+              </>
+            ) : (
+              <div className="pg-box pg-shot">
+                <p>Upload a screenshot of the payment request. AI reads it and runs the same check.</p>
+                <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={pickFile} className="hidden" />
+                {shot && <img src={shot.url} alt="Selected screenshot" className="pg-shot-img" />}
+                <div className="pg-row" style={{ justifyContent: 'flex-start' }}>
+                  <button onClick={() => fileRef.current?.click()} className="pg-btn-o">{shot ? 'Choose another' : 'Upload screenshot'}</button>
+                  {shot && <button onClick={reviewShot} disabled={busy} className="pg-btn">{busy ? 'Reading...' : 'Check screenshot \u2192'}</button>}
+                </div>
+              </div>
+            )}
+            {busy && <p className="pg-hint" style={{ marginTop: 14 }}>{SCAN_STEPS[scanIdx]} After idle time the free server may need up to 30 seconds to wake up.</p>}
+            {error && <div className="pg-error">{error}</div>}
+          </div>
 
-        {result && (
+          <div className="pg-dark">
+            {!result && (
+              <div className="pg-example">
+                <div>
+                  <div className="pg-msg"><small>EXAMPLE &middot; SMS</small>Dear customer, your <mark>SBI account will be blocked today</mark>. Complete <mark>KYC update</mark> now: <mark>http://sbi-kyc-verify.co/login</mark> and enter your <mark>OTP</mark> to avoid suspension.</div>
+                  <div className="pg-todo"><b>What to do:</b> do not click or share the OTP. Report at 1930 or cybercrime.gov.in and call your bank on the number printed on your card.</div>
+                </div>
+                <div>
+                  <div className="pg-score"><div className="pg-ring"><i>87<s>/100</s></i></div><div><span className="pg-pill">BLOCKED</span><p>Checkout stays locked.</p></div></div>
+                  <ul className="pg-ev"><li>Urgent threat: "account will be blocked today"</li><li>Lookalike link: sbi-kyc-verify.co is not an SBI domain</li><li>Asks for an OTP, which banks never request by SMS</li><li>Matches the known fake KYC scam pattern</li></ul>
+                </div>
+              </div>
+            )}
+            <div className="pg-result">
+{result && (
           <div className="rounded-2xl border border-white/15 bg-black/30 p-5 space-y-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
             <div className={`rounded-2xl border px-4 py-3 ${review_.blocked ? 'border-rose-300/40 bg-rose-500/15' : review_.degraded ? 'border-amber-300/50 bg-amber-400/15' : 'border-emerald-300/30 bg-emerald-400/10'}`}>
               <p className={`text-2xl font-semibold tracking-tight ${review_.blocked ? 'text-rose-100' : review_.degraded ? 'text-amber-100' : 'text-emerald-100'}`}>
@@ -435,8 +448,43 @@ export default function PayGuard() {
             <p className="text-xs text-white/45">{review_.caution}</p>
           </div>
         )}
+            </div>
+        <div id="attack" className="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-white/70">Think you can cheat it? Try to bypass ScamShield.</p>
+            <button type="button" onClick={runAttacks} className="shrink-0 whitespace-nowrap rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Attack the shield</button>
+          </div>
+          {attacks && attacks.length > 0 && (
+            <ul className="space-y-2 text-sm">
+              {attacks.map((a) => (
+                <li key={a.attack} className="rounded-xl bg-white/5 p-2">
+                  <span className={a.blocked ? 'text-emerald-300 font-semibold' : 'text-rose-300 font-semibold'}>{a.blocked ? 'REJECTED' : 'GOT THROUGH'}</span> {a.attack}
+                  <span className="block text-xs text-white/50">{a.why}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+          </div>
+        <p className="text-sm text-[#6b7080] mt-5">Why this matters in India: banks reported 2,93,239 digital payment frauds worth Rs 2,060.75 crore in FY 2023-24 (RBI data given to Lok Sabha, Aug 2026). <a href="https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AU3487_CUPVNR.pdf" target="_blank" rel="noreferrer" className="underline" >Source</a>. Only frauds banks reported, so the real number is higher.</p>
+        </section>
+        <section id="how" className="pg-sec">
+          <h2>How it <span className="pg-serif">works</span></h2>
+          <p className="pg-lead">Rules plus AI review, then a payment guard.</p>
+          <div className="pg-steps">
+            <div className="pg-card"><div className="n">01</div><h3>Paste</h3><p>Message, link, invoice or screenshot.</p></div>
+            <div className="pg-card"><div className="n">02</div><h3>Score</h3><p>Rules and Gemini give a 0-100 risk and show why.</p></div>
+            <div className="pg-card"><div className="n">03</div><h3>Pay safely</h3><p>PayPal sandbox checkout opens only if the request is cleared.</p></div>
+          </div>
+        </section>
       </div>
-      <AiFeedbackMarquee />
+      <footer id="evidence" className="pg-footer">
+        <div className="pg-big">Check before <span className="pg-serif">you pay.</span></div>
+        <div className="pg-foot-marquee"><AiFeedbackMarquee /></div>
+        <p>Rules plus Gemini, with a PayPal sandbox payment guard.</p>
+        <span className="pg-badge">Built for PayPal AI Hackathon</span>
+        <p><a href="/" style={{ textDecoration: 'underline' }}>Open the full ScamShield app</a></p>
+      </footer>
     </div>
   );
 }
