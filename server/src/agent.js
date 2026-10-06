@@ -101,7 +101,9 @@ export async function runAgent({ prompt, tools, model, generate = generateText, 
 }
 
 export function pickModels(env = process.env) {
-  return [...new Set([env.GEMINI_MODEL, ...MODEL_FALLBACKS].filter(Boolean))].slice(0, 3);
+  // Gemini 3 models need thought signatures passed back between tool calls, which this SDK version cannot do.
+  // The agent therefore tries 2.5 models first and only then the general list.
+  return [...new Set([env.AGENT_MODEL, 'gemini-2.5-flash', 'gemini-2.5-flash-lite', ...MODEL_FALLBACKS].filter(Boolean))].slice(0, 4);
 }
 
 export function googleModel(name, env = process.env) {
