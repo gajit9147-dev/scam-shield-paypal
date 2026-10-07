@@ -210,52 +210,28 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
   return (
     <div className="pg-qr-scanner" style={{ marginTop: 12 }}>
       {/* Scanner Mode Toggle */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap' }}>
+      <div className="pg-tabs" style={{ marginBottom: 18 }}>
         <button
+          type="button"
           onClick={() => {
             setMethod('camera');
             setCameraError('');
           }}
-          style={{
-            background: method === 'camera' ? 'var(--ink)' : 'transparent',
-            color: method === 'camera' ? '#fff' : 'var(--ink)',
-            border: '1px solid var(--line)',
-            borderRadius: 999,
-            padding: '8px 18px',
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6
-          }}
+          className={`pg-tab ${method === 'camera' ? 'on' : ''}`}
         >
-          <span>📷</span>
-          <span>Live Camera Scan</span>
+          📷 Live Camera Scan
         </button>
 
         <button
+          type="button"
           onClick={() => {
             stopCamera();
             setMethod('upload');
             setCameraError('');
           }}
-          style={{
-            background: method === 'upload' ? 'var(--ink)' : 'transparent',
-            color: method === 'upload' ? '#fff' : 'var(--ink)',
-            border: '1px solid var(--line)',
-            borderRadius: 999,
-            padding: '8px 18px',
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6
-          }}
+          className={`pg-tab ${method === 'upload' ? 'on' : ''}`}
         >
-          <span>🖼️</span>
-          <span>Upload QR Image</span>
+          🖼️ Upload QR Image
         </button>
       </div>
 
@@ -397,7 +373,7 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
         <div
           onClick={() => fileInputRef.current?.click()}
           style={{
-            background: 'var(--bg, #f8f8fb)',
+            background: 'rgba(255, 255, 255, 0.04)',
             borderRadius: 24,
             border: '2px dashed var(--line)',
             padding: 32,
@@ -617,7 +593,7 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--mut)', display: 'block', marginBottom: 8 }}>
           Or try a simulated QR payment sample:
         </span>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div className="pg-chips" style={{ marginTop: 0 }}>
           {SAMPLE_QRS.map((s, idx) => (
             <button
               key={idx}
