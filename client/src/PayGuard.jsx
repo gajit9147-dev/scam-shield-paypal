@@ -202,7 +202,7 @@ function AiFeedbackMarquee() {
 
 export default function PayGuard() {
   const [language, setLanguage] = useState('en');
-  const [theme, setTheme] = useState(() => localStorage.getItem('ss_theme_v2') || 'light');
+  const [theme, setTheme] = useState(() => localStorage.getItem('ss_theme_v2') || 'dark');
   const [view, setView] = useState('checker');
   const [history, setHistory] = useState(() => {
     try { return JSON.parse(localStorage.getItem('upi_shield_history') || '[]'); } catch { return []; }
