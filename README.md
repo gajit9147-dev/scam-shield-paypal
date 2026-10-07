@@ -9,7 +9,7 @@ Core idea: **intent-bound payment authorization**. The reviewed request (amount,
 Scope: **Core** = check before you pay. **Proof** = the server-side payment gate. **Evidence** = the security demonstrations page. **Extensions** = QR, screenshot, multilingual and the experimental agent mode.
 
 - [Live site](https://scam-shield-paypal.onrender.com/) (`/pay` opens the same app)
-- [Demo video](https://youtu.be/53uOIUQQSfM)
+- [Demo video](https://youtu.be/DjWAjSGvNkQ)
 - [Devpost entry](https://devpost.com/software/scamshield-kuvz8o)
 
 No real money moves. Sandbox payments go to the configured test merchant, not to an email address or UPI ID pasted into the checker. The free Render service can take time to wake up.
