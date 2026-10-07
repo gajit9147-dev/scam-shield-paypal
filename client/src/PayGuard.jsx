@@ -215,29 +215,6 @@ export default function PayGuard() {
     localStorage.setItem('ss_theme_v2', theme);
   }, [theme]);
 
-  // Sync history with server on load
-  useEffect(() => {
-    fetch('/api/history')
-      .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data?.history) && data.history.length > 0) {
-          setHistory(prev => {
-            const combined = [...prev, ...data.history];
-            const seen = new Set();
-            const unique = combined.filter(item => {
-              const k = (item.sourceText || '').slice(0, 100);
-              if (!k || seen.has(k)) return false;
-              seen.add(k);
-              return true;
-            }).slice(0, 50);
-            try { localStorage.setItem('upi_shield_history', JSON.stringify(unique)); } catch {}
-            return unique;
-          });
-        }
-      })
-      .catch(() => {});
-  }, []);
-
   function showView(next) { setView(next); setMobileSettings(false); }
 
   function remember(out, sourceText, type) {
@@ -278,12 +255,7 @@ export default function PayGuard() {
       return next;
     });
 
-    // Mirror to server history
-    fetch('/api/history', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sourceText: item.sourceText, type: item.type, verdict: item.result.verdict, review: item.result.review })
-    }).catch(() => {});
+
   }
 
   function deleteHistoryItem(id) {
@@ -298,7 +270,6 @@ export default function PayGuard() {
     if (window.confirm('Clear all audit history?')) {
       setHistory([]);
       try { localStorage.removeItem('upi_shield_history'); } catch {}
-      fetch('/api/history', { method: 'DELETE' }).catch(() => {});
     }
   }
 

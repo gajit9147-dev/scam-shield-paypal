@@ -140,52 +140,10 @@ app.post('/api/payments/review-image', rateLimit(15), express.json({ limit: '6mb
     return res.status(422).json({ error: 'Could not read a payment request in that screenshot. Try a clearer one or paste the text.' });
   }
   const out = await reviewRequestText(transcript);
-  recordAudit({ sourceText: transcript, type: 'image', verdict: out.verdict, review: out.review });
   return res.json({ ...out, transcript });
 });
 
 app.use(express.json({ limit: '128kb' }));
-
-const auditHistory = [];
-const MAX_HISTORY = 50;
-
-function recordAudit({ sourceText, type, verdict, review }) {
-  if (!verdict) return null;
-  const item = {
-    id: String(Date.now()) + '-' + Math.random().toString(36).slice(2, 7),
-    timestamp: new Date().toLocaleString(),
-    type: type || 'text',
-    sourceText: String(sourceText || '').slice(0, 300),
-    verdict: {
-      riskLevel: verdict.riskLevel || 'UNCERTAIN',
-      label: verdict.label || 'uncertain',
-      category: verdict.category || 'unknown_suspicious',
-      categoryLabel: verdict.categoryLabel || '',
-      summary: verdict.summary || verdict.reason || ''
-    },
-    review: {
-      blocked: Boolean(review?.blocked),
-      canPay: Boolean(review?.canPay),
-      riskScore: review?.riskScore ?? (verdict.riskLevel === 'HIGH_RISK' ? 85 : verdict.riskLevel === 'SUSPICIOUS' ? 55 : 15),
-      amount: review?.amount || review?.request?.amount || null,
-      currency: review?.currency || review?.request?.currency || null,
-      payee: review?.payee || review?.request?.payee || null
-    }
-  };
-  auditHistory.unshift(item);
-  if (auditHistory.length > MAX_HISTORY) auditHistory.length = MAX_HISTORY;
-  return item;
-}
-
-app.get('/api/history', (_req, res) => res.json({ history: auditHistory }));
-app.post('/api/history', (req, res) => {
-  const item = recordAudit(req.body || {});
-  res.json({ success: true, item });
-});
-app.delete('/api/history', (_req, res) => {
-  auditHistory.length = 0;
-  res.json({ success: true });
-});
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
@@ -214,17 +172,6 @@ app.post('/api/check', rateLimit(30), async (req, res) => {
     spamScore: score,
     isSpamFlagged,
     isImage: false
-  });
-
-  recordAudit({
-    sourceText: cleanText,
-    type: 'text',
-    verdict: result,
-    review: {
-      blocked: result.riskLevel === 'HIGH_RISK',
-      canPay: false,
-      riskScore: result.riskLevel === 'HIGH_RISK' ? 85 : result.riskLevel === 'SUSPICIOUS' ? 55 : 15
-    }
   });
 
   return res.json(result);
@@ -288,7 +235,6 @@ app.post('/api/payments/review', rateLimit(30), async (req, res) => {
     return res.status(400).json({ error: 'Paste a payment request of 1 to 1000 characters.' });
   }
   const out = await reviewRequestText(text.trim());
-  recordAudit({ sourceText: text.trim(), type: 'text', verdict: out.verdict, review: out.review });
   return res.json(out);
 });
 
