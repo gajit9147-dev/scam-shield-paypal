@@ -17,6 +17,7 @@ export const hi = {
   navHistory: 'इतिहास',
   navScamExamples: 'धोखाधड़ी के उदाहरण',
   navSafetyTips: 'सुरक्षा सुझाव',
+  navSecurityInspector: 'सुरक्षा विश्लेषक',
   navSettings: 'सेटिंग्स',
 
   // Center Main Heading

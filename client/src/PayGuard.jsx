@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { whyRisky } from './whyRisky.js';
 import AgentPanel from './AgentPanel.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
+import SecurityInspector from './components/SecurityInspector.jsx';
 import { getDictionary, translateCategory, translateEvidence, translateRecommendation } from './locales/index.js';
 
 const SAMPLES = [
@@ -409,6 +410,7 @@ export default function PayGuard() {
           <button className={`pg-nav-link ${view === 'history' ? 'active' : ''}`} onClick={() => showView('history')}>{t.navHistory}</button>
           <button className={`pg-nav-link ${view === 'examples' ? 'active' : ''}`} onClick={() => showView('examples')}>{t.navScamExamples}</button>
           <button className={`pg-nav-link ${view === 'tips' ? 'active' : ''}`} onClick={() => showView('tips')}>{t.navSafetyTips}</button>
+          <button className={`pg-nav-link ${view === 'inspector' ? 'active' : ''}`} onClick={() => showView('inspector')}>{t.navSecurityInspector || 'Security Inspector'}</button>
           <select aria-label="Language" value={language} onChange={e => setLanguage(e.target.value)}><option value="en">English</option><option value="hi">हिंदी</option><option value="hinglish">Hinglish</option></select>
           <ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'light' ? 'dark' : 'light')} />
         </div>
@@ -425,6 +427,7 @@ export default function PayGuard() {
           ['history', language === 'hi' ? 'इतिहास' : 'History', 'M3 11a9 9 0 1 1 2.6 6.4 M3 3v8h8 M12 7v5l3 2'],
           ['examples', language === 'hi' ? 'उदाहरण' : 'Examples', 'M4 3h6v7H4z M14 3h6v7h-6z M4 14h6v7H4z M14 14h6v7h-6z'],
           ['tips', language === 'hi' ? 'सुझाव' : 'Tips', 'M9 18h6 M10 22h4 M8 14a6 6 0 1 1 8 0l-1 3H9z'],
+          ['inspector', language === 'hi' ? 'विश्लेषक' : 'Inspector', 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'],
           ['agent', 'Agent', 'M12 3v3 M8 3h8 M4 8h16v13H4z M8 12h1 M15 12h1 M8 17h8']
         ].map(([key,label,path]) => <button key={key} className={`ss-bn-item ${(key === 'agent' ? view === 'checker' && mode === 'Agent' : view === key && (key !== 'checker' || mode !== 'Agent')) ? 'is-active' : ''}`} aria-current={(key === 'agent' ? view === 'checker' && mode === 'Agent' : view === key && (key !== 'checker' || mode !== 'Agent')) ? 'page' : undefined} onClick={() => { showView(key === 'agent' ? 'checker' : key); if (key === 'agent') setMode('Agent'); else if (key === 'checker' && mode === 'Agent') setMode('Message'); }}><span className="ss-bn-pill"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={path} /></svg></span><span className="ss-bn-label">{label}</span></button>)}
       </nav>
@@ -442,7 +445,7 @@ export default function PayGuard() {
       </header>}
       <div className="pg-wrap">
         {view !== 'checker' && <section className="pg-sec pg-library">
-          <h2>{view === 'history' ? t.navHistory : view === 'examples' ? t.navScamExamples : t.navSafetyTips}</h2>
+          <h2>{view === 'history' ? t.navHistory : view === 'examples' ? t.navScamExamples : view === 'inspector' ? (t.navSecurityInspector || 'Security Inspector') : t.navSafetyTips}</h2>
           {view === 'history' && <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
               <p className="pg-lead" style={{ margin: 0 }}>
@@ -517,6 +520,14 @@ export default function PayGuard() {
           </>}
           {view === 'examples' && <><p className="pg-lead">Fictional requests to try. Selecting one fills the checker; it does not run a check or payment.</p><div className="pg-library-grid">{[[t.exampleKyc,t.exampleTextKyc],[t.exampleRefund,t.exampleTextRefund],[t.exampleLottery,t.exampleTextLottery],[t.exampleBankAlert,t.exampleTextBankAlert],[t.exampleSuspiciousLink,t.exampleTextSuspiciousLink],...SAMPLES].map(([label, sample],i) => <article className="pg-card" key={i}><h3>{label}</h3><p>{sample}</p><button className="pg-btn-o" onClick={() => { setMode('Message'); setText(sample); setResult(null); setView('checker'); }}>Use example</button></article>)}</div></>}
           {view === 'tips' && <><div className="pg-library-grid">{[1,2,3,4].map(i => <article className="pg-card" key={i}><h3>{t[`tip${i}Title`]}</h3><p>{t[`tip${i}Desc`]}</p></article>)}</div><p className="pg-lead">Already lost money? Contact your bank immediately. In India, report at <a href="https://cybercrime.gov.in" target="_blank" rel="noreferrer">cybercrime.gov.in</a> or call 1930.</p></>}
+          {view === 'inspector' && (
+            <SecurityInspector
+              token={review_?.token}
+              review={review_}
+              paid={paid}
+              language={language}
+            />
+          )}
         </section>}
         <div hidden={view !== 'checker'}>
         <section id="checker" className="pg-sec">
@@ -641,6 +652,19 @@ export default function PayGuard() {
               </div>
             )}
             <button type="button" onClick={() => downloadReport(result, result.transcript || checkedText)} className="rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Download evidence report</button>
+            <details className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm" style={{ marginTop: 12 }}>
+              <summary className="cursor-pointer text-white/80 font-medium">
+                🛡️ {language === 'hi' ? 'क्रिप्टोग्राफिक टोकन और वेबहुक विश्लेषक' : 'Inspect Cryptographic Token & Webhook'} {review_.token ? '· Token Active' : ''}
+              </summary>
+              <div className="mt-3">
+                <SecurityInspector
+                  token={review_?.token}
+                  review={review_}
+                  paid={paid}
+                  language={language}
+                />
+              </div>
+            </details>
             <p className="text-xs text-white/45">{review_.caution}</p>
           </div>
         )}

@@ -379,6 +379,26 @@ app.post('/api/invoices/verify', rateLimit(20), async (req, res) => {
 
 app.get('/api/paypal/webhook-status', (req, res) => res.json({ registered: webhookState.registered, error: webhookState.error }));
 
+app.get('/api/paypal/webhook-events', (req, res) => {
+  res.json({
+    registered: webhookState.registered,
+    error: webhookState.error,
+    events: recentEvents()
+  });
+});
+
+app.post('/api/payments/verify-token', rateLimit(60), (req, res) => {
+  const token = req.body?.token;
+  if (!token || typeof token !== 'string') {
+    return res.status(400).json({ valid: false, error: 'Token string required' });
+  }
+  const claim = verifyToken(token);
+  if (!claim) {
+    return res.json({ valid: false, error: 'Signature verification failed or token expired' });
+  }
+  return res.json({ valid: true, claim });
+});
+
 app.get('/api/paypal/confirmation', rateLimit(60), (req, res) => {
   const orderId = String(req.query.orderId || '');
   const paid = paidOrders.get(orderId);
