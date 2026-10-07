@@ -100,6 +100,12 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentLeft / 100) * circumference;
 
+  const [auditData, setAuditData] = useState({ events: [], note: '', error: '' });
+  useEffect(() => {
+    if (tab !== 'audit') return;
+    fetch('/api/payments/audit').then((r) => (r.ok ? r.json() : Promise.reject())).then((d) => setAuditData({ events: d.events || [], note: d.note || '', error: '' })).catch(() => setAuditData({ events: [], note: '', error: 'Could not load the decision log.' }));
+  }, [tab]);
+
   // Webhook polling
   const fetchWebhooks = async () => {
     setWebhookLoading(true);
@@ -375,7 +381,8 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
             { id: 'token', icon: '🔑', label: 'Token Anatomy & Nonce' },
             { id: 'tamper', icon: '⚡', label: 'Tamper Test' },
             { id: 'webhooks', icon: '📡', label: 'PayPal Webhook Stream' },
-            { id: 'attacks', icon: '🛡️', label: 'Attack Vector Matrix' }
+            { id: 'attacks', icon: '🛡️', label: 'Attack Vector Matrix' },
+            { id: 'audit', icon: '📋', label: 'Decision Log' }
           ].map(t => {
             const isActive = tab === t.id;
             return (
@@ -849,6 +856,18 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {tab === 'audit' && (
+            <div style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: 13 }}>
+              <p style={{ marginBottom: 12, color: 'rgba(255, 255, 255, 0.55)' }}>{auditData.error || auditData.note || 'Recent payment gate decisions.'} Kept in server memory only, so it is cleared when the server restarts.</p>
+              {auditData.events.length === 0 && !auditData.error && <p>No decisions recorded since the server last started.</p>}
+              {auditData.events.map((e, i) => (
+                <div key={i} style={{ padding: '8px 0', borderBottom: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <strong>{e.stage}</strong>: {e.decision}{e.risk ? `, ${e.risk}` : ''}{e.amount ? `, ${e.amount} ${e.currency || ''}` : ''}{e.orderId ? `, order ${e.orderId}` : ''}{e.reasons ? ` (${e.reasons.join(', ')})` : ''} <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>{new Date(e.at).toLocaleTimeString()}</span>
+                </div>
+              ))}
             </div>
           )}
 

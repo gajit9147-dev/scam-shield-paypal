@@ -225,6 +225,7 @@ async function reviewRequestText(cleanText) {
   }
   const review = await reviewPaymentRequest(cleanText, verdict, extracting, Boolean(ai));
   review.riskScore = riskScore(verdict, review);
+  adjustForOtpDelivery(review, verdict, localResult);
   return { verdict, review };
 }
 
@@ -238,6 +239,7 @@ app.post('/api/payments/review', rateLimit(30), async (req, res) => {
   return res.json(out);
 });
 
+import { adjustForOtpDelivery } from './paymentReview.js';
 import { captureOnce } from './reconcile.js';
 import { record as auditRecord, recent as auditRecent } from './audit.js';
 const expectedOrders = new Map();
@@ -288,7 +290,7 @@ app.post('/api/paypal/capture-order', rateLimit(20), async (req, res) => {
     expectedOrders.delete(orderId);
     auditRecord({ stage: 'capture', decision: out.kind, orderId, amount: expected.amount, currency: expected.currency, outcome: 'COMPLETED' });
     const r = out.result;
-    return res.json({ status: r.status, orderId, paidAt: new Date().toISOString(), captureId: r.captureId, amount: r.amount, payerName: r.payerName, ...(out.kind === 'reconciled' ? { reconciled: true } : {}), ...(out.kind === 'already_paid' ? { alreadyPaid: true } : {}) });
+    return res.json({ status: r.status, orderId, paidAt: new Date().toISOString(), captureId: r.captureId, captureStatus: r.captureStatus, amount: r.amount, payerName: r.payerName, ...(out.kind === 'reconciled' ? { reconciled: true } : {}), ...(out.kind === 'already_paid' ? { alreadyPaid: true } : {}) });
   }
   auditRecord({ stage: 'capture', decision: out.kind, orderId, outcome: out.status || 'none' });
   if (out.kind === 'unknown') return res.status(502).json({ error: 'The payment state could not be confirmed. Check PayPal before paying again.' });

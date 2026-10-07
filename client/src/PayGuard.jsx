@@ -396,6 +396,7 @@ export default function PayGuard() {
         style: { layout: 'vertical', shape: 'rect' },
         createOrder: async () => { const o = await postJson('/api/paypal/create-order', { token }); orderTicket = o.orderTicket; return o.id; },
         onApprove: async (data) => { try { const receipt = await postJson('/api/paypal/capture-order', { orderId: data.orderID, orderTicket }); if (!cancelled) setPaid(receipt); } catch (e) { if (!cancelled) setError(e.message); } },
+        onCancel: () => { if (!cancelled) setError('Payment cancelled in PayPal. Nothing was charged. You can try again.'); },
         onError: () => setError('PayPal could not finish this sandbox payment.')
       });
       return buttons.render(buttonsRef.current);
@@ -678,6 +679,7 @@ export default function PayGuard() {
             {paid && (
               <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-100 space-y-1">
                 <p className="font-semibold">Sandbox payment {paid.status}. {paid.amount ? `${paid.amount.value} ${paid.amount.currency_code}. ` : ''}Receipt id: {paid.captureId}</p>
+                <p className="text-xs text-emerald-100/80">From PayPal's response: order {paid.status}{paid.captureStatus ? `, capture ${paid.captureStatus}` : ''}. Order id {paid.orderId}.</p>
                 <p className="text-xs text-emerald-100/80">Payment completed and the amount matched the review. Risk score {review_.riskScore}/100, {verdict.label || verdict.riskLevel}. Order {paid.orderId}. {paid.paidAt ? new Date(paid.paidAt).toLocaleString() : ''}. No real money moved.</p>
                 <p className="text-xs text-emerald-100/80">{hook === 'confirmed' ? 'PayPal webhook confirmed this capture (signature verified by PayPal).' : hook === 'waiting' ? 'Waiting for PayPal webhook confirmation...' : hook === 'none' ? 'PayPal webhook confirmation not received yet.' : ''}</p>
               </div>

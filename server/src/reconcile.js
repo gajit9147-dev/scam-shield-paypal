@@ -22,7 +22,7 @@ export async function captureOnce({ orderId, expected, capture, getOrder, done }
   }
   const { ok, unit } = readCapture(data, expected);
   if (!ok) return { kind: captureError ? 'not_paid' : 'mismatch', status: data?.status || null, error: captureError };
-  const result = { status: data.status, orderId, captureId: unit?.id || null, amount: unit.amount, payerName: data?.payer?.name?.given_name || null };
+  const result = { status: data.status, orderId, captureId: unit?.id || null, captureStatus: unit?.status || null, amount: unit.amount, payerName: data?.payer?.name?.given_name || null };
   // amount and currency stay at the top level because the webhook confirmation compares against them.
   done.set(orderId, { amount: unit.amount.value, currency: unit.amount.currency_code, result });
   if (done.size > 500) done.delete(done.keys().next().value);

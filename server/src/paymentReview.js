@@ -339,3 +339,15 @@ export function runAttackDemo(orderKnown = () => false) {
   results.push({ attack: 'Capture an order that was never reviewed', blocked: verifyOrderTicket(undefined, 'FAKE-ORDER-123456') === null && verifyOrderTicket(signOrderTicket({ orderId: 'REAL-ORDER-111111', amount: '12.50', currency: 'USD' }), 'FAKE-ORDER-123456') === null && !orderKnown('FAKE-ORDER-123456'), why: 'The server only captures orders it created from a reviewed request.' });
   return results;
 }
+
+// A bare OTP delivery text is not a payment request. Keep the card consistent with its UNCERTAIN verdict:
+// no invented payee or pressure, a low number, and wording that fits a code delivery message.
+export function adjustForOtpDelivery(review, verdict, localResult) {
+  if (!localResult?.isOtpDelivery || verdict?.riskLevel !== 'UNCERTAIN') return review;
+  review.pressure = [];
+  review.request = { ...review.request, payee: null };
+  review.payeeCheck = { status: 'none', note: 'No payee found in the request, so there is nothing to compare.' };
+  review.advice = 'This is an OTP message, not a payment request. Never share OTPs with anyone.';
+  if (Number.isFinite(review.riskScore)) review.riskScore = Math.min(review.riskScore, 24);
+  return review;
+}

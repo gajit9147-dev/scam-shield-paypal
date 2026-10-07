@@ -35,3 +35,17 @@ test('a delivery message stays UNCERTAIN even when the AI over-reacts, and is ne
 test('OTP theft stays HIGH_RISK', () => {
   for (const t of theft) assert.equal(verdictWithAi(t).riskLevel, 'HIGH_RISK', t);
 });
+
+import { adjustForOtpDelivery } from './paymentReview.js';
+test('an OTP delivery card has no invented payee or pressure and a low score', () => {
+  const text = delivery[1];
+  const review = { request: { payee: 'Team Telco', amount: null }, pressure: ['urgency'], riskScore: 85, advice: 'Legitimate companies never ask for your OTP.', payeeCheck: { status: 'unclear' } };
+  const out = adjustForOtpDelivery(review, { riskLevel: 'UNCERTAIN' }, detectLocalSignals(text));
+  assert.equal(out.request.payee, null); assert.deepEqual(out.pressure, []); assert.ok(out.riskScore <= 24);
+  assert.match(out.advice, /not a payment request/);
+});
+test('a real scam card is left alone', () => {
+  const review = { request: { payee: 'x@y.com' }, pressure: ['urgency'], riskScore: 90 };
+  const out = adjustForOtpDelivery(review, { riskLevel: 'HIGH_RISK' }, detectLocalSignals('Share OTP now to verify your account'));
+  assert.equal(out.riskScore, 90); assert.equal(out.request.payee, 'x@y.com');
+});
