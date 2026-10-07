@@ -72,20 +72,22 @@ cd scam-shield-paypal/client && npm ci && npm run dev
 
 Open the URL Vite prints (usually http://localhost:5173) and go to `/pay`.
 
-Set keys in `server/.env` (never commit it) or in your host's environment settings:
+Copy `.env.example` to `server/.env`, then fill the keys privately (never commit it), or use your host's environment settings:
 
 ```
 PAYPAL_CLIENT_ID=your-sandbox-client-id
 PAYPAL_CLIENT_SECRET=your-sandbox-secret
-GEMINI_API_KEY=optional
+GEMINI_API_KEY=your-gemini-api-key
 ```
 
 Get sandbox keys at https://developer.paypal.com (Apps and Credentials, Sandbox). Test payments use a sandbox buyer account from the same dashboard. Without a Gemini key the rules still run and block scams, but checkout never unlocks, and the screen says that the AI did not answer.
 
+For local webhook delivery, use a public HTTPS tunnel URL in `PUBLIC_URL` and restart the server. A localhost URL cannot receive PayPal events. The template lists optional settings and model overrides. Gemini is required for agent mode and for AI-cleared checkout.
+
 Checks:
 
 ```bash
-cd server && npm test      # 61 tests, PayPal calls are mocked
+cd server && npm test      # 83 tests, model and PayPal calls are mocked
 node eval/run-paypal-testset.js http://localhost:3001   # 40 labeled payment requests (20 scams, 20 safe)
 cd client && npm run build
 ```
