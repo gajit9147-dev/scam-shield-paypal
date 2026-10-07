@@ -62,6 +62,19 @@ export function isLegitimateReceipt(text) {
   return hits >= 1 || /\b(?:payment\s+(?:of\s+.*?\s+)?(?:was\s+)?received\s+successfully|credited\s+to\s+your\s+account|debited\s+from\s+your\s+a\/c)\b/i.test(norm);
 }
 
+// A plain OTP delivery message: it hands you a code and says nothing else. It has a code next to the OTP wording,
+// no link, no phone number, no UPI id, no money, and no ask to send, tell, share or read the code out. "Enter the OTP" alone is what a real app asks.
+export function isOtpDelivery(rawText) {
+  const t = String(rawText || '');
+  if (t.length > 300) return false;
+  const hasCode = /\b\d{4,8}\b[^.\n]{0,25}\b(?:is|as)\s+(?:your|the)\b[^.\n]{0,30}\b(?:otp|one[ -]?time\s+(?:password|pin|code)|verification\s+code)\b|\b(?:otp|one[ -]?time\s+(?:password|pin|code)|verification\s+code)\b[^.\n]{0,25}\b(?:is|:)\s*\d{4,8}\b/i.test(t);
+  if (!hasCode) return false;
+  if (/https?:\/\/|www\.|\b[a-z0-9-]+\.(?:com|in|co|ly|xyz|link|top|online)\b|@|\b\d{10}\b|\+\d{8,}/i.test(t)) return false;
+  if (/\b(?:rs\.?|inr|usd|rupees?|refund|prize|reward|cashback|kyc|blocked|suspend|expire[sd]?|urgent|immediately|pay|payment|transfer|account|upi|pin|cvv|call|click)\b|₹|\$/i.test(t.replace(/\bone[ -]?time\s+pin\b/ig, ''))) return false;
+  if (/\b(?:send|share|tell|reply|forward|give|read\s+out|provide|bata|batao|bhej|bhejo|de\s*do|dedo|mang)\b(?![^.]{0,40}\b(?:no\s*one|anyone|nobody|anybody)\b)/i.test(t.replace(/\b(?:do\s+not|don'?t|never)\s+(?:share|tell|give|forward|send)[^.!]*[.!]?/ig, ''))) return false;
+  return true;
+}
+
 export function detectLocalSignals(rawText) {
   const { normalized, expanded } = normalizeMessage(rawText);
   const entities = extractEntities(rawText);
@@ -73,7 +86,8 @@ export function detectLocalSignals(rawText) {
   // 1. OTP Requests (English, Hindi Devanagari, and Hinglish transliterations)
   const otpRequestPattern = /\b(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\s*(?:bta\s*do|batao|bata\s*do|bataiye|bhej\s*do|bhejo|bhejiye|share|send|de\s*do|dedo|mang|karo|करो|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं|दर्ज\s*करें)\b|\b(?:send|share|reply|provide|enter|submit|tell|give|forward|type|verify|batao|bataiye|bata\s*do|bta\s*do|bhejo|bhejiye|bhej\s*do|de\s*do|dedo|mang|भेजो|बताओ|दीजिये|दीजिए|शेयर|भेजें|बताएं)\s+(?:me\s+|your\s+|the\s+|this\s+|with\s+(?:the\s+)?|turant\s+|abhi\s+|apna\s+)?(?:otp|one[ -]?time\s+(?:password|pin|code)|ओटीपी)\b/i;
 
-  if (otpRequestPattern.test(textToMatch) && !isDefensive) {
+  const otpDelivery = isOtpDelivery(rawText);
+  if (otpRequestPattern.test(textToMatch) && !isDefensive && !otpDelivery) {
     signals.push({
       type: 'otp_request',
       severity: 'high',
@@ -398,6 +412,7 @@ export function detectLocalSignals(rawText) {
     signals,
     entities,
     isDefensiveAdvice: isDefensive,
+    isOtpDelivery: otpDelivery,
     isLegitReceipt: isLegitimateReceipt(rawText)
   };
 }

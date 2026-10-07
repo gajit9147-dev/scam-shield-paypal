@@ -300,7 +300,12 @@ export function combineEvidence({
 
   // Explicit safety protection: if message is legitimate defensive advice ("Never share your OTP")
   // or a legitimate transaction receipt with no fraudulent requests, it must remain UNCERTAIN.
-  if ((isDefensive || isLegitReceipt) && highSeverityCount === 0) {
+  const localHighCount = structuredSignals.filter(s => s.source === 'local_rules' && s.severity === 'high').length;
+  if (localResult?.isOtpDelivery && localHighCount === 0) {
+    // A bare code delivery message: the AI model alone must not turn it into OTP theft. It still never counts as certified safe.
+    riskLevel = 'UNCERTAIN';
+    label = 'uncertain';
+  } else if ((isDefensive || isLegitReceipt) && highSeverityCount === 0) {
     riskLevel = 'UNCERTAIN';
     label = 'uncertain';
   } else if (
