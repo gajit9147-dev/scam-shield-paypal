@@ -204,6 +204,7 @@ export default function PayGuard() {
   const [language, setLanguage] = useState('en');
   const [theme, setTheme] = useState(() => localStorage.getItem('ss_theme_v2') || 'dark');
   const [view, setView] = useState('checker');
+  const [mobileSettings, setMobileSettings] = useState(false);
   const [history, setHistory] = useState(() => {
     try { return JSON.parse(localStorage.getItem('upi_shield_history') || '[]'); } catch { return []; }
   });
@@ -237,7 +238,7 @@ export default function PayGuard() {
       .catch(() => {});
   }, []);
 
-  function showView(next) { setView(next); }
+  function showView(next) { setView(next); setMobileSettings(false); }
 
   function remember(out, sourceText, type) {
     if (!out) return;
@@ -440,6 +441,21 @@ export default function PayGuard() {
           <select aria-label="Language" value={language} onChange={e => setLanguage(e.target.value)}><option value="en">English</option><option value="hi">हिंदी</option><option value="hinglish">Hinglish</option></select>
           <ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'light' ? 'dark' : 'light')} />
         </div>
+        <button className="pg-mobile-avatar" aria-label="Open settings" aria-expanded={mobileSettings} onClick={() => setMobileSettings(!mobileSettings)}>A</button>
+      </nav>
+      {mobileSettings && <section className="pg-mobile-settings" aria-label="Mobile settings">
+        <div className="pg-mobile-settings-head"><button aria-label="Close settings" onClick={() => setMobileSettings(false)}>×</button></div>
+        <div className="pg-mobile-controls"><label>Language<select aria-label="Mobile language" value={language} onChange={e => setLanguage(e.target.value)}><option value="en">English</option><option value="hi">हिंदी</option><option value="hinglish">Hinglish</option></select></label>
+        <div className="pg-mobile-theme"><span>Dark mode</span><ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'light' ? 'dark' : 'light')} /></div></div>
+      </section>}
+      <nav aria-label="Mobile navigation" className="ss-bottomnav pg-mobile-bottom">
+        {[
+          ['checker', language === 'hi' ? 'जाँचें' : 'Check', 'M9 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4 M9 12l3 3L22 5'],
+          ['history', language === 'hi' ? 'इतिहास' : 'History', 'M3 11a9 9 0 1 1 2.6 6.4 M3 3v8h8 M12 7v5l3 2'],
+          ['examples', language === 'hi' ? 'उदाहरण' : 'Examples', 'M4 3h6v7H4z M14 3h6v7h-6z M4 14h6v7H4z M14 14h6v7h-6z'],
+          ['tips', language === 'hi' ? 'सुझाव' : 'Tips', 'M9 18h6 M10 22h4 M8 14a6 6 0 1 1 8 0l-1 3H9z'],
+          ['agent', 'Agent', 'M12 3v3 M8 3h8 M4 8h16v13H4z M8 12h1 M15 12h1 M8 17h8']
+        ].map(([key,label,path]) => <button key={key} className={`ss-bn-item ${(key === 'agent' ? view === 'checker' && mode === 'Agent' : view === key && (key !== 'checker' || mode !== 'Agent')) ? 'is-active' : ''}`} aria-current={(key === 'agent' ? view === 'checker' && mode === 'Agent' : view === key && (key !== 'checker' || mode !== 'Agent')) ? 'page' : undefined} onClick={() => { showView(key === 'agent' ? 'checker' : key); if (key === 'agent') setMode('Agent'); else if (key === 'checker' && mode === 'Agent') setMode('Message'); }}><span className="ss-bn-pill"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={path} /></svg></span><span className="ss-bn-label">{label}</span></button>)}
       </nav>
       {view === 'checker' && <header id="top" className="pg-hero">
         <div className="pg-prism" aria-hidden />
