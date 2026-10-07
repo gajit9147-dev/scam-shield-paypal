@@ -286,7 +286,7 @@ html.dark .glass-bubble,
 .pg-example{display:grid;grid-template-columns:1.1fr 1fr;gap:40px}
 .pg-msg{background:#111318;border:1px solid #2a2d36;border-radius:22px;padding:24px;font-size:18px;line-height:1.7}
 .pg-msg small{display:block;color:#8b90a0;font-size:13px;margin-bottom:10px;letter-spacing:.08em}
-.pg mark{background:rgba(255,90,31,.25);color:#ffb08f;border-bottom:2px solid var(--or);padding:0 3px;border-radius:4px}
+.pg mark{background:none;color:inherit;border-bottom:2px dotted var(--or);padding:0;border-radius:0}
 .pg-score{display:flex;align-items:center;gap:22px;margin-bottom:22px}
 .pg-score p{margin:12px 0 0;color:#8b90a0;font-size:15px}
 .pg-ring{width:110px;height:110px;border-radius:50%;background:conic-gradient(var(--or) 0 87%,#2a2d36 0);display:grid;place-items:center;flex:none}
@@ -296,7 +296,7 @@ html.dark .glass-bubble,
 .pg-ev{list-style:none;padding:0;margin:0}
 .pg-ev li{padding:13px 0;border-top:1px solid #2a2d36;font-size:16px;display:flex;gap:12px;line-height:1.5}
 .pg-ev li:before{content:"";flex:none;width:9px;height:9px;border-radius:50%;background:var(--or);margin-top:8px}
-.pg-todo{margin-top:22px;background:#fff;color:var(--ink);border-radius:20px;padding:20px;font-size:16px;line-height:1.6}
+.pg-todo{margin-top:22px;background:#fff;color:#171820;border-radius:20px;padding:20px;font-size:16px;line-height:1.6}
 .pg-todo b{color:var(--or)}
 .pg-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .pg-card{border-radius:28px;padding:32px;background:linear-gradient(160deg,#fff,#f1f3ff);border:1px solid var(--line)}

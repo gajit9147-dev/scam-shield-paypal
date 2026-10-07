@@ -373,7 +373,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
         >
           {[
             { id: 'token', icon: '🔑', label: 'Token Anatomy & Nonce' },
-            { id: 'tamper', icon: '⚡', label: 'Tamper Simulation Lab' },
+            { id: 'tamper', icon: '⚡', label: 'Tamper Test' },
             { id: 'webhooks', icon: '📡', label: 'PayPal Webhook Stream' },
             { id: 'attacks', icon: '🛡️', label: 'Attack Vector Matrix' }
           ].map(t => {
@@ -1091,11 +1091,9 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                             border: live ? (live.blocked ? '1px solid rgba(52, 211, 153, 0.35)' : '1px solid rgba(244, 63, 94, 0.35)') : '1px solid rgba(255, 255, 255, 0.1)'
                           }}
                         >
-                          {live ? (live.blocked ? 'REJECTED (PASSED)' : 'VULNERABLE') : 'SHIELD ARMED'}
+                          {live ? (live.blocked ? 'REJECTED (PASSED)' : 'VULNERABLE') : 'NOT TESTED'}
                         </span>
-                        <span style={{ display: 'block', fontSize: 10, color: 'rgba(255, 255, 255, 0.4)', marginTop: 4 }}>
-                          Latency: &lt; 2ms
-                        </span>
+
                       </div>
                     </div>
                   );

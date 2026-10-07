@@ -40,7 +40,7 @@ function Highlighted({ text }) {
   let last = 0;
   for (const m of text.matchAll(FLAG_WORDS)) {
     if (m.index > last) parts.push(text.slice(last, m.index));
-    parts.push(<mark key={m.index} className="rounded bg-rose-400/30 px-0.5 text-rose-100">{m[0]}</mark>);
+    parts.push(<mark key={m.index}>{m[0]}</mark>);
     last = m.index + m[0].length;
   }
   if (last < text.length) parts.push(text.slice(last));
@@ -219,7 +219,7 @@ export default function PayGuard() {
     const r = out.review || {};
     const isBlocked = Boolean(r.blocked || v.riskLevel === 'HIGH_RISK');
     const isCleared = Boolean(r.canPay);
-    const score = r.riskScore ?? (v.riskLevel === 'HIGH_RISK' ? 85 : v.riskLevel === 'SUSPICIOUS' ? 55 : 15);
+    const score = Number.isFinite(r.riskScore) ? r.riskScore : null;
 
     const item = {
       id: Date.now() + '-' + Math.random().toString(36).slice(2, 6),
@@ -458,7 +458,7 @@ export default function PayGuard() {
           {view === 'history' && <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
               <p className="pg-lead" style={{ margin: 0 }}>
-                Transaction audits are automatically stored in your local session and synced with the security API.
+                Recent checks are saved only in this browser. They are not synced to a shared server history.
               </p>
               {history.length > 0 && (
                 <button className="pg-btn-o" style={{ padding: '8px 18px', fontSize: 13 }} onClick={clearAllHistory}>
@@ -473,7 +473,7 @@ export default function PayGuard() {
                   const verd = item.result?.verdict || {};
                   const isBlocked = rev.blocked || verd.riskLevel === 'HIGH_RISK';
                   const isCleared = rev.canPay;
-                  const score = rev.riskScore ?? (isBlocked ? 85 : 15);
+                  const score = Number.isFinite(rev.riskScore) ? rev.riskScore : null;
                   return (
                     <article className="pg-card" key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -488,7 +488,7 @@ export default function PayGuard() {
                           color: isBlocked ? '#f87171' : isCleared ? '#34d399' : '#fbbf24',
                           border: `1px solid ${isBlocked ? 'rgba(239, 68, 68, 0.3)' : isCleared ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`
                         }}>
-                          {isBlocked ? 'BLOCKED' : isCleared ? 'CLEARED' : 'UNCERTAIN'} • Risk {score}/100
+                          {isBlocked ? 'BLOCKED' : isCleared ? 'CLEARED' : 'UNCERTAIN'} • {score === null ? 'Risk score unavailable' : `Risk ${score}/100`}
                         </span>
                       </div>
                       <p style={{ margin: 0, fontSize: 15, fontWeight: 500, lineHeight: 1.5 }}>

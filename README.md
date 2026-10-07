@@ -1,213 +1,157 @@
-# ScamShield: AI-Powered Payment Fraud Prevention & Guarded PayPal Checkout
+# ScamShield
 
-ScamShield intercepts payment requests and suspicious communications with multi-layered AI & rule-based inspection **before** you pay. Only a payment request that safely passes all automated checks unlocks a guarded PayPal Sandbox checkout. A flagged request is blocked on the server, ensuring fraudulent PayPal orders are never created.
+Check a payment request before you pay. ScamShield combines scam rules, a local spam baseline and Gemini review, then opens PayPal **sandbox** checkout only when the server clears the request. A cleared result is guidance, not proof that a person or merchant is genuine.
 
-Built for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/).  
-- **Live Demo**: [https://scam-shield-paypal.onrender.com/pay](https://scam-shield-paypal.onrender.com/pay) *(Render free tier, initial cold boot may take up to a minute)*  
-- **Demo Video (2m 24s)**: [https://youtu.be/piMQvRnr5xI](https://youtu.be/piMQvRnr5xI)  
-- **Devpost Entry**: [https://devpost.com/software/scamshield-kuvz8o](https://devpost.com/software/scamshield-kuvz8o)
+- [Live site](https://scam-shield-paypal.onrender.com/) (`/pay` opens the same app)
+- [Demo video](https://youtu.be/piMQvRnr5xI)
+- [Devpost entry](https://devpost.com/software/scamshield-kuvz8o)
 
----
+No real money moves. Sandbox payments go to the configured test merchant, not to an email address or UPI ID pasted into the checker. The free Render service can take time to wake up.
 
-<table>
-  <tr>
-    <td align="center"><img src="docs/screenshots/blocked.png" alt="Blocked: a risky payment request" width="260"><br><sub><b>Blocked</b>: PayPal never opens</sub></td>
-    <td align="center"><img src="docs/screenshots/cleared.png" alt="Cleared: PayPal sandbox unlocked" width="260"><br><sub><b>Cleared</b>: Sandbox checkout unlocks</sub></td>
-    <td align="center"><img src="docs/screenshots/mobile.png" alt="Mobile view" width="140"><br><sub><b>Mobile View</b></sub></td>
-  </tr>
-</table>
+## Current UI
 
----
+Screenshots below show the final UI with fictional sample requests. Checker results were obtained from the live review API and displayed in the same production build before deployment. Risk scores in result screenshots are actual review outputs, not accuracy percentages.
 
-## Key Features
+| Desktop homepage | Mobile homepage |
+| --- | --- |
+| ![ScamShield desktop homepage](docs/screenshots/home-desktop.png) | ![ScamShield mobile homepage](docs/screenshots/home-mobile.png) |
 
-- **3-Layer Defense-in-Depth Fusion Engine**:
-  1. **Deterministic Local Rules**: Instant detection of high-risk patterns (OTP/UPI PIN theft, advance fees, impersonation, phishing domains).
-  2. **UCI Machine Learning Spam Baseline**: Secondary statistical spam scoring for text messages.
-  3. **Google Gemini Semantic Review**: Multimodal analysis (text + screenshot images) identifying psychological pressure, subtle fraud phrasing, and missing invoice metadata.
-- **India & South Asia Localization**:
-  - Trilingual support (**English, Hindi, and Hinglish** colloquialisms like *"bta do"*, *"bhej do"*, *"account block hoga"*).
-  - PII and sensitive data masking for UPI IDs, URLs, and phone numbers.
-  - Actionable recovery guidance including India's official National Cyber Crime Helpline (**1930**).
-- **Guarded PayPal Sandbox Gate**:
-  - Cryptographically HMAC-signed, short-lived (15-minute) review tokens.
-  - Strict server-side single-use nonce tracking (`used.log`) preventing double-spend and parallel replay attacks.
-  - Orders API v2 enforcement: sandbox orders are strictly capped to the verified amount from the review token.
-- **Interactive Security Playground ("Attack the Shield")**:
-  - Real-time bypass attack simulation testing 4 vector attacks: amount tampering, expired tokens, token reuse, and fabricated payment IDs.
-- **Bilingual Evidence Reports**: Downloadable audit trails with categorized risk signals and safety recommendations.
+| Blocked refund-fee request | Cleared fictional invoice |
+| --- | --- |
+| ![Actual blocked result for a fictional refund scam](docs/screenshots/blocked.png) | ![Actual cleared invoice result with PayPal sandbox checkout](docs/screenshots/cleared.png) |
 
----
+| QR scanner | Security Inspector |
+| --- | --- |
+| ![QR scanner with an explicitly fictional sample](docs/screenshots/qr-current.png) | ![Security Inspector showing token-verification controls](docs/screenshots/inspector-current.png) |
 
-## How It Works
+## What the app does
+
+- **Eight checker modes:** Message, QR Scanner, Screenshot, UPI, Link, Email, Phone and Agent. Text modes review pasted content, not your inbox or phone account.
+- **Text and screenshot review:** scam rules, the local UCI spam baseline and optional Gemini analysis produce a verdict with reasons. Suspicious phrases use dotted underlines; the score is a risk signal, not a probability.
+- **QR decoding:** live video, uploaded QR images and fictional samples. A UPI QR is a request to send money. Decoding one does not verify merchant ownership, receive a refund or open a UPI payment.
+- **Sandbox payment gate:** signed review token, amount binding, expiry checks, single-use token tracking and signed order tickets. Editing a token cannot change the approved amount.
+- **Security Inspector:** token claims, signature/expiry verification, Tamper Test, redacted webhook feed and four attack checks. The initial token is an unsigned example, not payment clearance. Decoding claims alone does not verify a token or check whether its nonce has been consumed.
+- **Guarded Agent:** can request a sandbox order only through the same review gate. It cannot read merchant transactions/invoices/orders, capture payments, refund or dispute. The buyer must approve in PayPal.
+- **Local History:** recent checks stay in this browser. Remove individual records or clear all history. There is no shared public transaction-history API.
+- **Safety tools:** evidence-report download, spoken warnings, lookalike-domain signals and a complaint draft. A draft is not a filed complaint; the app never reports anything automatically.
+- **English, Hindi and Hinglish:** localized guidance plus desktop/mobile navigation and light/dark themes.
+
+Agent availability on October 7: live attempts hit Gemini timeout/quota errors. A guarded unit test is not a successful live Agent run.
+
+## Review and checkout flow
 
 ```mermaid
-graph TD
-    A[User pastes text or uploads screenshot] --> B[Defense-in-Depth Engine]
-    B --> B1[Local Deterministic Rules]
-    B --> B2[Naive Bayes Baseline]
-    B --> B3[Gemini Multimodal Review]
-    B1 & B2 & B3 --> C[Evidence Fusion Layer]
-    C -->|High Risk / Scam Detected| D[BLOCKED: PayPal Checkout Locked]
-    C -->|No Red Flags / Benign| E[CLEARED: Issues HMAC Review Token]
-    E --> F[PayPal Orders API v2 Created]
-    F --> G[Capture & Webhook Verified Receipt]
+flowchart TD
+    A[Paste request or upload screenshot] --> B[Rules + local spam baseline + Gemini]
+    B --> C{Server review}
+    C -->|Blocked or AI clearance unavailable| D[Checkout locked]
+    C -->|Cleared and payment prepared| E[Signed review token]
+    E --> F[PayPal sandbox order]
+    F --> G[Buyer approval in PayPal]
+    G --> H[Guarded capture]
+    H --> I[Webhook confirmation when received and verified]
 ```
 
-1. **Submit Request**: Paste an invoice, chat message, or upload a payment screenshot.
-2. **Multi-Model Analysis**: Gemini extracts payee, amount, urgency, and anomalies while local rules screen for known scam signatures. Strictest verdict applies.
-3. **Verdict**:
-   - **BLOCKED**: Server refuses to sign a payment token; checkout cannot open.
-   - **CLEARED**: Server signs a short-lived review token with the exact audited amount.
-4. **Guarded Checkout**: PayPal sandbox button initiates payment locked strictly to the token's parameters.
-5. **Verification & Audit**: Webhook signature is validated and confirmation receipt is generated.
+AI quota failures are shown honestly. Local rules may still flag a scam, but unavailable AI must not turn an unreviewed request into payment clearance. Webhook confirmation is separate from capture and can arrive later.
 
----
+## Run locally
 
-## Project Structure
+Use Node **20.19+** or **22.12+**. Install root, server and client dependencies:
 
-```text
-├── client/                     # Frontend application (React 18, Vite 6, Tailwind CSS)
-│   ├── src/
-│   │   ├── PayGuard.jsx        # Main guarded payment checkout experience
-│   │   ├── App.jsx             # Scam detection chat and UI shell
-│   │   └── ...
-├── server/                     # Backend API (Express.js, Node.js >= 20)
-│   ├── src/
-│   │   ├── ai.js               # Google Gemini SDK integration & prompt guardrails
-│   │   ├── rules.js            # Deterministic Indian & global scam rule definitions
-│   │   ├── classify.js         # Local Naive Bayes spam classifier
-│   │   ├── fusion.js           # Evidence fusion engine combining rules + ML + AI
-│   │   ├── paymentReview.js    # Review tokens, HMAC signing & replay attack defense
-│   │   ├── paypal.js           # PayPal Orders API v2 client
-│   │   └── webhook.js          # Webhook signature verification and event logging
-│   └── eval/                   # Evaluation test suites & datasets
-├── data/                       # Datasets for evaluation and training
-├── docs/                       # Architecture diagrams and benchmark evaluations
-├── render.yaml                 # One-click Render production deployment blueprint
-└── package.json                # Root workspace configuration with dual-dev scripts
-```
-
----
-
-## Quick Start & Local Setup
-
-### Prerequisites
-- **Node.js**: `v20.19+` or `v22.12+` (Node 24 supported)
-- **npm**: `v9+`
-
-### 1. Clone the Repository
 ```bash
-git clone https://github.com/gajit9147-dev/scam-shield-paypal.git
-cd scam-shield-paypal
-```
-
-### 2. Configure Environment Variables
-Copy `.env.example` to `server/.env` (and root `.env`):
-```bash
+npm install
+npm run install:all
 cp .env.example server/.env
 ```
 
-Open `server/.env` and supply your credentials:
-```env
-# PayPal Sandbox Credentials (from developer.paypal.com)
-PAYPAL_CLIENT_ID=your_paypal_sandbox_client_id
-PAYPAL_CLIENT_SECRET=your_paypal_sandbox_client_secret
+Fill `server/.env` privately. Never commit it:
 
-# Google Gemini API Key (from Google AI Studio)
+```env
+PAYPAL_CLIENT_ID=your_sandbox_client_id
+PAYPAL_CLIENT_SECRET=your_sandbox_client_secret
 GEMINI_API_KEY=your_gemini_api_key
 
-# Local Server Settings
+# Recommended stable signing secret, or derived from the PayPal secret
+REVIEW_TOKEN_SECRET=your_private_signing_secret
+
+# Optional local settings
 PORT=3001
 CLIENT_ORIGIN=http://localhost:5173
-
-# Optional: Public URL for PayPal Webhook delivery (e.g. ngrok / cloudflare tunnel)
-PUBLIC_URL=
 ```
-> **Note**: Without a Gemini API key, local rules and unit tests still run and block scams, but AI-cleared checkout will remain locked for security.
 
-### 3. Install Dependencies
-You can install all dependencies across root, server, and client with one command:
-```bash
-npm run install:all
-```
-*(Or individually via `npm install` in root, `cd server && npm install`, `cd client && npm install`)*
+For public webhook delivery, set `PUBLIC_URL` to your server's public HTTPS URL. An existing sandbox webhook ID can be supplied as `PAYPAL_WEBHOOK_ID`. See [`.env.example`](.env.example) for model overrides, INR conversion fallback and the used-token log path.
 
-### 4. Run the Application
-
-#### Option A: Run Both Client & Server Concurrently (Recommended)
-From the root directory:
 ```bash
 npm run dev
+# Client: http://localhost:5173
+# Server: http://localhost:3001
 ```
 
-#### Option B: Run in Separate Terminals
-- **Terminal 1 (Backend Server)**:
-  ```bash
-  npm run dev:server
-  # Server starts at http://localhost:3001
-  ```
-- **Terminal 2 (Frontend Client)**:
-  ```bash
-  npm run dev:client
-  # Vite dev server starts at http://localhost:5173
-  ```
+Or use separate terminals with `npm run dev:server` and `npm run dev:client`. Both `/` and `/pay` render the same app.
 
-Open **http://localhost:5173/pay** in your browser to test the payment shield.
+Production build and server:
 
----
-
-## Testing & Benchmarks
-
-The project comes with a comprehensive suite of automated unit, integration, and dataset evaluation tests.
-
-### 1. Server Unit & Integration Tests (83/83 Passing)
-Tests payment token tamper-proofing, replay prevention, rule accuracy, and prompt injection defense:
 ```bash
-npm --prefix server test
+npm run build
+npm start
 ```
 
-### 2. UPI Pilot Synthetic Evaluation Benchmark
-Evaluates detection across synthetic Indian payment fraud scenarios:
+Without PayPal credentials, checkout is unavailable. Without Gemini access, local checks/tests still work, but AI-dependent review and Agent flows are limited. Phone camera access needs HTTPS or localhost and browser permission; photo upload is available as an alternative.
+
+## Tests and evaluation
+
 ```bash
+npm test                         # Server regression suite
+npm run build                    # Frontend production build
 npm --prefix server run eval:upi
-```
-*Current benchmark: **100.00% Precision, 100.00% Recall, 0 False Positives**.*
-
-### 3. Public Indian Scam Dataset Benchmark
-Evaluates real-world Indian SMS and payment scams:
-```bash
 npm --prefix server run eval:public
 ```
-*Current benchmark: **98.55% Precision, 98.55% Recall, 98.45% Accuracy**.*
 
-### 4. Frontend Production Build Check
-```bash
-npm --prefix client run build
+The October 7, 2026 server regression run passed **87/87 tests**. Coverage includes token parsing/signatures/expiry, replay protection, order tickets, scam rules, guarded Agent tools and webhook behavior. The current UI was also checked at 1280px, 390px and 320px, including navigation, themes, languages, camera cleanup, uploaded QR decoding and stale-result invalidation. A fake camera stream is not proof that every physical phone camera works.
+
+Evaluation reports are separate from payment review scores:
+
+- [42-case synthetic UPI pilot](docs/day5-upi-pilot-evaluation.md): a small hand-written regression set, not validated real-world accuracy.
+- [129-case public-source evaluation](docs/day6-public-evaluation.md): filtered public datasets with label noise and documented false positives/negatives, not independent real-world fraud validation.
+
+Do not present a sample's risk score, a four-attack demo or a small dataset benchmark as a guarantee of protection.
+
+## Project structure
+
+```text
+client/src/
+  PayGuard.jsx                 Main app, checker and browser-local History
+  AgentPanel.jsx               Guarded sandbox Agent UI
+  paypalClient.js              Shared PayPal sandbox SDK loader
+  components/                  QR, Inspector, safety and theme tools
+  locales/                     English, Hindi and Hinglish dictionaries
+server/src/
+  index.js                     API routes and guarded checkout
+  rules.js / classify.js       Scam rules and local spam baseline
+  fusion.js / ai.js            Evidence fusion and Gemini helpers
+  paymentReview.js             Review tokens, nonce guard and order tickets
+  agent.js                     Restricted Agent tool wrapper
+  paypal.js / webhook.js       Sandbox PayPal calls and webhook processing
+server/eval/                    Frozen evaluation sets and runners
+docs/                          Architecture, evaluation reports and screenshots
+render.yaml                    Render deployment configuration
 ```
 
----
+## Security and privacy limits
 
-## Security & Architectural Guarantees
+- PayPal API calls use the sandbox endpoint. Never replace this with a live-money endpoint for a demo.
+- Review tokens last up to 15 minutes. A stable signing secret is needed across server restarts.
+- Used-token tracking is file-backed. Configure durable storage if replay state must survive an ephemeral deployment restart; the default temporary file does not make multi-instance coordination automatic.
+- Screenshot routes do not save image files. Requests sent for AI analysis still reach the configured AI service. Avoid uploading secrets or unrelated personal information.
+- Browser History contains your checked text. Use its remove/clear controls on shared devices.
+- Domain and payee checks are format/lookalike signals, not ownership verification. A cleared invoice is not an authenticated merchant invoice.
+- Complaint generation does not contact 1930, your bank or a reporting portal. In India, contact your bank quickly after suspected loss and use [cybercrime.gov.in](https://cybercrime.gov.in/) or 1930.
+- AI output and external input can be wrong. Server-side payment gates reduce particular bypass risks; they do not eliminate fraud.
 
-- **Tamper-Proof Tokens**: The review token is HMAC-signed with `REVIEW_TOKEN_SECRET` (or a key derived from the PayPal secret). Any client-side edit to amount, payee, or expiration invalidates the signature immediately.
-- **Strict Nonce Tracking**: Single-use token IDs (`jti`) are recorded in an append-only log (`used.log`), preventing race conditions and double-spending across server restarts.
-- **Strict Sandbox Boundary**: No real money is transferred; all transactions execute within PayPal's Sandbox developer environment.
-- **Untrusted Input Isolation**: All user text and OCR transcripts are treated strictly as untrusted data strings. System instructions cannot be overridden by adversarial prompt injections.
+## Background
 
----
-
-## Background & Evolution
-
-ScamShield originated as a research project focused on UPI and digital banking fraud detection in India. The foundational scam heuristics, dialect normalizers, and trilingual evaluation frameworks are documented in:
-- [System Architecture](docs/architecture.md)
-- [UPI Pilot Evaluation Report](docs/day5-upi-pilot-evaluation.md)
-- [Public Dataset Benchmark Report](docs/day6-public-evaluation.md)
-
-For the **PayPal AI Hackathon**, the architecture was expanded to include the multimodal Gemini fusion gate, cryptographic review tokens, PayPal Orders API v2 sandbox enforcement, and the interactive Attack the Shield security playground.
-
----
+The project began with Indian UPI/banking scam patterns and expanded for the PayPal AI Hackathon into guarded sandbox checkout and Agent tools. See [architecture](docs/architecture.md) and the evaluation reports above for background and limits.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+[MIT](LICENSE).

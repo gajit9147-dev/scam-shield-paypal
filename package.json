@@ -5,11 +5,11 @@
   "description": "AI-powered UPI, banking and payment scam detection application with glassmorphic UI and trilingual support",
   "scripts": {
     "dev:server": "npm --prefix server start",
-    "dev:client": "npm --prefix client dev",
-    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue,magenta\" \"npm --prefix server start\" \"npm --prefix client dev\"",
+    "dev:client": "npm --prefix client run dev",
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue,magenta\" \"npm --prefix server start\" \"npm --prefix client run dev\"",
     "start": "npm --prefix server start",
     "test": "npm --prefix server test",
-    "build": "npm --prefix client build",
+    "build": "npm --prefix client run build",
     "install:all": "npm --prefix server install && npm --prefix client install"
   },
   "devDependencies": {
