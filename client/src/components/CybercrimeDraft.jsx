@@ -95,9 +95,12 @@ ${signals}
             background: '#070b14',
             border: '1px solid rgba(239, 68, 68, 0.3)',
             borderRadius: 18,
-            padding: 20,
+            padding: 'clamp(14px, 3.5vw, 20px)',
             color: '#fff',
-            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.5)'
+            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.5)',
+            width: '100%',
+            maxWidth: '100%',
+            boxSizing: 'border-box'
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
@@ -137,10 +140,12 @@ ${signals}
             rows={10}
             style={{
               width: '100%',
+              maxWidth: '100%',
+              boxSizing: 'border-box',
               background: 'rgba(0, 0, 0, 0.5)',
               border: '1px solid rgba(255, 255, 255, 0.12)',
               borderRadius: 12,
-              padding: 14,
+              padding: 12,
               fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
               fontSize: 12,
               color: '#e2e8f0',

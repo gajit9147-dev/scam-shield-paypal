@@ -56,6 +56,7 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
   const streamRef = useRef(null);
   const animFrameRef = useRef(null);
   const fileInputRef = useRef(null);
+  const mobileCameraInputRef = useRef(null);
 
   // Stop camera helper
   const stopCamera = useCallback(() => {
@@ -67,14 +68,17 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
     setCameraActive(false);
   }, []);
 
-  // Frame scanning loop
+  // Frame scanning loop for live video
   const tick = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (video && canvas && video.readyState === video.HAVE_ENOUGH_DATA) {
+    if (video && canvas && video.readyState >= 2 && video.videoWidth > 0) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
@@ -93,28 +97,26 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
     animFrameRef.current = requestAnimationFrame(tick);
   }, [stopCamera]);
 
-  // Start camera with graceful fallbacks
+  // Start live viewfinder stream
   const startCamera = async () => {
     setCameraError('');
     setScannedResult(null);
 
     if (!navigator?.mediaDevices?.getUserMedia) {
-      setCameraError('Camera access requires HTTPS or localhost in your browser. Switched to image upload mode.');
-      setMethod('upload');
+      setCameraError('Live video streaming requires HTTPS or localhost in mobile browsers. Use "📸 Take QR Photo" below to capture directly with your phone camera.');
       return;
     }
 
     try {
       stopCamera();
       let stream = null;
-      // 1. Try mobile rear/environment camera first
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' } }
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false
         });
       } catch {
-        // 2. Fallback to default webcam / PC camera
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       }
 
       streamRef.current = stream;
@@ -126,16 +128,8 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
         animFrameRef.current = requestAnimationFrame(tick);
       }
     } catch (err) {
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setCameraError('Camera permission was blocked. Please allow camera access in browser address bar settings, or upload a QR image below.');
-      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-        setCameraError('No webcam or camera device was found on this computer. You can upload a QR image/screenshot directly.');
-        setMethod('upload');
-      } else {
-        setCameraError('Camera could not be accessed (' + (err.message || 'not found') + '). You can upload a QR screenshot or photo below.');
-        setMethod('upload');
-      }
-      setCameraActive(false);
+      console.error('Camera stream access failed:', err);
+      setCameraError('Camera access was blocked or not allowed. Use "📸 Take QR Photo" below to launch your phone camera directly.');
     }
   };
 
@@ -163,7 +157,37 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
     if (onScan) onScan(res);
   };
 
-  // Decode uploaded image
+  // High-performance multi-scale decoder for high-resolution mobile camera captures (12MP-48MP photos)
+  const decodeFromImage = (img) => {
+    const scales = [1000, 600, 1600, img.width];
+    const canvas = canvasRef.current || document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    for (const maxDim of scales) {
+      let w = img.width;
+      let h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        } else {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+      }
+      canvas.width = w;
+      canvas.height = h;
+      ctx.drawImage(img, 0, 0, w, h);
+      const imageData = ctx.getImageData(0, 0, w, h);
+      const code = jsQR(imageData.data, w, h, { inversionAttempts: 'attemptBoth' });
+      if (code && code.data) {
+        return code.data;
+      }
+    }
+    return null;
+  };
+
+  // Decode uploaded or camera-captured image
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -177,19 +201,12 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
       setUploadedImage(url);
       const img = new Image();
       img.onload = () => {
-        const canvas = canvasRef.current || document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height);
-
+        const foundData = decodeFromImage(img);
         setDecoding(false);
-        if (code && code.data) {
-          handleQrFound(code.data);
+        if (foundData) {
+          handleQrFound(foundData);
         } else {
-          setCameraError('No QR code detected in this image. Make sure the QR code is clear, or paste the text directly.');
+          setCameraError('No QR code detected in this photo. Please retake closer to the QR code, ensure good lighting, or paste the text directly.');
         }
       };
       img.onerror = () => {
@@ -208,9 +225,9 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
   };
 
   return (
-    <div className="pg-qr-scanner" style={{ marginTop: 12 }}>
+    <div className="pg-qr-scanner" style={{ marginTop: 12, width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
       {/* Scanner Mode Toggle */}
-      <div className="pg-tabs" style={{ marginBottom: 18 }}>
+      <div className="pg-tabs" style={{ marginBottom: 16 }}>
         <button
           type="button"
           onClick={() => {
@@ -238,131 +255,194 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
       {/* Hidden processing canvas */}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
+      {/* Hidden Native Mobile Camera Input: works 100% on all Android and iOS devices */}
+      <input
+        id="qr-mobile-camera-capture"
+        ref={mobileCameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleFileUpload}
+        style={{ position: 'absolute', opacity: 0, width: 1, height: 1, pointerEvents: 'none' }}
+      />
+
       {/* Camera View Area */}
       {method === 'camera' && (
         <div
           style={{
             background: '#090d16',
-            borderRadius: 24,
+            borderRadius: 20,
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            padding: 24,
+            padding: 'clamp(14px, 3.5vw, 24px)',
             textAlign: 'center',
             color: '#fff',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            width: '100%',
+            boxSizing: 'border-box'
           }}
         >
-          {!cameraActive ? (
-            <div style={{ padding: '36px 16px' }}>
+          {/* Active Viewfinder Stream (Kept mounted in DOM so videoRef is always valid) */}
+          <div
+            style={{
+              display: cameraActive ? 'block' : 'none',
+              position: 'relative',
+              width: '100%',
+              maxWidth: '100%',
+              aspectRatio: '4 / 3',
+              maxHeight: 320,
+              margin: '0 auto',
+              borderRadius: 16,
+              overflow: 'hidden',
+              background: '#000',
+              boxShadow: '0 12px 30px rgba(0, 0, 0, 0.6)'
+            }}
+          >
+            <video
+              ref={videoRef}
+              playsInline
+              muted
+              autoPlay
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+
+            {/* Laser Scanning Animation Overlay */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '20%',
+                left: '15%',
+                right: '15%',
+                bottom: '20%',
+                border: '2px solid rgba(99, 102, 241, 0.8)',
+                borderRadius: 14,
+                boxShadow: '0 0 20px rgba(99, 102, 241, 0.4), inset 0 0 20px rgba(99, 102, 241, 0.2)',
+                pointerEvents: 'none'
+              }}
+            >
               <div
                 style={{
-                  width: 72,
-                  height: 72,
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 2,
+                  background: 'linear-gradient(90deg, transparent, #38bdf8, #818cf8, transparent)',
+                  boxShadow: '0 0 8px #38bdf8',
+                  animation: 'scanLaser 2s linear infinite'
+                }}
+              />
+            </div>
+
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 12,
+                left: 0,
+                right: 0,
+                fontSize: 12,
+                color: 'rgba(255, 255, 255, 0.8)',
+                textShadow: '0 2px 4px rgba(0,0,0,0.8)'
+              }}
+            >
+              Align QR code inside the frame
+            </div>
+          </div>
+
+          {cameraActive && (
+            <div style={{ marginTop: 14 }}>
+              <button
+                type="button"
+                onClick={stopCamera}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  color: '#fff',
+                  borderRadius: 999,
+                  padding: '8px 20px',
+                  fontSize: 13,
+                  cursor: 'pointer'
+                }}
+              >
+                Stop Camera Stream
+              </button>
+            </div>
+          )}
+
+          {/* Idle / Launch Mode */}
+          {!cameraActive && (
+            <div style={{ padding: '16px 8px' }}>
+              <div
+                style={{
+                  width: 58,
+                  height: 58,
                   borderRadius: '50%',
                   background: 'rgba(99, 102, 241, 0.18)',
                   border: '1px solid rgba(99, 102, 241, 0.35)',
                   display: 'grid',
                   placeItems: 'center',
-                  margin: '0 auto 16px',
-                  fontSize: 32
+                  margin: '0 auto 12px',
+                  fontSize: 26
                 }}
               >
                 📸
               </div>
-              <h3 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 6px', color: '#fff' }}>
+              <h3 style={{ fontSize: 17, fontWeight: 700, margin: '0 0 6px', color: '#fff' }}>
                 Scan Any UPI or Payment QR Code
               </h3>
-              <p style={{ margin: '0 auto 20px', fontSize: 13, color: 'rgba(255, 255, 255, 0.6)', maxWidth: 460 }}>
+              <p style={{ margin: '0 auto 18px', fontSize: 13, color: 'rgba(255, 255, 255, 0.65)', maxWidth: 440, lineHeight: 1.5 }}>
                 Point your camera at a merchant QR, UPI collect sticker, or payment invoice to inspect who receives the money and verify for scams before paying.
               </p>
-              <button
-                onClick={startCamera}
-                className="pg-btn"
-                style={{ padding: '12px 28px', fontSize: 15 }}
-              >
-                Start Camera Scanner &rarr;
-              </button>
-            </div>
-          ) : (
-            <div>
-              {/* Active Video Stream with Viewfinder */}
-              <div
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  maxWidth: 420,
-                  height: 320,
-                  margin: '0 auto',
-                  borderRadius: 18,
-                  overflow: 'hidden',
-                  background: '#000',
-                  boxShadow: '0 12px 30px rgba(0, 0, 0, 0.6)'
-                }}
-              >
-                <video
-                  ref={videoRef}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
 
-                {/* Laser Scanning Animation Overlay */}
-                <div
+              {/* Primary Mobile Shutter & Live Stream Buttons */}
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                {/* 100% Reliable Native Mobile Camera Shutter via label */}
+                <label
+                  htmlFor="qr-mobile-camera-capture"
+                  className="pg-btn"
                   style={{
-                    position: 'absolute',
-                    top: '20%',
-                    left: '15%',
-                    right: '15%',
-                    bottom: '20%',
-                    border: '2px solid rgba(99, 102, 241, 0.8)',
-                    borderRadius: 14,
-                    boxShadow: '0 0 20px rgba(99, 102, 241, 0.4), inset 0 0 20px rgba(99, 102, 241, 0.2)',
-                    pointerEvents: 'none'
+                    padding: '12px 22px',
+                    fontSize: 14,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    textAlign: 'center',
+                    justifyContent: 'center'
                   }}
                 >
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: 2,
-                      background: 'linear-gradient(90deg, transparent, #38bdf8, #818cf8, transparent)',
-                      boxShadow: '0 0 8px #38bdf8',
-                      animation: 'scanLaser 2s linear infinite'
-                    }}
-                  />
-                </div>
+                  <span>📸</span>
+                  <span>Take QR Photo (Phone Camera)</span>
+                </label>
 
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 12,
-                    left: 0,
-                    right: 0,
-                    fontSize: 12,
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.8)'
-                  }}
-                >
-                  Align QR code inside the frame
-                </div>
-              </div>
-
-              <div style={{ marginTop: 16 }}>
+                {/* WebRTC Live Stream */}
                 <button
-                  onClick={stopCamera}
+                  type="button"
+                  onClick={startCamera}
                   style={{
-                    background: 'rgba(255, 255, 255, 0.12)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.25)',
                     color: '#fff',
                     borderRadius: 999,
-                    padding: '8px 20px',
-                    fontSize: 13,
-                    cursor: 'pointer'
+                    padding: '12px 18px',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8
                   }}
                 >
-                  Stop Camera
+                  <span>🎥</span>
+                  <span>Live Video Viewfinder</span>
                 </button>
               </div>
+
+              {decoding && (
+                <div style={{ marginTop: 14, fontSize: 13, color: '#38bdf8' }}>
+                  ⏳ Analyzing camera photo for QR code...
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -374,12 +454,14 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
           onClick={() => fileInputRef.current?.click()}
           style={{
             background: 'rgba(255, 255, 255, 0.04)',
-            borderRadius: 24,
+            borderRadius: 20,
             border: '2px dashed var(--line)',
-            padding: 32,
+            padding: 'clamp(20px, 4vw, 32px)',
             textAlign: 'center',
             cursor: 'pointer',
-            transition: 'border-color 0.2s ease'
+            transition: 'border-color 0.2s ease',
+            width: '100%',
+            boxSizing: 'border-box'
           }}
         >
           <input
@@ -390,8 +472,8 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
             style={{ display: 'none' }}
           />
           <div style={{ fontSize: 36, marginBottom: 10 }}>📷</div>
-          <h3 style={{ fontSize: 17, fontWeight: 600, margin: '0 0 6px', color: 'var(--ink)' }}>
-            {decoding ? 'Analyzing QR image...' : 'Drop or Click to Upload QR Code Image'}
+          <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 6px', color: 'var(--ink)' }}>
+            {decoding ? 'Analyzing QR image...' : 'Drop or Tap to Choose QR Image'}
           </h3>
           <p style={{ margin: 0, fontSize: 13, color: 'var(--mut)' }}>
             Upload a screenshot or photo of any UPI, PayPal, or payment QR code.
@@ -404,6 +486,7 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
                 alt="Uploaded QR code"
                 style={{
                   maxHeight: 160,
+                  maxWidth: '100%',
                   borderRadius: 12,
                   border: '1px solid var(--line)',
                   margin: '0 auto',
@@ -415,39 +498,37 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
         </div>
       )}
 
-      {/* Smart Fallback Action Banner when Camera is unavailable */}
+      {/* Fallback & Helper Notice */}
       {cameraError && (
         <div
           style={{
-            marginTop: 16,
+            marginTop: 14,
             background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(15, 23, 42, 0.6))',
             border: '1px solid rgba(239, 68, 68, 0.35)',
-            borderRadius: 18,
-            padding: '18px 20px',
-            color: '#fff'
+            borderRadius: 16,
+            padding: '14px 18px',
+            color: '#fff',
+            width: '100%',
+            boxSizing: 'border-box'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <span style={{ fontSize: 22 }}>📷</span>
-            <span style={{ fontWeight: 700, fontSize: 14, color: '#fca5a5' }}>
-              Camera Not Available on this Desktop Browser
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <span style={{ fontSize: 18 }}>💡</span>
+            <span style={{ fontWeight: 700, fontSize: 13, color: '#fca5a5' }}>
+              Notice & Solution
             </span>
           </div>
-          <p style={{ margin: '0 0 14px', fontSize: 13, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.5 }}>
+          <p style={{ margin: '0 0 12px', fontSize: 13, color: 'rgba(255, 255, 255, 0.85)', lineHeight: 1.5 }}>
             {cameraError}
           </p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => {
-                setMethod('upload');
-                setTimeout(() => fileInputRef.current?.click(), 100);
-              }}
+            <label
+              htmlFor="qr-mobile-camera-capture"
               className="pg-btn"
-              style={{ padding: '10px 22px', fontSize: 13 }}
+              style={{ padding: '9px 18px', fontSize: 13, cursor: 'pointer' }}
             >
-              📁 Choose QR Screenshot / Image from Computer &rarr;
-            </button>
+              📸 Tap to Open Phone Camera &rarr;
+            </label>
             <button
               type="button"
               onClick={() => loadSample(SAMPLE_QRS[0])}
@@ -456,13 +537,13 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
                 border: '1px solid rgba(255, 255, 255, 0.25)',
                 color: '#fff',
                 borderRadius: 999,
-                padding: '10px 18px',
+                padding: '9px 16px',
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: 'pointer'
               }}
             >
-              ⚡ Test Sample Scam QR Instantly
+              ⚡ Test Sample Scam QR
             </button>
           </div>
         </div>
@@ -472,16 +553,18 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
       {scannedResult && (
         <div
           style={{
-            marginTop: 18,
+            marginTop: 16,
             background: '#0b0f19',
             border: '1px solid rgba(255, 255, 255, 0.12)',
-            borderRadius: 20,
-            padding: 22,
+            borderRadius: 18,
+            padding: 'clamp(14px, 3.5vw, 20px)',
             color: '#fff',
-            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.5)'
+            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.5)',
+            width: '100%',
+            boxSizing: 'border-box'
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span
                 style={{
@@ -495,7 +578,7 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
               >
                 {scannedResult.upi ? 'UPI QR DETECTED' : 'QR PAYLOAD READ'}
               </span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', wordBreak: 'break-all' }}>
                 {scannedResult.upi?.pn || 'Payment Destination'}
               </span>
             </div>
@@ -510,16 +593,17 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
               background: 'linear-gradient(135deg, rgba(225, 29, 72, 0.25), rgba(159, 18, 57, 0.3))',
               border: '2px solid #f43f5e',
               borderRadius: 14,
-              padding: '14px 18px',
-              marginBottom: 16,
-              boxShadow: '0 0 20px rgba(244, 63, 94, 0.25)'
+              padding: '12px 16px',
+              marginBottom: 14,
+              boxShadow: '0 0 20px rgba(244, 63, 94, 0.25)',
+              boxSizing: 'border-box'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#fecdd3', fontWeight: 800, fontSize: 14, marginBottom: 4 }}>
-              <span style={{ fontSize: 20 }}>🚨</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#fecdd3', fontWeight: 800, fontSize: 13, marginBottom: 4 }}>
+              <span style={{ fontSize: 18 }}>🚨</span>
               <span>DANGER: YE QR CODE PAISA AANE KA NAHI, PAISA KATNE KA HAI!</span>
             </div>
-            <p style={{ margin: 0, fontSize: 13, color: '#fff', lineHeight: 1.5 }}>
+            <p style={{ margin: 0, fontSize: 12, color: '#fff', lineHeight: 1.5 }}>
               QR code scan karne ya UPI PIN daalne se <b>kabhi paise aate nahi hain</b>, sirf aapke bank account se paise katte hain. Agar kisi ne cashback ya refund pane ke liye ye scan karne ko bola hai to <b>turant cancel karein!</b>
             </p>
           </div>
@@ -529,25 +613,25 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: 12,
-                marginBottom: 16
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))',
+                gap: 10,
+                marginBottom: 14
               }}
             >
-              <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: 12, borderRadius: 12, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: 10, borderRadius: 12, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                 <span style={{ fontSize: 10, textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.45)', display: 'block' }}>Payee VPA Handle</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#60a5fa', wordBreak: 'break-all' }}>{scannedResult.upi.pa}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa', wordBreak: 'break-all' }}>{scannedResult.upi.pa}</span>
               </div>
-              <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: 12, borderRadius: 12, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: 10, borderRadius: 12, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                 <span style={{ fontSize: 10, textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.45)', display: 'block' }}>Requested Amount</span>
-                <span style={{ fontSize: 16, fontWeight: 800, color: '#34d399' }}>
+                <span style={{ fontSize: 15, fontWeight: 800, color: '#34d399' }}>
                   {scannedResult.upi.am ? `${scannedResult.upi.am} ${scannedResult.upi.cu}` : 'Open (Any Amount)'}
                 </span>
               </div>
               {scannedResult.upi.tn && (
-                <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: 12, borderRadius: 12, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: 10, borderRadius: 12, border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                   <span style={{ fontSize: 10, textTransform: 'uppercase', color: 'rgba(255, 255, 255, 0.45)', display: 'block' }}>Transaction Note</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#f8fafc' }}>"{scannedResult.upi.tn}"</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#f8fafc', wordBreak: 'break-word' }}>"{scannedResult.upi.tn}"</span>
                 </div>
               )}
             </div>
@@ -555,13 +639,13 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
             <div
               style={{
                 background: 'rgba(0, 0, 0, 0.4)',
-                padding: '12px 16px',
+                padding: '10px 14px',
                 borderRadius: 12,
                 fontFamily: 'monospace',
-                fontSize: 13,
+                fontSize: 12,
                 wordBreak: 'break-all',
                 color: '#38bdf8',
-                marginBottom: 16
+                marginBottom: 14
               }}
             >
               {scannedResult.raw}
@@ -569,7 +653,7 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
           )}
 
           {/* Direct Trigger Button */}
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
             <button
               onClick={() => {
                 if (onAnalyzeText) {
@@ -577,11 +661,11 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
                 }
               }}
               className="pg-btn"
-              style={{ padding: '10px 22px', fontSize: 14 }}
+              style={{ padding: '10px 20px', fontSize: 13 }}
             >
               Scan with ScamShield AI &rarr;
             </button>
-            <span style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.5)' }}>
+            <span style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.5)' }}>
               Runs payee safety check, QR collect scam detector, and PayPal sandbox guard.
             </span>
           </div>
@@ -589,7 +673,7 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
       )}
 
       {/* Preset Example QRs */}
-      <div style={{ marginTop: 22 }}>
+      <div style={{ marginTop: 20 }}>
         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--mut)', display: 'block', marginBottom: 8 }}>
           Or try a simulated QR payment sample:
         </span>

@@ -74,8 +74,11 @@ export default function DomainRadar({ text }) {
         background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(15, 23, 42, 0.6))',
         border: '1px solid rgba(239, 68, 68, 0.35)',
         borderRadius: 18,
-        padding: '18px 20px',
-        color: '#fff'
+        padding: 'clamp(14px, 3.5vw, 20px)',
+        color: '#fff',
+        width: '100%',
+        maxWidth: '100%',
+        boxSizing: 'border-box'
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
@@ -104,7 +107,7 @@ export default function DomainRadar({ text }) {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))',
           gap: 12,
           marginBottom: 14
         }}

@@ -223,13 +223,13 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
           style={{
             position: 'relative',
             zIndex: 1,
-            padding: '28px 28px 24px',
+            padding: 'clamp(14px, 3.5vw, 24px)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: 20
+            gap: 16
           }}
         >
           <div>
@@ -365,7 +365,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
             zIndex: 1,
             display: 'flex',
             gap: 8,
-            padding: '14px 28px',
+            padding: '10px clamp(10px, 3vw, 24px)',
             background: 'rgba(0, 0, 0, 0.25)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
             flexWrap: 'wrap'
@@ -406,7 +406,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
         </div>
 
         {/* Tab Content Body */}
-        <div style={{ position: 'relative', zIndex: 1, padding: 28 }}>
+        <div style={{ position: 'relative', zIndex: 1, padding: 'clamp(14px, 3.5vw, 24px)', width: '100%', boxSizing: 'border-box' }}>
           {/* TAB 1: Token Anatomy & Nonce */}
           {tab === 'token' && (
             <div>
@@ -527,9 +527,9 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                    gap: 16,
-                    marginBottom: 24
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
+                    gap: 14,
+                    marginBottom: 20
                   }}
                 >
                   {/* Amount Bound Card */}
@@ -667,9 +667,9 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                  gap: 18,
-                  marginBottom: 24
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
+                  gap: 14,
+                  marginBottom: 20
                 }}
               >
                 <div
