@@ -395,3 +395,22 @@ html:not(.dark) .glass-bubble:nth-child(n+2){display:none}
 .pg-night .pg-nav-link.active{color:#161720}.pg-night .pg-btn-o{color:var(--ink)}
 .pg-night .pg-ag-steps li,.pg-night .pg-ag-hooks li{background:#2a2b37}
 @media(max-width:950px){.pg-nav{border-radius:28px;align-items:flex-start;gap:12px;flex-wrap:wrap}.pg-nav-tools{width:100%;justify-content:flex-start;gap:5px}.pg-nav-link{padding:8px 10px}.pg-nav-tools select{margin-left:auto}.pg-library-grid{grid-template-columns:1fr}}
+
+.pg-reviews{max-width:1200px;margin:30px auto 0;text-align:left}
+.pg-reviews h2{font-size:32px;margin:0 0 10px;color:#fff}
+.pg-footer .pg-review-intro{font-size:14px;line-height:1.6;margin:0 0 20px;color:#b5b5c1;max-width:760px}
+.pg-review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.pg-review-card{background:#18191f;border:1px solid #35363f;border-radius:24px;padding:24px;min-width:0}
+.pg-review-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.pg-review-top h3{font-size:20px;margin:0 0 5px;color:#fff}
+.pg-review-top span{font-size:12px;line-height:1.5;color:#b5b5c1;display:block}
+.pg-review-top b{font-size:36px;line-height:1;letter-spacing:-1px;color:#d2ceff;white-space:nowrap}
+.pg-review-top small{font-size:15px;letter-spacing:0;color:#aaa9bb}
+.pg-review-card blockquote{font-size:16px;line-height:1.6;margin:20px 0 12px;color:#f0eff6}
+.pg-footer .pg-review-card p{font-size:13px;line-height:1.65;color:#b5b5c1;margin:12px 0}
+.pg-review-next strong{color:#e7e6ef}
+.pg-review-card details{border-top:1px solid #35363f;margin-top:18px;padding-top:14px}
+.pg-reviews summary{font-size:13px;color:#dad8ea;cursor:pointer;line-height:1.5}
+.pg-review-archive{overflow:hidden;margin-top:20px;padding:18px 22px;border:1px solid #35363f;border-radius:18px}
+.pg-review-archive>p{font-size:13px!important;line-height:1.6;margin:12px 0!important}
+@media(max-width:700px){.pg-review-grid{grid-template-columns:1fr}.pg-review-card{padding:20px}.pg-reviews h2{font-size:28px}.pg-review-top b{font-size:32px}}

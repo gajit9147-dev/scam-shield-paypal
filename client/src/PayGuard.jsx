@@ -173,16 +173,29 @@ const AI_FEEDBACK = [
 function AiFeedbackMarquee() {
   const items = [...AI_FEEDBACK, ...AI_FEEDBACK];
   return (
-    <section aria-label="AI-generated feedback on this project" className="mx-auto mt-6 max-w-xl md:max-w-3xl lg:max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-3">
-      <p className="mb-2 text-xs uppercase tracking-wide text-white/60">Feedback and suggestions taken from AI (ChatGPT and Gemini), not from human users. Real scores, copied word for word.</p>
-      <div className="ai-marquee flex gap-4 whitespace-nowrap">
-        {items.map((f, i) => (
-          <figure key={i} className="inline-block shrink-0 rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-white/80">
-            <blockquote>&ldquo;{f.text}&rdquo;</blockquote>
-            <figcaption className="mt-1 text-xs text-white/50">AI-generated: {f.who}, score {f.score}</figcaption>
-          </figure>
-        ))}
+    <section aria-label="AI-generated feedback on this project" className="pg-reviews">
+      <h2>Project <span className="pg-serif">reviews</span></h2>
+      <p className="pg-review-intro">AI-generated opinions, not user testimonials or security certifications. Scores describe the project, not scam-detection accuracy.</p>
+      <div className="pg-review-grid">
+        <article className="pg-review-card">
+          <div className="pg-review-top"><div><h3>Antigravity</h3><span>Architecture &amp; code quality · October 7, 2026</span></div><b>9.3<small>/10</small></b></div>
+          <blockquote>"Strict tool guardrails preventing LLM prompt injections from invoking money-transfer tools. Signed review tokens, single-use nonce tracking, and rate limiting."</blockquote>
+          <p>Review supplied by the project owner. It reports 83 passing tests and praises the layered checks and Hindi/Hinglish support.</p>
+          <p className="pg-review-next"><strong>Suggested next steps:</strong> dependency audit fixes and TypeScript definitions for API contracts.</p>
+          <details><summary>Test context and limits</summary><p>Rechecked locally: 83/83 mocked server tests; 42 synthetic cases at 100% accuracy; 129 public-source cases at 98.45% accuracy. These narrow sets do not establish real-world effectiveness. Untuned public rules-only samples had 41-48% recall. A configured Gemini key is not proof that an AI call succeeded; current live AI checks have hit quota limits. Checkout stays locked when AI review is unavailable.</p></details>
+        </article>
+        <article className="pg-review-card">
+          <div className="pg-review-top"><div><h3>ChatGPT</h3><span>First project review · October 5, 2026</span></div><b>8.3<small>/10</small></b></div>
+          <blockquote>"Technically impressive and demoable with unusually strong security controls, but limited by detection generalization, payee verification, and sandbox-only realism."</blockquote>
+          <p>Historical review of an earlier version, selected by the project owner. Not a new rating of the current deployment.</p>
+          <p className="pg-review-next"><strong>Review strengths:</strong> server-side blocking, signed tokens, amount binding, capture checks and webhook verification.</p>
+          <details><summary>Original review limits</summary><p>"The reported 98.55% precision/recall is from a small, potentially non-representative dataset; it should not be presented as real-world accuracy."</p><p>"Payee verification is absent, despite being central to payment safety."</p><p>"The PayPal “payment” does not actually pay the extracted seller, reducing real-world fidelity."</p></details>
+        </article>
       </div>
+      <details className="pg-review-archive"><summary>Earlier AI reviews (historical scores)</summary>
+        <p>Previous versions received ChatGPT 8.3, 8.4 and 8.0, and Gemini 8.0 and 7.5. Verbatim excerpts follow; scores are not directly comparable across prompts or models.</p>
+        <div className="ai-marquee flex gap-4 whitespace-nowrap">{items.map((f, i) => <figure key={i} className="inline-block shrink-0 rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-white/80"><blockquote>"{f.text}"</blockquote><figcaption className="mt-1 text-xs text-white/50">AI-generated: {f.who}, score {f.score}</figcaption></figure>)}</div>
+      </details>
     </section>
   );
 }
