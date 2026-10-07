@@ -3,10 +3,27 @@
 Check a payment request before you pay. ScamShield combines scam rules, a local spam baseline and Gemini review, then opens PayPal **sandbox** checkout only when the server clears the request. A cleared result is guidance, not proof that a person or merchant is genuine.
 
 - [Live site](https://scam-shield-paypal.onrender.com/) (`/pay` opens the same app)
-- [Demo video](https://youtu.be/piMQvRnr5xI)
+- [Demo video](https://youtu.be/cFKX_lgzVys)
 - [Devpost entry](https://devpost.com/software/scamshield-kuvz8o)
 
 No real money moves. Sandbox payments go to the configured test merchant, not to an email address or UPI ID pasted into the checker. The free Render service can take time to wake up.
+
+## Try it (for judges)
+
+Live demo: https://scam-shield-paypal.onrender.com/pay
+(Render free tier: the first load can take up to about a minute to wake up. Sandbox only, no real money moves.)
+
+1. Blocked example. Paste this into the checker and press Analyze:
+   `URGENT! Your PayPal account is limited. Pay $25 verification fee to support-help@gmail.com within 10 minutes or your account will be blocked.`
+   Expected: BLOCKED, risk 100/100, reasons listed, PayPal checkout stays locked.
+2. Cleared example and payment. Paste:
+   `Invoice 88 from Blue Cafe Vadodara: please pay $12.50 for catering order 88. Thanks!`
+   Expected: CLEARED (risk score low, "uncertain", not "safe"). Open PayPal sandbox checkout and log in with the sandbox buyer below. After payment the receipt shows the order and capture status from PayPal's response, then a "PayPal webhook confirmed" line.
+   Sandbox buyer email: sb-ciyxy53147650@personal.example.com
+   Sandbox buyer password: d7)3:q@J (PayPal sandbox test account, no real money)
+3. "Attack the shield" (below the result): runs 4 simulated bypass attempts against the server-side gate (no PayPal call). All 4 should show REJECTED.
+4. Security Inspector (top menu): Tamper Test, PayPal Webhook Stream, Attack Vector Matrix (press "Execute Full Attack Suite") and Decision Log. Token panels are labeled "illustrative" until you run a real review first.
+5. Agent mode is experimental and can time out. It is not needed to evaluate the project.
 
 ## Current UI
 
@@ -31,7 +48,7 @@ Screenshots below show the final UI with fictional sample requests. Checker resu
 - **QR decoding:** live video, uploaded QR images and fictional samples. A UPI QR is a request to send money. Decoding one does not verify merchant ownership, receive a refund or open a UPI payment.
 - **Sandbox payment gate:** signed review token, amount binding, expiry checks, single-use token tracking and signed order tickets. Editing a token cannot change the approved amount.
 - **Security Inspector:** token claims, signature/expiry verification, Tamper Test, redacted webhook feed and four attack checks. The initial token is an unsigned example, not payment clearance. Decoding claims alone does not verify a token or check whether its nonce has been consumed.
-- **Guarded Agent:** can request a sandbox order only through the same review gate. It cannot read merchant transactions/invoices/orders, capture payments, refund or dispute. The buyer must approve in PayPal.
+- **Guarded Agent (experimental, may time out):** can request a sandbox order only through the same review gate. It cannot read merchant transactions/invoices/orders, capture payments, refund or dispute. The buyer must approve in PayPal.
 - **Local History:** recent checks stay in this browser. Remove individual records or clear all history. There is no shared public transaction-history API.
 - **Safety tools:** evidence-report download, spoken warnings, lookalike-domain signals and a complaint draft. A draft is not a filed complaint; the app never reports anything automatically.
 - **English, Hindi and Hinglish:** localized guidance plus desktop/mobile navigation and light/dark themes.
@@ -107,7 +124,7 @@ npm --prefix server run eval:upi
 npm --prefix server run eval:public
 ```
 
-The October 7, 2026 server regression run passed **87/87 tests**; after the later safety changes below the server suite passes **94/94**. Coverage includes token parsing/signatures/expiry, replay protection, order tickets, scam rules, guarded Agent tools and webhook behavior. The current UI was also checked at 1280px, 390px and 320px, including navigation, themes, languages, camera cleanup, uploaded QR decoding and stale-result invalidation. A fake camera stream is not proof that every physical phone camera works.
+The October 7, 2026 server regression run passed **87/87 tests**; after the later safety changes below the server suite passes **100/100**. Coverage includes token parsing/signatures/expiry, replay protection, order tickets, scam rules, guarded Agent tools and webhook behavior. The current UI was also checked at 1280px, 390px and 320px, including navigation, themes, languages, camera cleanup, uploaded QR decoding and stale-result invalidation. A fake camera stream is not proof that every physical phone camera works.
 
 Evaluation reports are separate from payment review scores:
 

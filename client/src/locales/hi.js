@@ -47,7 +47,7 @@ export const hi = {
   exampleSuspiciousLink: 'संदिग्ध लिंक',
 
   // Real scam texts for example chips (Bilingual / Hindi realistic messages)
-  exampleTextKyc: 'आपका SBI KYC समाप्त हो गया है। अपना खाता 24 घंटे में ब्लॉक होने से बचाने के लिए तुरंत https://sbi-kyc-verify.top/update पर अपडेट करें।',
+  exampleTextKyc: 'आपका Sample Bank KYC समाप्त हो गया है। अपना खाता 24 घंटे में ब्लॉक होने से बचाने के लिए तुरंत https://samplebank-kyc-verify.top/update पर अपडेट करें।',
   exampleTextRefund: 'प्रिय ग्राहक, आपका Rs 4,999 का UPI रिफंड बकाया है। अपने खाते में पैसे पाने के लिए upi-refund.xyz पर Rs 99 का शुल्क भरें।',
   exampleTextLottery: 'बधाई हो! आपने KBC लकी ड्रॉ में Rs 25,00,000 जीते हैं। WhatsApp +91 9876543210 पर संपर्क करें और Rs 1,500 रजिस्ट्रेशन शुल्क जमा करें।',
   exampleTextBankAlert: 'चेतावनी: सुरक्षा कारणों से आपका HDFC बैंक खाता अस्थायी रूप से बंद कर दिया गया है। तुरंत चालू करने के लिए https://hdfc-verify.xyz पर क्लिक करें।',

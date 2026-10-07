@@ -17,7 +17,7 @@ const SAMPLES = [
   ['OTP theft', 'Your bank account is locked. Share the OTP 483920 sent to your phone with our agent to unlock it today'],
   ['Fake prize', 'Congratulations! You won a $500 gift card. Pay a $15 delivery fee at https://claim-prize.example.invalid to get it'],
   ['Friend payback', 'Hey, here are the tickets from last night. Please send me $20 for your share, thanks!'],
-  ['India: fake KYC', 'Dear customer, your KYC is expired and your account will be blocked today. Update KYC now at http://sbi-kyc-update.example.invalid or call 9876543210'],
+  ['India: fake KYC', 'Dear customer, your KYC is expired and your account will be blocked today. Update KYC now at http://samplebank-kyc-update.example.invalid or call 9876543210'],
   ['India: QR refund', 'Hi, I will refund your Rs 4,999 order. Scan this QR code and enter your UPI PIN to receive the money'],
   ['India: job fee', 'Work from home job offer, earn Rs 5000 daily. Pay a Rs 999 registration fee to confirm your joining today'],
   ['India: UPI collect', 'You have a UPI collect request of Rs 9,999 from Cashback Rewards. Approve it to receive your cashback now'],
@@ -112,6 +112,7 @@ function AiPanel({ verdict, review }) {
   const rows = [
     ['Amount', review.request.amount ? `${review.request.amount} ${review.request.currency || ''}` : 'Not found'],
     ['Pay to', review.request.payee || 'Not stated'],
+    ['Payee verification', 'NOT CHECKED. ScamShield cannot confirm who owns this payee; sandbox checkout pays the app\'s own test merchant.'],
     ['For', review.request.purpose || 'Not stated'],
     ['Pressure signs', review.pressure.length ? review.pressure.join('; ') : 'None found'],
     ['Missing from invoice', review.missing.length ? review.missing.join('; ') : 'Nothing obvious'],
@@ -497,7 +498,7 @@ export default function PayGuard() {
                           color: isBlocked ? '#f87171' : isCleared ? '#34d399' : '#fbbf24',
                           border: `1px solid ${isBlocked ? 'rgba(239, 68, 68, 0.3)' : isCleared ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`
                         }}>
-                          {isBlocked ? 'BLOCKED' : isCleared ? 'CLEARED' : 'UNCERTAIN'} • {score === null ? 'Risk score unavailable' : `Risk ${score}/100`}
+                          {isBlocked ? 'BLOCKED (risk decision, not proof)' : isCleared ? 'CLEARED' : 'UNCERTAIN'} • {score === null ? 'Risk score unavailable' : `Risk ${score}/100`}
                         </span>
                       </div>
                       <p style={{ margin: 0, fontSize: 15, fontWeight: 500, lineHeight: 1.5 }}>
@@ -606,12 +607,12 @@ export default function PayGuard() {
             {!result && (
               <div className="pg-example">
                 <div>
-                  <div className="pg-msg"><small>EXAMPLE &middot; SMS</small>Dear customer, your <mark>SBI account will be blocked today</mark>. Complete <mark>KYC update</mark> now: <mark>http://sbi-kyc-verify.co/login</mark> and enter your <mark>OTP</mark> to avoid suspension.</div>
+                  <div className="pg-msg"><small>EXAMPLE &middot; SMS</small>Dear customer, your <mark>Sample Bank account will be blocked today</mark>. Complete <mark>KYC update</mark> now: <mark>http://samplebank-kyc-verify.co/login</mark> and enter your <mark>OTP</mark> to avoid suspension.</div>
                   <div className="pg-todo"><b>What to do:</b> do not click or share the OTP. Report at 1930 or cybercrime.gov.in and call your bank on the number printed on your card.</div>
                 </div>
                 <div>
                   <div className="pg-score"><div className="pg-ring"><i>87<s>/100</s></i></div><div><span className="pg-pill">BLOCKED</span><p>Checkout stays locked.</p></div></div>
-                  <ul className="pg-ev"><li>Urgent threat: "account will be blocked today"</li><li>Lookalike link: sbi-kyc-verify.co is not an SBI domain</li><li>Asks for an OTP, which banks never request by SMS</li><li>Matches the known fake KYC scam pattern</li></ul>
+                  <ul className="pg-ev"><li>Urgent threat: "account will be blocked today"</li><li>Lookalike link: samplebank-kyc-verify.co is not a Sample Bank domain</li><li>Asks for an OTP, which banks never request by SMS</li><li>Matches the known fake KYC scam pattern</li></ul>
                 </div>
               </div>
             )}
@@ -709,7 +710,7 @@ export default function PayGuard() {
             </div>
         <div id="attack" className="rounded-2xl border border-white/10 bg-black/20 p-4 space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-white/70">Think you can cheat it? Try to bypass ScamShield.</p>
+            <p className="text-sm text-white/70">Think you can cheat it? Run 4 simulated bypass attempts against the server-side gate (no PayPal call).</p>
             <button type="button" onClick={runAttacks} className="shrink-0 whitespace-nowrap rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Attack the shield</button>
           </div>
           {attacks && attacks.length > 0 && (

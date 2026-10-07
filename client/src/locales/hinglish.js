@@ -47,7 +47,7 @@ export const hinglish = {
   exampleSuspiciousLink: 'Suspicious Link',
 
   // Real scam texts for example chips (Realistic Hinglish/Indian context)
-  exampleTextKyc: 'Your SBI KYC is expired. Update now at https://sbi-kyc-verify.top/update or your account will be blocked within 24 hours.',
+  exampleTextKyc: 'Your Sample Bank KYC is expired. Update now at https://samplebank-kyc-verify.top/update or your account will be blocked within 24 hours.',
   exampleTextRefund: 'Dear customer, aapka Rs 4,999 ka UPI refund pending hai. Processing fee of Rs 99 pay karein at upi-refund.xyz to receive money in your account.',
   exampleTextLottery: 'Badhai ho! Aapne KBC Lucky Draw me Rs 25,00,000 jeete hain. WhatsApp manager +91 9876543210 par contact karein aur Rs 1,500 registration fee pay karein.',
   exampleTextBankAlert: 'ALERT: Suspicious activity ki wajah se aapka HDFC Bank account temporarily suspend kar diya gaya hai. Turant restore karne ke liye click karein https://hdfc-verify.xyz.',
