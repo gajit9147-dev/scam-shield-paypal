@@ -440,3 +440,9 @@ html:not(.dark) .glass-bubble:nth-child(n+2){display:none}
 }
 @media(max-width:700px){.pg-mobile-controls{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}.pg-mobile-controls label,.pg-mobile-controls .pg-mobile-theme{display:flex;flex-direction:column;align-items:flex-start;gap:8px;font-size:13px}.pg-mobile-controls .pg-mobile-theme{align-items:center;min-width:82px}.pg-mobile-controls select{padding:9px 14px}}
 @media(max-width:700px){.pg-mobile-settings{position:relative;padding:20px 22px;border-radius:30px;background:linear-gradient(140deg,var(--bg),#f2f1ff);box-shadow:0 10px 30px #29234b0b}.pg-night .pg-mobile-settings{background:linear-gradient(140deg,#20212b,#171820)}.pg-mobile-settings-head{position:absolute;right:12px;top:7px}.pg-mobile-settings-head button{font-size:18px;width:24px;height:24px}.pg-mobile-controls{padding-top:4px;align-items:flex-end}.pg-mobile-controls .pg-mobile-theme{padding-right:10px}}
+
+@keyframes scanLaser {
+  0% { top: 0%; opacity: 0.8; }
+  50% { top: 96%; opacity: 1; }
+  100% { top: 0%; opacity: 0.8; }
+}

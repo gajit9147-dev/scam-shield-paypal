@@ -4,6 +4,7 @@ import { whyRisky } from './whyRisky.js';
 import AgentPanel from './AgentPanel.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
 import SecurityInspector from './components/SecurityInspector.jsx';
+import QRScanner from './components/QRScanner.jsx';
 import { getDictionary, translateCategory, translateEvidence, translateRecommendation } from './locales/index.js';
 
 const SAMPLES = [
@@ -325,12 +326,14 @@ export default function PayGuard() {
     fetch('/api/paypal/config').then(r => r.json()).then(setConfig).catch(() => setConfig({ configured: false }));
   }, []);
 
-  async function review() {
+  async function review(explicitText) {
+    const textToCheck = typeof explicitText === 'string' ? explicitText : text;
+    if (!textToCheck?.trim()) return;
     setBusy(true); setError(''); setResult(null); setPaid(null);
     try {
-      setCheckedText(text);
-      const out = await postJson('/api/payments/review', { text });
-      setResult(out); remember(out, text, 'text');
+      setCheckedText(textToCheck);
+      const out = await postJson('/api/payments/review', { text: textToCheck });
+      setResult(out); remember(out, textToCheck, 'text');
     } catch (e) {
       setError(e.message);
     } finally {
@@ -393,12 +396,13 @@ export default function PayGuard() {
   const [mode, setMode] = useState('Message');
   const MODES = {
     Message: 'Paste the SMS, WhatsApp, or chat message you received...',
+    'QR Scanner': '',
+    Screenshot: '',
+    UPI: 'Paste the UPI ID, collect request, or payment handle...',
     Link: 'Paste the suspicious payment link or domain to verify...',
     Email: 'Paste the invoice email text or payment request...',
     Phone: 'Enter what the caller or SMS requested you to pay...',
-    Screenshot: '',
-    Agent: '',
-    UPI: 'Paste the UPI ID, collect request, or payment handle...'
+    Agent: ''
   };
 
   return (
@@ -539,7 +543,17 @@ export default function PayGuard() {
                 <button key={m} role="tab" aria-selected={mode === m} onClick={() => setMode(m)} className={`pg-tab ${mode === m ? 'on' : ''}`}>{m}</button>
               ))}
             </div>
-            {mode === 'Agent' ? <AgentPanel /> : mode !== 'Screenshot' ? (
+            {mode === 'Agent' ? <AgentPanel /> : mode === 'QR Scanner' ? (
+              <QRScanner
+                onScan={(scanned) => {
+                  setText(scanned.readableText);
+                }}
+                onAnalyzeText={(txt) => {
+                  setText(txt);
+                  review(txt);
+                }}
+              />
+            ) : mode !== 'Screenshot' ? (
               <>
                 <textarea
                   value={text}
