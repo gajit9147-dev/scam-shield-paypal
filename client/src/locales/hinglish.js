@@ -13,10 +13,10 @@ export const hinglish = {
   profile: 'Profile',
 
   // Navigation
-  navCheckMessage: 'Security Scanner',
-  navHistory: 'Audit History',
-  navScamExamples: 'Threat Library',
-  navSafetyTips: 'Safety Protocols',
+  navCheckMessage: 'Check Message',
+  navHistory: 'History',
+  navScamExamples: 'Scam Examples',
+  navSafetyTips: 'Safety Tips',
   navSettings: 'Settings',
 
   // Center Main Heading
