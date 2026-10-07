@@ -3,7 +3,7 @@
 Check a payment request before you pay. ScamShield combines scam rules, a local spam baseline and Gemini review, then opens PayPal **sandbox** checkout only when the server clears the request. A cleared result is guidance, not proof that a person or merchant is genuine.
 
 - [Live site](https://scam-shield-paypal.onrender.com/) (`/pay` opens the same app)
-- [Demo video](https://youtu.be/cFKX_lgzVys)
+- [Demo video](https://youtu.be/53uOIUQQSfM)
 - [Devpost entry](https://devpost.com/software/scamshield-kuvz8o)
 
 No real money moves. Sandbox payments go to the configured test merchant, not to an email address or UPI ID pasted into the checker. The free Render service can take time to wake up.
