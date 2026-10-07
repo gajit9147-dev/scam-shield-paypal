@@ -5,6 +5,9 @@ import AgentPanel from './AgentPanel.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
 import SecurityInspector from './components/SecurityInspector.jsx';
 import QRScanner from './components/QRScanner.jsx';
+import AudioAlert from './components/AudioAlert.jsx';
+import CybercrimeDraft from './components/CybercrimeDraft.jsx';
+import DomainRadar from './components/DomainRadar.jsx';
 import { getDictionary, translateCategory, translateEvidence, translateRecommendation } from './locales/index.js';
 
 const SAMPLES = [
@@ -605,9 +608,12 @@ export default function PayGuard() {
 {result && (
           <div className="rounded-2xl border border-white/15 bg-black/30 p-5 space-y-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
             <div className={`rounded-2xl border px-4 py-3 ${review_.blocked ? 'border-rose-300/40 bg-rose-500/15' : review_.degraded ? 'border-amber-300/50 bg-amber-400/15' : 'border-emerald-300/30 bg-emerald-400/10'}`}>
-              <p className={`text-2xl font-semibold tracking-tight ${review_.blocked ? 'text-rose-100' : review_.degraded ? 'text-amber-100' : 'text-emerald-100'}`}>
-                {review_.blocked ? 'BLOCKED: suspicious payment request' : review_.canPay ? 'CLEARED: PayPal Sandbox unlocked' : review_.degraded ? 'NOT CLEARED: AI review unavailable' : 'NOT PAYABLE: checkout could not be prepared'}
-              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+                <p className={`text-2xl font-semibold tracking-tight ${review_.blocked ? 'text-rose-100' : review_.degraded ? 'text-amber-100' : 'text-emerald-100'}`}>
+                  {review_.blocked ? 'BLOCKED: suspicious payment request' : review_.canPay ? 'CLEARED: PayPal Sandbox unlocked' : review_.degraded ? 'NOT CLEARED: AI review unavailable' : 'NOT PAYABLE: checkout could not be prepared'}
+                </p>
+                <AudioAlert verdict={verdict} review={review_} language={language} />
+              </div>
               <p className="text-xs text-white/60">{review_.blocked ? 'The server will not open checkout for this request.' : review_.degraded ? 'Only the rules ran. Checkout stays locked until the AI review answers. Check again in a minute.' : 'It passed the automated checks. That does not prove the seller is genuine.'}</p>
               <p className="mt-1 text-sm text-white/85">
                 {review_.request?.amount ? `${review_.request.amount} ${review_.request.currency || ''}` : 'Amount not found'}
@@ -643,6 +649,7 @@ export default function PayGuard() {
                 <Highlighted text={result.transcript || checkedText} />
               </div>
             )}
+            <DomainRadar text={result.transcript || checkedText} />
             <AiPanel verdict={verdict} review={review_} />
             {review_.blocked && <WhyBlocked verdict={verdict} language={language} />}
                                     {review_.advice && <p className="text-sm text-white/75">{review_.advice}</p>}
@@ -665,7 +672,12 @@ export default function PayGuard() {
                 <p className="text-xs text-emerald-100/80">{hook === 'confirmed' ? 'PayPal webhook confirmed this capture (signature verified by PayPal).' : hook === 'waiting' ? 'Waiting for PayPal webhook confirmation...' : hook === 'none' ? 'PayPal webhook confirmation not received yet.' : ''}</p>
               </div>
             )}
-            <button type="button" onClick={() => downloadReport(result, result.transcript || checkedText)} className="rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Download evidence report</button>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+              <button type="button" onClick={() => downloadReport(result, result.transcript || checkedText)} className="rounded-full border border-white/25 px-4 py-1.5 text-xs text-white/90 hover:bg-white/10">Download evidence report</button>
+              {(review_.blocked || verdict.riskLevel === 'HIGH_RISK' || verdict.riskLevel === 'SUSPICIOUS') && (
+                <CybercrimeDraft result={result} sourceText={result.transcript || checkedText} language={language} />
+              )}
+            </div>
             <details className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm" style={{ marginTop: 12 }}>
               <summary className="cursor-pointer text-white/80 font-medium">
                 🛡️ {language === 'hi' ? 'क्रिप्टोग्राफिक टोकन और वेबहुक विश्लेषक' : 'Inspect Cryptographic Token & Webhook'} {review_.token ? '· Token Active' : ''}

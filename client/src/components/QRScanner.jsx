@@ -464,6 +464,26 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
             </span>
           </div>
 
+          {/* Loud Red Alert for UPI QR Scams */}
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(225, 29, 72, 0.25), rgba(159, 18, 57, 0.3))',
+              border: '2px solid #f43f5e',
+              borderRadius: 14,
+              padding: '14px 18px',
+              marginBottom: 16,
+              boxShadow: '0 0 20px rgba(244, 63, 94, 0.25)'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#fecdd3', fontWeight: 800, fontSize: 14, marginBottom: 4 }}>
+              <span style={{ fontSize: 20 }}>🚨</span>
+              <span>DANGER: YE QR CODE PAISA AANE KA NAHI, PAISA KATNE KA HAI!</span>
+            </div>
+            <p style={{ margin: 0, fontSize: 13, color: '#fff', lineHeight: 1.5 }}>
+              QR code scan karne ya UPI PIN daalne se <b>kabhi paise aate nahi hain</b>, sirf aapke bank account se paise katte hain. Agar kisi ne cashback ya refund pane ke liye ye scan karne ko bola hai to <b>turant cancel karein!</b>
+            </p>
+          </div>
+
           {/* Extracted UPI Fields */}
           {scannedResult.upi ? (
             <div
