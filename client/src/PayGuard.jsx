@@ -204,18 +204,106 @@ export default function PayGuard() {
   const [language, setLanguage] = useState('en');
   const [theme, setTheme] = useState(() => localStorage.getItem('ss_theme_v2') || 'light');
   const [view, setView] = useState('checker');
-  const [history, setHistory] = useState(() => { try { return JSON.parse(localStorage.getItem('upi_shield_history') || '[]'); } catch { return []; } });
+  const [history, setHistory] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('upi_shield_history') || '[]'); } catch { return []; }
+  });
   const t = getDictionary(language);
-  useEffect(() => { document.documentElement.classList.toggle('dark', theme === 'dark'); localStorage.setItem('ss_theme_v2', theme); }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('ss_theme_v2', theme);
+  }, [theme]);
+
+  // Sync history with server on load
+  useEffect(() => {
+    fetch('/api/history')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data?.history) && data.history.length > 0) {
+          setHistory(prev => {
+            const combined = [...prev, ...data.history];
+            const seen = new Set();
+            const unique = combined.filter(item => {
+              const k = (item.sourceText || '').slice(0, 100);
+              if (!k || seen.has(k)) return false;
+              seen.add(k);
+              return true;
+            }).slice(0, 50);
+            try { localStorage.setItem('upi_shield_history', JSON.stringify(unique)); } catch {}
+            return unique;
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   function showView(next) { setView(next); }
+
   function remember(out, sourceText, type) {
-    const item = { id: Date.now(), timestamp: new Date().toLocaleString(), type, sourceText, result: { verdict: out.verdict, review: { blocked: out.review.blocked, canPay: out.review.canPay, riskScore: out.review.riskScore } } };
-    setHistory(prev => { const next = [item, ...prev].slice(0, 20); try { localStorage.setItem('upi_shield_history', JSON.stringify(next)); } catch {} return next; });
+    if (!out) return;
+    const v = out.verdict || {};
+    const r = out.review || {};
+    const isBlocked = Boolean(r.blocked || v.riskLevel === 'HIGH_RISK');
+    const isCleared = Boolean(r.canPay);
+    const score = r.riskScore ?? (v.riskLevel === 'HIGH_RISK' ? 85 : v.riskLevel === 'SUSPICIOUS' ? 55 : 15);
+
+    const item = {
+      id: Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      timestamp: new Date().toLocaleString(),
+      type: type || 'text',
+      sourceText: String(sourceText || '').trim(),
+      result: {
+        verdict: {
+          riskLevel: v.riskLevel || (isBlocked ? 'HIGH_RISK' : 'UNCERTAIN'),
+          label: v.label || (isBlocked ? 'scam' : 'uncertain'),
+          category: v.category || 'unknown_suspicious',
+          categoryLabel: v.categoryLabel || '',
+          summary: v.summary || v.reason || ''
+        },
+        review: {
+          blocked: isBlocked,
+          canPay: isCleared,
+          riskScore: score,
+          amount: r.request?.amount || r.amount,
+          currency: r.request?.currency || r.currency,
+          payee: r.request?.payee || r.payee
+        }
+      }
+    };
+
+    setHistory(prev => {
+      const next = [item, ...prev.filter(x => x.sourceText !== item.sourceText)].slice(0, 50);
+      try { localStorage.setItem('upi_shield_history', JSON.stringify(next)); } catch {}
+      return next;
+    });
+
+    // Mirror to server history
+    fetch('/api/history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sourceText: item.sourceText, type: item.type, verdict: item.result.verdict, review: item.result.review })
+    }).catch(() => {});
   }
+
+  function deleteHistoryItem(id) {
+    setHistory(prev => {
+      const next = prev.filter(x => x.id !== id);
+      try { localStorage.setItem('upi_shield_history', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }
+
+  function clearAllHistory() {
+    if (window.confirm('Clear all audit history?')) {
+      setHistory([]);
+      try { localStorage.removeItem('upi_shield_history'); } catch {}
+      fetch('/api/history', { method: 'DELETE' }).catch(() => {});
+    }
+  }
+
   function restore(item) {
     setView('checker'); setMode('Message'); setPaid(null); setError('');
     setText(item.sourceText || ''); setCheckedText(item.sourceText || ''); setShot(null);
-    // Stored results never restore a checkout authorization. Recheck for a fresh token.
     setResult(null);
     if (item.type === 'image' && !item.sourceText) setError('Upload the screenshot again for a fresh check.');
   }
@@ -373,9 +461,76 @@ export default function PayGuard() {
         {view !== 'checker' && <section className="pg-sec pg-library">
           <h2>{view === 'history' ? t.navHistory : view === 'examples' ? t.navScamExamples : t.navSafetyTips}</h2>
           {view === 'history' && <>
-            <p className="pg-lead">Recent checks stay on this browser only. Up to 20 are kept. Screenshots and checkout tokens are not saved.</p>
-            {history.length ? <><button className="pg-btn-o" onClick={() => { if (window.confirm('Clear all history on this browser?')) { setHistory([]); localStorage.removeItem('upi_shield_history'); } }}>Clear history</button>
-            <div className="pg-library-grid">{history.map(item => <article className="pg-card" key={item.id}><small>{item.timestamp}</small><p>{item.sourceText || 'Screenshot check'}</p><p className="pg-hint">{item.result?.review?.blocked ? 'Blocked' : item.result?.review?.canPay ? 'Cleared at the time of the check' : item.verdict?.riskLevel || 'Past check'} | Risk {item.result?.review?.riskScore ?? item.verdict?.riskScore ?? 'not recorded'}</p><button className="pg-btn-o" onClick={() => restore(item)}>Recheck request</button></article>)}</div></> : <p className="pg-hint">No checks saved on this browser yet.</p>}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+              <p className="pg-lead" style={{ margin: 0 }}>
+                Transaction audits are automatically stored in your local session and synced with the security API.
+              </p>
+              {history.length > 0 && (
+                <button className="pg-btn-o" style={{ padding: '8px 18px', fontSize: 13 }} onClick={clearAllHistory}>
+                  Clear All History ({history.length})
+                </button>
+              )}
+            </div>
+            {history.length ? (
+              <div className="pg-library-grid">
+                {history.map(item => {
+                  const rev = item.result?.review || {};
+                  const verd = item.result?.verdict || {};
+                  const isBlocked = rev.blocked || verd.riskLevel === 'HIGH_RISK';
+                  const isCleared = rev.canPay;
+                  const score = rev.riskScore ?? (isBlocked ? 85 : 15);
+                  return (
+                    <article className="pg-card" key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <span style={{ fontSize: 12, color: 'var(--mut)', fontWeight: 600 }}>{item.timestamp}</span>
+                        <span style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          padding: '3px 10px',
+                          borderRadius: 999,
+                          letterSpacing: '0.05em',
+                          background: isBlocked ? 'rgba(239, 68, 68, 0.15)' : isCleared ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                          color: isBlocked ? '#f87171' : isCleared ? '#34d399' : '#fbbf24',
+                          border: `1px solid ${isBlocked ? 'rgba(239, 68, 68, 0.3)' : isCleared ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`
+                        }}>
+                          {isBlocked ? 'BLOCKED' : isCleared ? 'CLEARED' : 'UNCERTAIN'} • Risk {score}/100
+                        </span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: 15, fontWeight: 500, lineHeight: 1.5 }}>
+                        "{item.sourceText ? (item.sourceText.length > 180 ? `${item.sourceText.slice(0, 180)}...` : item.sourceText) : 'Screenshot Analysis'}"
+                      </p>
+                      {verd.categoryLabel && (
+                        <span style={{ fontSize: 12, color: 'var(--mut)' }}>
+                          Category: <b>{verd.categoryLabel}</b>
+                        </span>
+                      )}
+                      <div style={{ display: 'flex', gap: 8, marginTop: 'auto', paddingTop: 8 }}>
+                        <button className="pg-btn-o" style={{ padding: '8px 14px', fontSize: 13 }} onClick={() => restore(item)}>
+                          Re-check &rarr;
+                        </button>
+                        <button className="pg-btn-o" style={{ padding: '8px 14px', fontSize: 13, opacity: 0.7 }} onClick={() => deleteHistoryItem(item.id)}>
+                          Remove
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="pg-card" style={{ textAlign: 'center', padding: '48px 24px', margin: '20px 0' }}>
+                <h3 style={{ fontSize: 20, marginBottom: 8 }}>No Saved Audits Yet</h3>
+                <p style={{ color: 'var(--mut)', maxWidth: 500, margin: '0 auto 20px' }}>
+                  Every payment request, invoice, or screenshot you analyze is automatically stored here for auditing.
+                </p>
+                <button className="pg-btn" onClick={() => {
+                  setMode('Message');
+                  setText(SAMPLES[1][1]);
+                  setView('checker');
+                }}>
+                  Test a Sample Scam Scan &rarr;
+                </button>
+              </div>
+            )}
           </>}
           {view === 'examples' && <><p className="pg-lead">Fictional requests to try. Selecting one fills the checker; it does not run a check or payment.</p><div className="pg-library-grid">{[[t.exampleKyc,t.exampleTextKyc],[t.exampleRefund,t.exampleTextRefund],[t.exampleLottery,t.exampleTextLottery],[t.exampleBankAlert,t.exampleTextBankAlert],[t.exampleSuspiciousLink,t.exampleTextSuspiciousLink],...SAMPLES].map(([label, sample],i) => <article className="pg-card" key={i}><h3>{label}</h3><p>{sample}</p><button className="pg-btn-o" onClick={() => { setMode('Message'); setText(sample); setResult(null); setView('checker'); }}>Use example</button></article>)}</div></>}
           {view === 'tips' && <><div className="pg-library-grid">{[1,2,3,4].map(i => <article className="pg-card" key={i}><h3>{t[`tip${i}Title`]}</h3><p>{t[`tip${i}Desc`]}</p></article>)}</div><p className="pg-lead">Already lost money? Contact your bank immediately. In India, report at <a href="https://cybercrime.gov.in" target="_blank" rel="noreferrer">cybercrime.gov.in</a> or call 1930.</p></>}
