@@ -47,10 +47,8 @@ const SHORT_LABELS = {
 };
 
 export default function App() {
-  // Localization (persisted)
-  const [language, setLanguage] = useState(() => {
-    return localStorage.getItem('upi_shield_lang') || 'en';
-  });
+  // Every visit starts in English. Other languages require an explicit choice.
+  const [language, setLanguage] = useState('en');
 
   // Visual Theme (light / dark)
   const [theme, setTheme] = useState(() => {
@@ -115,7 +113,7 @@ export default function App() {
   // Handle language switch
   const handleLanguageChange = (newLang) => {
     setLanguage(newLang);
-    localStorage.setItem('upi_shield_lang', newLang);
+
   };
 
   // Toggle theme
