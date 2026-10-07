@@ -446,7 +446,7 @@ export default function PayGuard() {
           ['history', language === 'hi' ? 'इतिहास' : 'History', 'M3 11a9 9 0 1 1 2.6 6.4 M3 3v8h8 M12 7v5l3 2'],
           ['examples', language === 'hi' ? 'उदाहरण' : 'Examples', 'M4 3h6v7H4z M14 3h6v7h-6z M4 14h6v7H4z M14 14h6v7h-6z'],
           ['tips', language === 'hi' ? 'सुझाव' : 'Tips', 'M9 18h6 M10 22h4 M8 14a6 6 0 1 1 8 0l-1 3H9z'],
-          ['inspector', language === 'hi' ? 'विश्लेषक' : 'Inspector', 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'],
+          ['inspector', language === 'hi' ? 'विश्लेषक' : 'Security demos', 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'],
           ['agent', 'Agent', 'M12 3v3 M8 3h8 M4 8h16v13H4z M8 12h1 M15 12h1 M8 17h8']
         ].map(([key,label,path]) => <button key={key} className={`ss-bn-item ${(key === 'agent' ? view === 'checker' && mode === 'Agent' : view === key && (key !== 'checker' || mode !== 'Agent')) ? 'is-active' : ''}`} aria-current={(key === 'agent' ? view === 'checker' && mode === 'Agent' : view === key && (key !== 'checker' || mode !== 'Agent')) ? 'page' : undefined} onClick={() => { showView(key === 'agent' ? 'checker' : key); if (key === 'agent') setMode('Agent'); else if (key === 'checker' && mode === 'Agent') setMode('Message'); }}><span className="ss-bn-pill"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={path} /></svg></span><span className="ss-bn-label">{label}</span></button>)}
       </nav>
@@ -464,7 +464,7 @@ export default function PayGuard() {
       </header>}
       <div className="pg-wrap">
         {view !== 'checker' && <section className="pg-sec pg-library">
-          <h2>{view === 'history' ? t.navHistory : view === 'examples' ? t.navScamExamples : view === 'inspector' ? (t.navSecurityInspector || 'Security Inspector') : t.navSafetyTips}</h2>
+          <h2>{view === 'history' ? t.navHistory : view === 'examples' ? t.navScamExamples : view === 'inspector' ? (t.navSecurityInspector || 'Security demonstrations') : t.navSafetyTips}</h2>
           {view === 'history' && <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
               <p className="pg-lead" style={{ margin: 0 }}>
@@ -498,7 +498,7 @@ export default function PayGuard() {
                           color: isBlocked ? '#f87171' : isCleared ? '#34d399' : '#fbbf24',
                           border: `1px solid ${isBlocked ? 'rgba(239, 68, 68, 0.3)' : isCleared ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`
                         }}>
-                          {isBlocked ? 'BLOCKED (risk decision, not proof)' : isCleared ? 'CLEARED' : 'UNCERTAIN'} • {score === null ? 'Risk score unavailable' : `Risk ${score}/100`}
+                          {isBlocked ? 'BLOCKED (risk decision, not proof)' : isCleared ? 'CLEARED' : 'UNCERTAIN'} • {score === null ? 'Risk Signal Score unavailable' : `Risk Signal Score ${score}/100`}
                         </span>
                       </div>
                       <p style={{ margin: 0, fontSize: 15, fontWeight: 500, lineHeight: 1.5 }}>
@@ -638,7 +638,7 @@ export default function PayGuard() {
               <div className="mt-3 space-y-3">
             <Steps review={review_} />
             <div>
-              <div className="flex justify-between text-xs text-white/60"><span>Risk signals (not a probability)</span><span>{review_.riskScore}/100</span></div>
+              <div className="flex justify-between text-xs text-white/60"><span>Risk Signal Score (a warning signal, not a probability)</span><span>{review_.riskScore}/100</span></div>
               <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
                 <div className={`h-full rounded-full ${review_.riskScore >= 55 ? 'bg-rose-400' : review_.riskScore >= 25 ? 'bg-amber-300' : 'bg-emerald-300'}`} style={{ width: `${review_.riskScore}%` }} />
               </div>
@@ -681,7 +681,7 @@ export default function PayGuard() {
               <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-100 space-y-1">
                 <p className="font-semibold">Sandbox payment {paid.status}. {paid.amount ? `${paid.amount.value} ${paid.amount.currency_code}. ` : ''}Receipt id: {paid.captureId}</p>
                 <p className="text-xs text-emerald-100/80">From PayPal's response: order {paid.status}{paid.captureStatus ? `, capture ${paid.captureStatus}` : ''}. Order id {paid.orderId}.</p>
-                <p className="text-xs text-emerald-100/80">Payment completed and the amount matched the review. Risk score {review_.riskScore}/100, {verdict.label || verdict.riskLevel}. Order {paid.orderId}. {paid.paidAt ? new Date(paid.paidAt).toLocaleString() : ''}. No real money moved.</p>
+                <p className="text-xs text-emerald-100/80">Payment completed and the amount matched the review. Risk Signal Score {review_.riskScore}/100, {verdict.label || verdict.riskLevel}. Order {paid.orderId}. {paid.paidAt ? new Date(paid.paidAt).toLocaleString() : ''}. No real money moved.</p>
                 <p className="text-xs text-emerald-100/80">{hook === 'confirmed' ? 'PayPal webhook confirmed this capture (signature verified by PayPal).' : hook === 'waiting' ? 'Waiting for PayPal webhook confirmation...' : hook === 'none' ? 'PayPal webhook confirmation not received yet.' : ''}</p>
               </div>
             )}

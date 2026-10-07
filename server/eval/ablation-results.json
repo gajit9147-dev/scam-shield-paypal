@@ -1,0 +1,288 @@
+{
+  "cases": 30,
+  "answeredByLiveServer": 30,
+  "rulesOnly": {
+    "scamsFlagged": "6/15",
+    "safeNotFlagged": "15/15"
+  },
+  "geminiOnly": {
+    "scamsFlagged": "15/15",
+    "safeNotFlagged": "15/15"
+  },
+  "fusion": {
+    "scamsFlagged": "15/15",
+    "safeNotFlagged": "15/15"
+  },
+  "rows": [
+    {
+      "id": "P01",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": true,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P02",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": true,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P03",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P04",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P05",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P06",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P07",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P08",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": true,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P09",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P10",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": true,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P11",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P12",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P13",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": true,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P14",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "P15",
+      "expect": "scam",
+      "answered": true,
+      "rulesFlag": true,
+      "geminiAnswered": true,
+      "geminiFlag": true,
+      "fusionFlag": true
+    },
+    {
+      "id": "S01",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S02",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S03",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S04",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S05",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S06",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S07",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S08",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S09",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S10",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S11",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S12",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S13",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S14",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    },
+    {
+      "id": "S15",
+      "expect": "safe",
+      "answered": true,
+      "rulesFlag": false,
+      "geminiAnswered": true,
+      "geminiFlag": false,
+      "fusionFlag": false
+    }
+  ]
+}

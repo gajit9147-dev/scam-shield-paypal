@@ -284,7 +284,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
             </div>
 
             <h3 style={{ fontSize: 26, fontWeight: 700, margin: '0 0 6px', letterSpacing: '-0.02em', color: '#fff' }}>
-              Security & Cryptographic Inspector
+              Security demonstrations (specific tested conditions, not a security certification)
             </h3>
             <p style={{ margin: 0, fontSize: 14, color: 'rgba(255, 255, 255, 0.6)', maxWidth: 580, lineHeight: 1.5 }}>
               Deep-inspect token signatures, token nonce claims, simulated attack vectors, and real-time PayPal sandbox webhook deliveries.

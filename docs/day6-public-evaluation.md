@@ -29,6 +29,7 @@ Both datasets carry keyword-based labels from their authors, not hand-verified l
 
 - Cases: **129** (69 scam-positive, 60 benign)
 - Confusion matrix: **TP 68, FP 1, TN 59, FN 1**
+- In plain counts: **68 of 69 scam cases flagged, 59 of 60 benign cases not flagged.** Not real-world fraud accuracy (keyword-labelled public data).
 - Precision: **98.55%** - Recall: **98.55%** - Accuracy: **98.45%**
 - False positive (kept, documented): `It says account is blocked` - a two-clause benign chat fragment the cautious
   rules flag as SUSPICIOUS. This is the false-positive cost of a cautious posture: a benign fragment about an

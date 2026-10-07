@@ -2,6 +2,10 @@
 
 Check a payment request before you pay. ScamShield combines scam rules, a local spam baseline and Gemini review, then opens PayPal **sandbox** checkout only when the server clears the request. A cleared result is guidance, not proof that a person or merchant is genuine.
 
+Positioning: ScamShield is a **pre-payment intent firewall**, not a merchant verification service. It checks what the request says and gates checkout on that review; it does not verify who the payee is.
+
+Scope: **Core** = check before you pay. **Proof** = the server-side payment gate. **Evidence** = the security demonstrations page. **Extensions** = QR, screenshot, multilingual and the experimental agent mode.
+
 - [Live site](https://scam-shield-paypal.onrender.com/) (`/pay` opens the same app)
 - [Demo video](https://youtu.be/53uOIUQQSfM)
 - [Devpost entry](https://devpost.com/software/scamshield-kuvz8o)
@@ -15,14 +19,14 @@ Live demo: https://scam-shield-paypal.onrender.com/pay
 
 1. Blocked example. Paste this into the checker and press Analyze:
    `URGENT! Your PayPal account is limited. Pay $25 verification fee to support-help@gmail.com within 10 minutes or your account will be blocked.`
-   Expected: BLOCKED, risk 100/100, reasons listed, PayPal checkout stays locked.
+   Expected: BLOCKED, Risk Signal Score 100/100, reasons listed, PayPal checkout stays locked.
 2. Cleared example and payment. Paste:
    `Invoice 88 from Blue Cafe Vadodara: please pay $12.50 for catering order 88. Thanks!`
-   Expected: CLEARED (risk score low, "uncertain", not "safe"). Open PayPal sandbox checkout and log in with the sandbox buyer below. After payment the receipt shows the order and capture status from PayPal's response, then a "PayPal webhook confirmed" line.
+   Expected: CLEARED (Risk Signal Score low, "uncertain", not "safe"). Open PayPal sandbox checkout and log in with the sandbox buyer below. After payment the receipt shows the order and capture status from PayPal's response, then a "PayPal webhook confirmed" line.
    Sandbox buyer email: sb-ciyxy53147650@personal.example.com
    Sandbox buyer password: d7)3:q@J (PayPal sandbox test account, no real money)
 3. "Attack the shield" (below the result): runs 4 simulated bypass attempts against the server-side gate (no PayPal call). All 4 should show REJECTED.
-4. Security Inspector (top menu): Tamper Test, PayPal Webhook Stream, Attack Vector Matrix (press "Execute Full Attack Suite") and Decision Log. Token panels are labeled "illustrative" until you run a real review first.
+4. Security demonstrations (top menu): Tamper Test, PayPal Webhook Stream, Attack Vector Matrix (press "Execute Full Attack Suite") and Decision Log. Token panels are labeled "illustrative" until you run a real review first.
 5. Agent mode is experimental and can time out. It is not needed to evaluate the project.
 
 ## Current UI
@@ -47,7 +51,7 @@ Screenshots below show the final UI with fictional sample requests. Checker resu
 - **Text and screenshot review:** scam rules, the local UCI spam baseline and optional Gemini analysis produce a verdict with reasons. Suspicious phrases use dotted underlines; the score is a risk signal, not a probability.
 - **QR decoding:** live video, uploaded QR images and fictional samples. A UPI QR is a request to send money. Decoding one does not verify merchant ownership, receive a refund or open a UPI payment.
 - **Sandbox payment gate:** signed review token, amount binding, expiry checks, single-use token tracking and signed order tickets. Editing a token cannot change the approved amount.
-- **Security Inspector:** token claims, signature/expiry verification, Tamper Test, redacted webhook feed and four attack checks. The initial token is an unsigned example, not payment clearance. Decoding claims alone does not verify a token or check whether its nonce has been consumed.
+- **Security demonstrations (Inspector):** token claims, signature/expiry verification, Tamper Test, redacted webhook feed and four attack checks. The initial token is an unsigned example, not payment clearance. Decoding claims alone does not verify a token or check whether its nonce has been consumed.
 - **Guarded Agent (experimental, may time out):** can request a sandbox order only through the same review gate. It cannot read merchant transactions/invoices/orders, capture payments, refund or dispute. The buyer must approve in PayPal.
 - **Local History:** recent checks stay in this browser. Remove individual records or clear all history. There is no shared public transaction-history API.
 - **Safety tools:** evidence-report download, spoken warnings, lookalike-domain signals and a complaint draft. A draft is not a filed complaint; the app never reports anything automatically.
@@ -122,16 +126,22 @@ npm test                         # Server regression suite
 npm run build                    # Frontend production build
 npm --prefix server run eval:upi
 npm --prefix server run eval:public
+node server/eval/run-ablation.js <server-url>   # rules vs Gemini vs fusion (needs a Gemini key)
 ```
 
-The October 7, 2026 server regression run passed **87/87 tests**; after the later safety changes below the server suite passes **100/100**. Coverage includes token parsing/signatures/expiry, replay protection, order tickets, scam rules, guarded Agent tools and webhook behavior. The current UI was also checked at 1280px, 390px and 320px, including navigation, themes, languages, camera cleanup, uploaded QR decoding and stale-result invalidation. A fake camera stream is not proof that every physical phone camera works.
+The October 7, 2026 server regression run passed **87/87 tests**; after the later safety changes the server suite passes **100 regression tests** (mocked PayPal and Gemini responses; this is not a security certification and not a detection-accuracy number). Coverage includes token parsing/signatures/expiry, replay protection, order tickets, scam rules, guarded Agent tools and webhook behavior. The current UI was also checked at 1280px, 390px and 320px, including navigation, themes, languages, camera cleanup, uploaded QR decoding and stale-result invalidation. A fake camera stream is not proof that every physical phone camera works.
 
 Evaluation reports are separate from payment review scores:
 
 - [42-case synthetic UPI pilot](docs/day5-upi-pilot-evaluation.md): a small hand-written regression set, not validated real-world accuracy.
+- [What the AI adds: rules vs Gemini vs fusion](docs/ablation-rules-vs-gemini-vs-fusion.md): on 30 reworded cases, rules alone flag 6/15 scams, Gemini and fusion flag 15/15, 15/15 benign untouched. Small team-written set, not a benchmark.
 - [129-case public-source evaluation](docs/day6-public-evaluation.md): filtered public datasets with label noise and documented false positives/negatives, not independent real-world fraud validation.
 
-Do not present a sample's risk score, a four-attack demo or a small dataset benchmark as a guarantee of protection.
+**Fail-closed:** when the AI review cannot complete, ScamShield does not clear the request on rules alone; checkout stays locked and the UI says the AI review was unavailable.
+
+**Production note:** review tokens, order tickets and history are held in memory or local files in this demo. A real deployment needs durable storage (a database) so state survives restarts and scales past one instance.
+
+Do not present a sample's Risk Signal Score, a four-attack demo or a small dataset benchmark as a guarantee of protection.
 
 ## Project structure
 

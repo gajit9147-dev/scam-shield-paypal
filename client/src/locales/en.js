@@ -17,7 +17,7 @@ export const en = {
   navHistory: 'History',
   navScamExamples: 'Scam Examples',
   navSafetyTips: 'Safety Tips',
-  navSecurityInspector: 'Security Inspector',
+  navSecurityInspector: 'Security demonstrations',
   navSettings: 'Settings',
 
   // Center Main Heading
