@@ -13,10 +13,10 @@ export const hi = {
   profile: 'प्रोफ़ाइल',
 
   // Navigation
-  navCheckMessage: 'संदेश जाँचें',
-  navHistory: 'इतिहास',
-  navScamExamples: 'धोखाधड़ी के उदाहरण',
-  navSafetyTips: 'सुरक्षा सुझाव',
+  navCheckMessage: 'सुरक्षा स्कैनर',
+  navHistory: 'जाँच इतिहास',
+  navScamExamples: 'थ्रेट लाइब्रेरी',
+  navSafetyTips: 'सुरक्षा नियम',
   navSettings: 'सेटिंग्स',
 
   // Center Main Heading
