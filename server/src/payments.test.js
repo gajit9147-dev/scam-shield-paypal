@@ -105,3 +105,16 @@ test('the live INR rate is used when the API answers and the fixed rate when it 
   await refreshInrRate(bad);
   assert.equal(currentInrRate().value, 100);
 });
+
+test('rejects an extra token segment rather than ignoring it', () => {
+  const good = signOrderTicket({ orderId: 'ORDER-ABCDEFG1', amount: '12.50', currency: 'USD' });
+  assert.ok(verifyToken(good));
+  assert.equal(verifyToken(`${good}.extra`), null);
+});
+
+test('AI outage never unlocks a benign request', async () => {
+  const r = await reviewPaymentRequest('Invoice 88 from Blue Cafe: $12.50', { riskLevel: 'UNCERTAIN' }, Promise.resolve(null), false);
+  assert.equal(r.canPay, false);
+  assert.equal(r.token, null);
+  assert.equal(r.degraded, true);
+});

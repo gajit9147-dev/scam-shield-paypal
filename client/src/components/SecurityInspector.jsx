@@ -1,27 +1,27 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 
-// Sample pre-signed demo tokens for instant exploration if user hasn't run a scan yet
+// Unsigned illustrative demo tokens for instant exploration if user hasn't run a scan yet
 function makeDemoToken(amount = 12.5, currency = 'USD', payee = 'seller.demo@example.com', purpose = 'Website design fee') {
   const exp = Date.now() + 15 * 60 * 1000;
   const payload = {
     amount,
     currency,
     payee,
-    payeeStatus: 'clean',
+    payeeStatus: 'illustrative_unverified',
     purpose,
     risk: 'LOW_RISK',
     jti: Math.random().toString(16).slice(2, 14) + Math.random().toString(16).slice(2, 14),
     exp
   };
   const bodyBase64 = btoa(JSON.stringify(payload)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  const mac = 'hmac_sha256_' + Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 12);
+  const mac = 'unsigned_example_' + Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 12);
   return `${bodyBase64}.${mac}`;
 }
 
 function parseToken(raw) {
   if (!raw || typeof raw !== 'string' || !raw.includes('.')) return null;
   const parts = raw.split('.');
-  if (parts.length < 2) return null;
+  if (parts.length !== 2) return null;
   const body = parts[0];
   const mac = parts[1];
   try {
@@ -36,7 +36,6 @@ function parseToken(raw) {
     const claims = JSON.parse(jsonStr);
     return {
       raw,
-      header: { alg: 'HS256', typ: 'JWT' },
       body,
       mac,
       claims
@@ -68,11 +67,11 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
 
   // Sync when activeToken changes from parent scan
   useEffect(() => {
-    if (activeToken) {
-      setCurrentToken(activeToken);
-    }
+    setCurrentToken(activeToken || makeDemoToken());
+    setVerifyResult(null);
   }, [activeToken]);
 
+  const isIllustrative = currentToken !== activeToken;
   const parsed = useMemo(() => parseToken(currentToken), [currentToken]);
 
   // Live 15-Minute Countdown Timer
@@ -83,6 +82,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
 
   useEffect(() => {
     if (!parsed?.claims?.exp) return;
+    setTimeLeft(Math.max(0, Math.floor((parsed.claims.exp - Date.now()) / 1000)));
     const interval = setInterval(() => {
       const remaining = Math.max(0, Math.floor((parsed.claims.exp - Date.now()) / 1000));
       setTimeLeft(remaining);
@@ -107,10 +107,10 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
       const res = await fetch('/api/paypal/webhook-events');
       if (res.ok) {
         const data = await res.json();
-        setWebhookData(data);
-      }
+        setWebhookData({ ...data, error: '' });
+      } else { setWebhookData(prev => ({ ...prev, error: 'Could not load webhook events.' })); }
     } catch {
-      // fallback
+      setWebhookData(prev => ({ ...prev, error: 'Could not load webhook events.' }));
     } finally {
       setWebhookLoading(false);
     }
@@ -159,7 +159,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
       setVerifyResult({
         ...data,
         testedToken: tokenToTest,
-        testedType: isTampered ? 'tampered' : 'authentic'
+        testedType: isTampered ? 'tampered' : 'original'
       });
     } catch (err) {
       setVerifyResult({ valid: false, error: err.message || 'Verification call failed' });
@@ -273,7 +273,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                   color: '#34d399'
                 }}
               >
-                HMAC-SHA256 Bound
+                Two-Part HMAC Format
               </span>
             </div>
 
@@ -281,7 +281,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
               Security & Cryptographic Inspector
             </h3>
             <p style={{ margin: 0, fontSize: 14, color: 'rgba(255, 255, 255, 0.6)', maxWidth: 580, lineHeight: 1.5 }}>
-              Deep-inspect token signatures, live single-use nonces, simulated attack vectors, and real-time PayPal sandbox webhook deliveries.
+              Deep-inspect token signatures, token nonce claims, simulated attack vectors, and real-time PayPal sandbox webhook deliveries.
             </p>
           </div>
 
@@ -352,7 +352,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                 {isExpired ? 'EXPIRED' : `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`}
               </div>
               <span style={{ fontSize: 11, color: isExpired ? '#fca5a5' : 'rgba(255, 255, 255, 0.5)' }}>
-                {isExpired ? 'Signature Locked' : 'Cryptographically Valid'}
+                {isIllustrative ? 'Unsigned example' : isExpired ? 'Expiry elapsed' : 'Expiry claim only'}
               </span>
             </div>
           </div>
@@ -407,9 +407,11 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
 
         {/* Tab Content Body */}
         <div style={{ position: 'relative', zIndex: 1, padding: 'clamp(14px, 3.5vw, 24px)', width: '100%', boxSizing: 'border-box' }}>
+          {tab !== 'token' && isIllustrative && <p style={{ color: '#fbbf24', padding: '12px 28px' }}>Unsigned illustrative example. Run a payment review first for a real server-issued token.</p>}
           {/* TAB 1: Token Anatomy & Nonce */}
           {tab === 'token' && (
             <div>
+              <p style={{ margin: '0 0 18px', color: '#fbbf24', fontSize: 13 }}>{isIllustrative ? 'Unsigned illustrative example only. This is not a server-issued token, verified merchant, or payment clearance. It will fail server verification.' : 'Server-issued review token. Decoding is not verification. Use the verification tab for signature and expiry; this view does not check nonce consumption or authorize payment.'}</p>
               {/* Token Bar Controls */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -441,7 +443,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                     {copied ? '✓ Copied!' : '📋 Copy Token'}
                   </button>
                   <button
-                    onClick={() => setCurrentToken(makeDemoToken(25.0, 'USD', 'freelancer@design.io', 'Branding project'))}
+                    onClick={() => { setCurrentToken(makeDemoToken(25.0, 'USD', 'freelancer@design.io', 'Branding project')); setVerifyResult(null); }}
                     style={{
                       background: 'rgba(255, 255, 255, 0.07)',
                       border: '1px solid rgba(255, 255, 255, 0.15)',
@@ -518,7 +520,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ width: 10, height: 10, borderRadius: 3, background: '#34d399' }} />
                   <span style={{ color: '#a7f3d0', fontWeight: 600 }}>Signature:</span>
-                  <span style={{ color: 'rgba(255, 255, 255, 0.65)' }}>HMAC-SHA256 (Bound to Secret Server Key)</span>
+                  <span style={{ color: 'rgba(255, 255, 255, 0.65)' }}>{isIllustrative ? 'Unsigned placeholder, not an HMAC' : 'Server HMAC-SHA256 signature'}</span>
                 </div>
               </div>
 
@@ -553,7 +555,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                       {parsed.claims.amount} {parsed.claims.currency}
                     </div>
                     <p style={{ margin: 0, fontSize: 12, color: 'rgba(255, 255, 255, 0.5)' }}>
-                      Cryptographically bound. Any client manipulation voids the signature.
+                      {isIllustrative ? 'Illustrative amount. No server signature binds this example.' : 'The server signature binds this amount. Verify the token before relying on it.'}
                     </p>
                   </div>
 
@@ -578,7 +580,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                       {parsed.claims.jti || 'none'}
                     </div>
                     <p style={{ margin: 0, fontSize: 12, color: 'rgba(255, 255, 255, 0.5)' }}>
-                      Anti-replay protection. Consumed in server state on first PayPal order creation.
+                      {isIllustrative ? 'Illustrative nonce. Not registered with the server.' : 'Nonce claim only. Consumption is checked during order creation, not in this display.'}
                     </p>
                   </div>
 
@@ -789,7 +791,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                   }}
                 >
                   <span>✓</span>
-                  <span>Transmit Authentic Token</span>
+                  <span>Verify Original Token</span>
                 </button>
               </div>
 
@@ -817,14 +819,14 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                           color: '#fff'
                         }}
                       >
-                        {verifyResult.valid ? 'GATE CLEARED' : 'BLOCKED BY GATEKEEPER'}
+                        {verifyResult.valid ? 'SIGNATURE VALID' : 'NOT VERIFIED'}
                       </span>
                       <span style={{ fontSize: 15, fontWeight: 700, color: verifyResult.valid ? '#34d399' : '#f87171' }}>
-                        {verifyResult.valid ? 'HMAC Signature Authenticated (200 OK)' : 'HMAC Digest Mismatch (Verification Failed)'}
+                        {verifyResult.valid ? 'Signature and expiry verified' : 'Verification unsuccessful'}
                       </span>
                     </div>
                     <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'rgba(255, 255, 255, 0.4)' }}>
-                      Latency: ~1.4ms · crypto.timingSafeEqual
+                      No order created by this check
                     </span>
                   </div>
 
@@ -841,20 +843,9 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                     }}
                   >
                     <div><span style={{ color: '#94a3b8' }}>[1] CLIENT:</span> Prepared request token payload with claims.</div>
-                    {verifyResult.testedType === 'tampered' ? (
-                      <>
-                        <div><span style={{ color: '#f43f5e' }}>[2] INJECTION:</span> Tampered amount injected ({tamperedAmount}) with mismatched MAC signature.</div>
-                        <div><span style={{ color: '#fbbf24' }}>[3] SERVER:</span> Recomputed HMAC-SHA256 hash using private server secret.</div>
-                        <div><span style={{ color: '#f43f5e' }}>[4] MISMATCH:</span> Supplied MAC != Computed MAC. Constant-time comparison failed.</div>
-                        <div style={{ color: '#f87171', fontWeight: 700 }}>[5] ACTION: Aborting PayPal sandbox order creation. Zero funds at risk.</div>
-                      </>
-                    ) : (
-                      <>
-                        <div><span style={{ color: '#38bdf8' }}>[2] INTEGRITY:</span> Clean payload matches signed HMAC digest perfectly.</div>
-                        <div><span style={{ color: '#34d399' }}>[3] NONCE:</span> Checking single-use `jti` anti-replay cache... Unconsumed.</div>
-                        <div style={{ color: '#34d399', fontWeight: 700 }}>[4] ACTION: Verification successful! PayPal order unlocked.</div>
-                      </>
-                    )}
+                    <div><span style={{ color: '#38bdf8' }}>[2] REQUEST:</span> {verifyResult.testedType === 'tampered' ? 'Edited claims sent with the original MAC.' : 'Original token sent for verification.'}</div>
+                    <div><span style={{ color: '#fbbf24' }}>[3] RESPONSE:</span> {verifyResult.valid ? 'Server verified signature and expiry.' : (verifyResult.error || 'Token not verified.')}</div>
+                    <div>[4] LIMIT:</div><div>Nonce consumption and checkout eligibility are not checked here. No payment or PayPal order was created.</div>
                   </div>
                 </div>
               )}
@@ -924,6 +915,7 @@ export default function SecurityInspector({ token: activeToken, review, paid, la
                 </div>
               </div>
 
+              {webhookData.error && <p role="alert">{webhookData.error}</p>}
               {/* Webhook Events Feed */}
               {webhookData.events && webhookData.events.length > 0 ? (
                 <div style={{ display: 'grid', gap: 12 }}>

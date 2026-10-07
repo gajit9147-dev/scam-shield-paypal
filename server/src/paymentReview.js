@@ -7,7 +7,7 @@ import { createHmac, createHash, timingSafeEqual, randomBytes } from 'node:crypt
 import { readFileSync, appendFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { callModel, extractJson, MODEL_FALLBACKS } from './ai.js';
+import { callModel, extractJson, MODEL_FALLBACKS, loadEnvFile } from './ai.js';
 
 const SUPPORTED = ['USD', 'EUR', 'GBP', 'CAD', 'AUD'];
 const FALLBACK_INR_PER_USD = Number(process.env.DEMO_INR_PER_USD) || 85;
@@ -38,6 +38,7 @@ export function deriveSecret(env = process.env) {
   if (env.PAYPAL_CLIENT_SECRET) return createHash('sha256').update(`scamshield-review-token:${env.PAYPAL_CLIENT_SECRET}`).digest('hex');
   return randomBytes(32).toString('hex');
 }
+loadEnvFile();
 const SECRET = deriveSecret();
 const TOKEN_TTL_MS = 15 * 60 * 1000;
 const MAX_USD = 500; // sandbox demo cap
@@ -207,7 +208,7 @@ export function verifyOrderTicket(ticket, orderId) {
 }
 
 export function verifyToken(token) {
-  if (typeof token !== 'string' || !token.includes('.')) return null;
+  if (typeof token !== 'string' || token.split('.').length !== 2) return null;
   const [body, mac] = token.split('.');
   const expected = createHmac('sha256', SECRET).update(body).digest('base64url');
   const a = Buffer.from(mac);
@@ -215,7 +216,7 @@ export function verifyToken(token) {
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   try {
     const payload = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
-    if (!payload.exp || Date.now() > payload.exp) return null;
+    if (!payload || typeof payload !== 'object' || !Number.isFinite(payload.exp) || Date.now() > payload.exp) return null;
     return payload;
   } catch {
     return null;

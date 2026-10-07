@@ -15,20 +15,20 @@ const SAMPLE_QRS = [
     desc: 'QR pointing to an unofficial PayPal lookalike phishing domain.'
   },
   {
-    label: 'Clean: Genuine Cafe Invoice QR',
-    type: 'clean_merchant',
-    raw: 'upi://pay?pa=bluecafe@okhdfcbank&pn=Blue%20Cafe%20Vadodara&am=12.50&cu=USD&tn=Catering%20order%2088',
-    desc: 'Legitimate merchant payment QR request.'
+    label: 'Fictional Cafe Payment QR',
+    type: 'fictional_merchant',
+    raw: 'upi://pay?pa=bluecafe@okhdfcbank&pn=Blue%20Cafe%20Vadodara&am=12.50&cu=INR&tn=Catering%20order%2088',
+    desc: 'Fictional payment request. Merchant ownership is not verified.'
   }
 ];
 
 function parseUpiUri(uri) {
-  if (!uri || typeof uri !== 'string' || !uri.toLowerCase().startsWith('upi://pay')) {
-    return null;
-  }
+  if (!uri || typeof uri !== 'string') return null;
   try {
-    const query = uri.split('?')[1] || '';
-    const params = new URLSearchParams(query);
+    const url = new URL(uri);
+    if (url.protocol.toLowerCase() !== 'upi:' || url.hostname.toLowerCase() !== 'pay' || (url.pathname && url.pathname !== '/') || url.username || url.password) return null;
+    const params = url.searchParams;
+    if (!params.get('pa') || !/^[^\s@]+@[^\s@]+$/.test(params.get('pa'))) return null;
     return {
       isUpi: true,
       pa: params.get('pa') || '',
@@ -57,9 +57,11 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
   const animFrameRef = useRef(null);
   const fileInputRef = useRef(null);
   const mobileCameraInputRef = useRef(null);
+  const sessionRef = useRef(0);
 
   // Stop camera helper
   const stopCamera = useCallback(() => {
+    sessionRef.current += 1;
     if (animFrameRef.current) {
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
@@ -109,35 +111,54 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
 
     try {
       stopCamera();
+      const session = sessionRef.current;
       let stream = null;
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: 'environment' } },
           audio: false
         });
-      } catch {
+      } catch (error) {
+        if (['NotAllowedError','PermissionDeniedError'].includes(error.name)) throw error;
+        // 2. Fallback to default webcam / PC camera
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       }
 
+      if (session !== sessionRef.current) { stream.getTracks().forEach(track => track.stop()); return; }
+
       streamRef.current = stream;
-      if (videoRef.current) {
+      setCameraActive(true);
+      // Let React mount the active video before attaching the stream.
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      if (videoRef.current && streamRef.current === stream) {
         videoRef.current.srcObject = stream;
         videoRef.current.setAttribute('playsinline', 'true');
         await videoRef.current.play();
-        setCameraActive(true);
+        if (session !== sessionRef.current) return;
         animFrameRef.current = requestAnimationFrame(tick);
-      }
+      } else { stream.getTracks().forEach(track => track.stop()); }
     } catch (err) {
-      console.error('Camera stream access failed:', err);
-      setCameraError('Camera access was blocked or not allowed. Use "📸 Take QR Photo" below to launch your phone camera directly.');
+      stopCamera();
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setCameraError('Camera permission was blocked. Please allow camera access in browser address bar settings, or upload a QR image below.');
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        setCameraError('No webcam or camera device was found on this computer. You can upload a QR image/screenshot directly.');
+        setMethod('upload');
+      } else {
+        setCameraError('Camera could not be accessed (' + (err.message || 'not found') + '). You can upload a QR screenshot or photo below.');
+        setMethod('upload');
+      }
+
+      setCameraActive(false);
     }
   };
 
   useEffect(() => {
+    stopCamera();
     return () => {
       stopCamera();
     };
-  }, [stopCamera]);
+  }, [stopCamera, method]);
 
   // QR Found Handler
   const handleQrFound = (data) => {
@@ -159,7 +180,7 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
 
   // High-performance multi-scale decoder for high-resolution mobile camera captures (12MP-48MP photos)
   const decodeFromImage = (img) => {
-    const scales = [1000, 600, 1600, img.width];
+    const scales = [1000, 600, 1600];
     const canvas = canvasRef.current || document.createElement('canvas');
     const ctx = canvas.getContext('2d');
 
@@ -191,6 +212,8 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    stopCamera();
+    if (!['image/png','image/jpeg','image/webp'].includes(file.type) || file.size > 6 * 1024 * 1024) { setCameraError('Use PNG, JPEG or WebP up to 6 MB.'); return; }
     setCameraError('');
     setScannedResult(null);
     setDecoding(true);
@@ -215,6 +238,7 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
       };
       img.src = url;
     };
+    reader.onerror = () => { setDecoding(false); setCameraError('Could not read this image.'); };
     reader.readAsDataURL(file);
     e.target.value = '';
   };
@@ -587,8 +611,8 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
             </span>
           </div>
 
-          {/* Loud Red Alert for UPI QR Scams */}
-          <div
+          {/* Payment-direction warning applies only to decoded UPI payment requests. */}
+          {scannedResult.upi && <div className="pg-qr-warning" role="alert"
             style={{
               background: 'linear-gradient(135deg, rgba(225, 29, 72, 0.25), rgba(159, 18, 57, 0.3))',
               border: '2px solid #f43f5e',
@@ -601,12 +625,12 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#fecdd3', fontWeight: 800, fontSize: 13, marginBottom: 4 }}>
               <span style={{ fontSize: 18 }}>🚨</span>
-              <span>DANGER: YE QR CODE PAISA AANE KA NAHI, PAISA KATNE KA HAI!</span>
+              <span>UPI PAYMENT REQUEST: PAISA BHEJNE KE LIYE, RECEIVE KARNE KE LIYE NAHI</span>
             </div>
             <p style={{ margin: 0, fontSize: 12, color: '#fff', lineHeight: 1.5 }}>
-              QR code scan karne ya UPI PIN daalne se <b>kabhi paise aate nahi hain</b>, sirf aapke bank account se paise katte hain. Agar kisi ne cashback ya refund pane ke liye ye scan karne ko bola hai to <b>turant cancel karein!</b>
+              This UPI QR requests money to be sent, not received. Scanning alone does not debit money. Refund receive karne ke liye UPI PIN kabhi na daalein. Payment authorize karne se paisa kat sakta hai. The named payee is not independently verified.
             </p>
-          </div>
+          </div>}
 
           {/* Extracted UPI Fields */}
           {scannedResult.upi ? (

@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+
+import { loadPayPal } from './paypalClient.js';
 
 const TASKS = [
-  ['Check my invoices', 'List my recent PayPal sandbox invoices.'],
-  ['Recent payments', 'Show my recent PayPal sandbox transactions.'],
   ['Pay a clean request', 'Pay this request: Invoice 88 from Blue Cafe Vadodara: please pay $12.50 for catering order 88. Thanks!'],
   ['Pay a scam', 'Pay this right now: URGENT! Pay $25 to refund.desk@paypa1-help.com in 10 minutes to release your refund or your account will be blocked']
 ];
@@ -22,15 +22,41 @@ const STEP_TEXT = {
   error: () => 'PayPal returned an error.'
 };
 
+function AgentOrder({ order }) {
+  const host = useRef(null);
+  const [error, setError] = useState('');
+  const [receipt, setReceipt] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    let buttons;
+    (async () => {
+      try {
+        const config = await call('/api/paypal/config');
+        if (!config.configured || !config.clientId) throw new Error('PayPal sandbox is not configured.');
+        const paypal = await loadPayPal(config.clientId);
+        if (cancelled || !host.current) return;
+        buttons = paypal.Buttons({
+          style: { layout: 'vertical' },
+          createOrder: async () => order.id,
+          onApprove: async data => {
+            try { const r = await call('/api/paypal/capture-order', { orderId: data.orderID, orderTicket: order.orderTicket }); if (!cancelled) setReceipt(r); }
+            catch (e) { if (!cancelled) setError(e.message); }
+          },
+          onError: e => { if (!cancelled) setError(e.message || 'PayPal could not finish.'); }
+        });
+        await buttons.render(host.current);
+      } catch (e) { if (!cancelled) setError(e.message); }
+    })();
+    return () => { cancelled = true; try { Promise.resolve(buttons?.close?.()).catch(() => {}); } catch { /* ignore SDK cleanup error */ } };
+  }, [order.id, order.orderTicket]);
+  return <div className="pg-ag-card"><p>Sandbox order {order.id}: {order.amount} {order.currency}. Payment goes to the demo merchant, not a verified seller. Approve only inside PayPal.</p>{receipt ? <p role="status">Sandbox payment captured: {receipt.amount?.value} {receipt.amount?.currency_code}. Order {receipt.orderId}.</p> : <div ref={host} />}{error && <p role="alert">{error}</p>}</div>;
+}
+
 export default function AgentPanel() {
   const [prompt, setPrompt] = useState('');
   const [busy, setBusy] = useState(false);
   const [out, setOut] = useState(null);
   const [err, setErr] = useState('');
-  const [invText, setInvText] = useState('');
-  const [invId, setInvId] = useState('');
-  const [inv, setInv] = useState(null);
-  const [invBusy, setInvBusy] = useState(false);
   const [hooks, setHooks] = useState(null);
 
   const loadHooks = () => call('/api/paypal/webhook-events').then(setHooks).catch(() => setHooks({ registered: false, events: [] }));
@@ -41,16 +67,11 @@ export default function AgentPanel() {
     try { setOut(await call('/api/agent/run', { prompt })); } catch (e) { setErr(e.message); }
     setBusy(false);
   }
-  async function verify() {
-    setInvBusy(true); setInv(null);
-    try { setInv(await call('/api/invoices/verify', { text: invText, ...(invId.trim() ? { invoiceId: invId.trim() } : {}) })); } catch (e) { setInv({ result: 'unverified', reason: e.message }); }
-    setInvBusy(false);
-  }
 
   return (
     <div className="pg-agent">
-      <p className="pg-lead" style={{ marginTop: 0 }}>Give the agent a task. It uses PayPal's Agent Toolkit to look things up, and every payment goes through the scam check first. It cannot pay: the buyer approves in PayPal.</p>
-      <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} maxLength={1200} rows={3} className="pg-box" placeholder="Ask the agent, for example: List my recent invoices" />
+      <p className="pg-lead" style={{ marginTop: 0 }}>Give the agent a task. It uses PayPal's Agent Toolkit to prepare a sandbox order after the scam check. Merchant records stay private. It cannot pay: the buyer approves in PayPal.</p>
+      <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} maxLength={1200} rows={3} className="pg-box" placeholder="Ask the agent to check a payment request" />
       <div className="pg-chips">
         {TASKS.map(([label, t]) => <button key={label} className="pg-chip" onClick={() => setPrompt(t)}>{label}</button>)}
       </div>
@@ -69,20 +90,14 @@ export default function AgentPanel() {
             </ul>
           )}
           <p className="pg-ag-answer">{out.answer}</p>
-          {out.orders?.map((o) => (
-            <p key={o.id} className="pg-hint">Order {o.id}, {o.amount} {o.currency}. Open the buyer step on the checker above to approve.</p>
-          ))}
+          {out.orders?.map(o => <AgentOrder key={o.id} order={o} />)}
         </div>
       )}
 
       <div className="pg-ag-grid">
         <div className="pg-ag-card">
-          <h3>Check an invoice</h3>
-          <p className="pg-hint">Paste the invoice text. If it has a PayPal invoice ID, the agent compares it with PayPal's own record.</p>
-          <textarea value={invText} onChange={(e) => setInvText(e.target.value)} maxLength={2000} rows={3} className="pg-box pg-sm" placeholder="Invoice INV2-... please pay $120.00" />
-          <input value={invId} onChange={(e) => setInvId(e.target.value)} maxLength={60} className="pg-in" placeholder="PayPal invoice ID (optional)" />
-          <button className="pg-btn-o" onClick={verify} disabled={invBusy || !invText.trim()}>{invBusy ? 'Checking...' : 'Verify with PayPal'}</button>
-          {inv && <p className={`pg-ag-res ${inv.result}`}><b>{inv.result}</b> {inv.reason}</p>}
+          <h3>Merchant records are private</h3>
+          <p className="pg-hint">This public demo cannot list or look up merchant invoices, orders or transactions. Use the message checker to review pasted invoice text without accessing merchant records.</p>
         </div>
         <div className="pg-ag-card">
           <h3>PayPal webhook log</h3>

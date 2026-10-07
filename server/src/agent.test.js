@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { z } from 'zod';
-import { buildGuardedTools, runAgent, READ_TOOLS } from './agent.js';
+import { buildGuardedTools, runAgent } from './agent.js';
 import { verifyInvoice } from './invoiceCheck.js';
 
 // These tests use FAKE PayPal tools and a FAKE model. They prove the guard logic, not PayPal behaviour.
@@ -20,7 +20,7 @@ const scam = { verdict: { riskLevel: 'HIGH_RISK', summary: 'Asks for a fee to re
 
 test('only the allowed tools reach the model; pay and refund never do', () => {
   const tools = buildGuardedTools({ toolkitTools: fakeKit(), review: async () => ok });
-  assert.deepEqual(Object.keys(tools).sort(), [...READ_TOOLS, 'request_payment'].sort());
+  assert.deepEqual(Object.keys(tools).sort(), ['request_payment']);
 });
 
 test('a blocked request never creates an order', async () => {
@@ -49,13 +49,10 @@ test('non-USD cleared requests are refused', async () => {
   assert.equal(out.created, false);
 });
 
-test('read tools have plain schemas and map to toolkit calls', async () => {
+test('merchant reads never reach the public model even when the toolkit supplies them', () => {
   const tools = buildGuardedTools({ toolkitTools: fakeKit(), review: async () => ok });
-  await tools.list_transactions.execute({ days: 3 });
-  const c = calls.find((x) => x.name === 'list_transactions').a;
-  assert.equal(c.page_size, 20);
-  assert.ok(new Date(c.end_date) > new Date(c.start_date));
-  assert.equal(tools.get_order.parameters.safeParse({ id: 'bad' }).success, false);
+  for (const name of ['get_order', 'get_invoice', 'list_invoices', 'list_transactions']) assert.equal(tools[name], undefined);
+  assert.equal(calls.length, 0);
 });
 
 test('runAgent passes only the guarded tools and a system prompt that treats text as data', async () => {
@@ -83,4 +80,13 @@ test('invoice: unknown id or no id is unverified, never "fake"', async () => {
   assert.equal(nf.result, 'unverified');
   const none = await verifyInvoice({ text: 'pay $5' }, { getInvoice: async () => inv });
   assert.equal(none.result, 'unverified');
+});
+
+
+test('agent stops after one tool step so Gemini thought signatures are not replayed', async () => {
+  let got;
+  const r = await runAgent({ prompt: 'Check payment', tools: {}, model: 'fake', generate: async opts => { got = opts; return { text: '', steps: [{ toolResults: [{ result: 'checked' }] }] }; } });
+  assert.equal(got.maxSteps, 1);
+  assert.ok(got.abortSignal instanceof AbortSignal);
+  assert.match(r.answer, /No payment was captured/);
 });

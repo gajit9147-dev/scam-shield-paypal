@@ -18,10 +18,11 @@ export default function AudioAlert({ verdict, review, language = 'en' }) {
       }
     };
   }, []);
+  useEffect(() => { synthRef.current?.cancel(); setSpeaking(false); }, [verdict, review, language]);
 
   if (!supported) return null;
 
-  const isBlocked = review?.blocked || verdict?.riskLevel === 'HIGH_RISK';
+  const isBlocked = verdict?.riskLevel === 'HIGH_RISK';
   const isSuspicious = verdict?.riskLevel === 'SUSPICIOUS';
 
   const getAlertText = () => {
@@ -29,15 +30,15 @@ export default function AudioAlert({ verdict, review, language = 'en' }) {
 
     if (isBlocked) {
       if (lang === 'hi') {
-        return 'सावधान! यह संदेश एक फ्रॉड है। बैंक या यूपीआई कभी भी एसएमएस पर ओटीपी या पिन नहीं माँगता। इस अनुरोध पर कोई भुगतान न करें!';
+        return 'सावधान! इस संदेश में धोखाधड़ी के गंभीर संकेत मिले हैं। बैंक या यूपीआई कभी भी एसएमएस पर ओटीपी या पिन नहीं माँगता। इस अनुरोध पर कोई भुगतान न करें!';
       }
       if (lang === 'hinglish') {
-        return 'Saavdhan! Yeh payment request ek fraud hai. Bank ya UPI kabhi bhi SMS par OTP ya PIN nahi maangta. Is request par koi payment na karein!';
+        return 'Saavdhan! Is payment request me fraud ke strong signals mile hain. Bank ya UPI kabhi bhi SMS par OTP ya PIN nahi maangta. Is request par koi payment na karein!';
       }
-      return 'Warning! This payment request is identified as a high risk scam. Banks and UPI never ask for your secret PIN or OTP to receive money. Do not pay!';
+      return 'Warning! This payment request has high risk scam indicators. Banks and UPI never ask for your secret PIN or OTP to receive money. Do not pay!';
     }
 
-    if (isSuspicious) {
+    if (isSuspicious || review?.blocked) {
       if (lang === 'hi') {
         return 'चेतावनी! इस अनुरोध में संदिग्ध संकेत मिले हैं। किसी अज्ञात व्यक्ति को भुगतान करने से पहले सावधानी बरतें।';
       }
@@ -46,6 +47,8 @@ export default function AudioAlert({ verdict, review, language = 'en' }) {
       }
       return 'Caution! Suspicious indicators were detected in this payment request. Proceed with extreme caution and verify the payee.';
     }
+
+    if (!review?.canPay) return language === 'hi' ? 'यह अनुरोध भुगतान के लिए मंजूर नहीं हुआ। जाँच अधूरी या अनिश्चित हो सकती है। प्राप्तकर्ता की पहचान स्वयं जाँचें।' : language === 'hinglish' ? 'Yeh request payment ke liye clear nahi hui. Check incomplete ya uncertain ho sakta hai. Payee ko khud verify karein.' : 'This request was not cleared for payment. The review may be incomplete or uncertain. Verify the payee independently.';
 
     // Low risk or uncertain
     if (lang === 'hi') {

@@ -20,7 +20,7 @@ export default function DomainRadar({ text }) {
     const urlMatches = text.match(/(?:https?:\/\/)?([a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)/gi) || [];
     if (!urlMatches.length) return null;
 
-    const domainRaw = urlMatches[0].replace(/^https?:\/\//i, '').split('/')[0].toLowerCase();
+    const domainRaw = urlMatches.map(candidate => { try { return new URL(/^https?:/i.test(candidate) ? candidate : 'https://' + candidate).hostname.toLowerCase(); } catch { return ''; } }).find(host => BRAND_DOMAINS.some(b => host.includes(b.stem) || (b.stem === 'paypal' && /paypa1|pay-pal|paypai/.test(host))));
     if (!domainRaw || domainRaw.length < 4 || !domainRaw.includes('.')) return null;
 
     // Check risky TLD
@@ -33,6 +33,7 @@ export default function DomainRadar({ text }) {
     let substitutedChar = null;
 
     for (const b of BRAND_DOMAINS) {
+      if (domainRaw === b.official || domainRaw.endsWith(`.${b.official}`)) continue;
       if (domainRaw.includes(b.stem) && domainRaw !== b.official && !domainRaw.endsWith(`.${b.official}`)) {
         matchedBrand = b;
         isTyposquat = true;
@@ -53,7 +54,7 @@ export default function DomainRadar({ text }) {
       }
     }
 
-    if (!matchedBrand && !hasRiskyTld) return null;
+    if (!matchedBrand) return null;
 
     return {
       domain: domainRaw,
@@ -99,7 +100,7 @@ export default function DomainRadar({ text }) {
             fontWeight: 800
           }}
         >
-          LOOKALIKE DETECTED
+          POSSIBLE LOOKALIKE
         </span>
       </div>
 
@@ -132,7 +133,7 @@ export default function DomainRadar({ text }) {
               https://{analysis.matchedBrand.official}
             </div>
             <span style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.5)', marginTop: 4, display: 'block' }}>
-              Authentic TLS encrypted corporate portal
+              Reference domain only. This app has not checked TLS or current ownership.
             </span>
           </div>
         )}
@@ -156,7 +157,7 @@ export default function DomainRadar({ text }) {
             {analysis.domain}
           </div>
           <span style={{ fontSize: 11, color: '#fca5a5', marginTop: 4, display: 'block' }}>
-            {analysis.substitutedChar ? `Typosquatting trick: substituted ${analysis.substitutedChar}` : 'Lookalike domain registered to deceive users'}
+            {analysis.substitutedChar ? `Typosquatting trick: substituted ${analysis.substitutedChar}` : 'Similar brand text. Registration and intent are not verified.'}
           </span>
         </div>
       </div>
@@ -165,7 +166,7 @@ export default function DomainRadar({ text }) {
         <div style={{ fontSize: 12, color: 'rgba(255, 255, 255, 0.8)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ color: '#fbbf24' }}>⚠️</span>
           <span>
-            <b>Risky TLD Indicator:</b> The domain uses <code style={{ color: '#fbbf24', background: 'rgba(0,0,0,0.3)', padding: '1px 5px', borderRadius: 4 }}>{analysis.matchedTld}</code> which has a disproportionately high incidence of phishing and abuse.
+            <b>Risky TLD Indicator:</b> The domain uses <code style={{ color: '#fbbf24', background: 'rgba(0,0,0,0.3)', padding: '1px 5px', borderRadius: 4 }}>{analysis.matchedTld}</code> is a heuristic warning only. The suffix alone does not establish fraud.
           </span>
         </div>
       )}

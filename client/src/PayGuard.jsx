@@ -8,6 +8,7 @@ import QRScanner from './components/QRScanner.jsx';
 import AudioAlert from './components/AudioAlert.jsx';
 import CybercrimeDraft from './components/CybercrimeDraft.jsx';
 import DomainRadar from './components/DomainRadar.jsx';
+import { loadPayPal } from './paypalClient.js';
 import { getDictionary, translateCategory, translateEvidence, translateRecommendation } from './locales/index.js';
 
 const SAMPLES = [
@@ -23,16 +24,6 @@ const SAMPLES = [
   ['Fake support', 'PayPal support: your account is limited. Pay a $30 verification fee now to support-help@gmail.com or lose access']
 ];
 
-function loadPayPal(clientId) {
-  if (window.paypal) return Promise.resolve(window.paypal);
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=USD&intent=capture`;
-    s.onload = () => resolve(window.paypal);
-    s.onerror = () => reject(new Error('Could not load PayPal.'));
-    document.head.appendChild(s);
-  });
-}
 
 async function postJson(url, body) {
   const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -207,17 +198,17 @@ function AiFeedbackMarquee() {
 
 export default function PayGuard() {
   const [language, setLanguage] = useState('en');
-  const [theme, setTheme] = useState(() => localStorage.getItem('ss_theme_v2') || 'dark');
+  const [theme, setTheme] = useState(() => { try { return localStorage.getItem('ss_theme_v2') || 'dark'; } catch { return 'dark'; } });
   const [view, setView] = useState('checker');
   const [mobileSettings, setMobileSettings] = useState(false);
   const [history, setHistory] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('upi_shield_history') || '[]'); } catch { return []; }
+    try { const data = JSON.parse(localStorage.getItem('upi_shield_history') || '[]'); return Array.isArray(data) ? data.filter(x => x && x.result).slice(0, 50) : []; } catch { return []; }
   });
   const t = getDictionary(language);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('ss_theme_v2', theme);
+    try { localStorage.setItem('ss_theme_v2', theme); } catch { /* browser storage may be unavailable */ }
   }, [theme]);
 
   function showView(next) { setView(next); setMobileSettings(false); }
@@ -279,6 +270,7 @@ export default function PayGuard() {
   }
 
   function restore(item) {
+    reviewSequence.current += 1; setBusy(false);
     setView('checker'); setMode('Message'); setPaid(null); setError('');
     setText(item.sourceText || ''); setCheckedText(item.sourceText || ''); setShot(null);
     setResult(null);
@@ -329,18 +321,25 @@ export default function PayGuard() {
     fetch('/api/paypal/config').then(r => r.json()).then(setConfig).catch(() => setConfig({ configured: false }));
   }, []);
 
+  const reviewSequence = useRef(0);
+  function changeText(next) {
+    reviewSequence.current += 1;
+    setText(next); setResult(null); setPaid(null); setBusy(false);
+  }
   async function review(explicitText) {
     const textToCheck = typeof explicitText === 'string' ? explicitText : text;
     if (!textToCheck?.trim()) return;
+    const sequence = ++reviewSequence.current;
     setBusy(true); setError(''); setResult(null); setPaid(null);
     try {
       setCheckedText(textToCheck);
       const out = await postJson('/api/payments/review', { text: textToCheck });
+      if (sequence !== reviewSequence.current) return;
       setResult(out); remember(out, textToCheck, 'text');
     } catch (e) {
-      setError(e.message);
+      if (sequence === reviewSequence.current) setError(e.message);
     } finally {
-      setBusy(false);
+      if (sequence === reviewSequence.current) setBusy(false);
     }
   }
 
@@ -356,21 +355,24 @@ export default function PayGuard() {
     reader.onload = () => {
       const url = String(reader.result);
       setError('');
+      reviewSequence.current += 1; setResult(null); setPaid(null); setBusy(false);
       setShot({ url, mimeType: f.type, image: url.split(',')[1], name: f.name });
     };
     reader.readAsDataURL(f);
   }
 
   async function reviewShot() {
+    const sequence = ++reviewSequence.current;
     setBusy(true); setError(''); setResult(null); setPaid(null); setCheckedText('');
     try {
       const out = await postJson('/api/payments/review-image', { image: shot.image, mimeType: shot.mimeType });
+      if (sequence !== reviewSequence.current) return;
       setResult(out); remember(out, out.transcript || '', 'image');
       if (out.transcript) setText(out.transcript);
     } catch (e) {
-      setError(e.message);
+      if (sequence === reviewSequence.current) setError(e.message);
     } finally {
-      setBusy(false);
+      if (sequence === reviewSequence.current) setBusy(false);
     }
   }
 
@@ -385,10 +387,10 @@ export default function PayGuard() {
       buttons = paypal.Buttons({
         style: { layout: 'vertical', shape: 'rect' },
         createOrder: async () => { const o = await postJson('/api/paypal/create-order', { token }); orderTicket = o.orderTicket; return o.id; },
-        onApprove: async (data) => setPaid(await postJson('/api/paypal/capture-order', { orderId: data.orderID, orderTicket })),
+        onApprove: async (data) => { try { const receipt = await postJson('/api/paypal/capture-order', { orderId: data.orderID, orderTicket }); if (!cancelled) setPaid(receipt); } catch (e) { if (!cancelled) setError(e.message); } },
         onError: () => setError('PayPal could not finish this sandbox payment.')
       });
-      buttons.render(buttonsRef.current);
+      return buttons.render(buttonsRef.current);
     }).catch((e) => setError(e.message));
     return () => { cancelled = true; try { buttons?.close(); } catch { /* ignore */ } };
   }, [result, config]);
@@ -445,8 +447,8 @@ export default function PayGuard() {
         <p className="pg-sub">Paste a message, link or invoice. ScamShield scores the risk in seconds and only opens PayPal checkout when the request looks safe.</p>
         <a href="#checker" className="pg-btn">Check a request &rarr;</a>
         <div className="pg-stats">
-          <div><b>0 / 20</b><span>scams passed in our test set</span></div>
-          <div><b>1.3s</b><span>median check time</span></div>
+          <div><b>Sandbox</b><span>no real money moves</span></div>
+          <div><b>Check first</b><span>AI + rules before checkout</span></div>
           <div><b>40</b><span>labeled test requests</span></div>
         </div>
       </header>}
@@ -517,7 +519,7 @@ export default function PayGuard() {
                 </p>
                 <button className="pg-btn" onClick={() => {
                   setMode('Message');
-                  setText(SAMPLES[1][1]);
+                  changeText(SAMPLES[1][1]);
                   setView('checker');
                 }}>
                   Test a Sample Scam Scan &rarr;
@@ -525,7 +527,7 @@ export default function PayGuard() {
               </div>
             )}
           </>}
-          {view === 'examples' && <><p className="pg-lead">Fictional requests to try. Selecting one fills the checker; it does not run a check or payment.</p><div className="pg-library-grid">{[[t.exampleKyc,t.exampleTextKyc],[t.exampleRefund,t.exampleTextRefund],[t.exampleLottery,t.exampleTextLottery],[t.exampleBankAlert,t.exampleTextBankAlert],[t.exampleSuspiciousLink,t.exampleTextSuspiciousLink],...SAMPLES].map(([label, sample],i) => <article className="pg-card" key={i}><h3>{label}</h3><p>{sample}</p><button className="pg-btn-o" onClick={() => { setMode('Message'); setText(sample); setResult(null); setView('checker'); }}>Use example</button></article>)}</div></>}
+          {view === 'examples' && <><p className="pg-lead">Fictional requests to try. Selecting one fills the checker; it does not run a check or payment.</p><div className="pg-library-grid">{[[t.exampleKyc,t.exampleTextKyc],[t.exampleRefund,t.exampleTextRefund],[t.exampleLottery,t.exampleTextLottery],[t.exampleBankAlert,t.exampleTextBankAlert],[t.exampleSuspiciousLink,t.exampleTextSuspiciousLink],...SAMPLES].map(([label, sample],i) => <article className="pg-card" key={i}><h3>{label}</h3><p>{sample}</p><button className="pg-btn-o" onClick={() => { setMode('Message'); changeText(sample); setResult(null); setView('checker'); }}>Use example</button></article>)}</div></>}
           {view === 'tips' && <><div className="pg-library-grid">{[1,2,3,4].map(i => <article className="pg-card" key={i}><h3>{t[`tip${i}Title`]}</h3><p>{t[`tip${i}Desc`]}</p></article>)}</div><p className="pg-lead">Already lost money? Contact your bank immediately. In India, report at <a href="https://cybercrime.gov.in" target="_blank" rel="noreferrer">cybercrime.gov.in</a> or call 1930.</p></>}
           {view === 'inspector' && (
             <SecurityInspector
@@ -549,7 +551,7 @@ export default function PayGuard() {
             {mode === 'Agent' ? <AgentPanel /> : mode === 'QR Scanner' ? (
               <QRScanner
                 onScan={(scanned) => {
-                  setText(scanned.readableText);
+                  changeText(scanned.readableText);
                 }}
                 onAnalyzeText={(txt) => {
                   setText(txt);
@@ -560,7 +562,7 @@ export default function PayGuard() {
               <>
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => changeText(e.target.value)}
                   maxLength={1000}
                   rows={5}
                   placeholder={language === 'en' ? MODES[mode] : t.inputPlaceholder}
@@ -568,7 +570,7 @@ export default function PayGuard() {
                 />
                 <div className="pg-chips">
                   {SAMPLES.map(([label, s], i) => (
-                    <button key={i} onClick={() => setText(s)} className="pg-chip">{label}</button>
+                    <button key={i} onClick={() => changeText(s)} className="pg-chip">{label}</button>
                   ))}
                 </div>
                 <div className="pg-row">

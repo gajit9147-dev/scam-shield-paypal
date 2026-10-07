@@ -9,8 +9,7 @@ import { detectLocalSignals } from './rules.js';
 import { combineEvidence } from './fusion.js';
 import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
 import { buildGuardedTools, runAgent, pickModels, googleModel } from './agent.js';
-import { verifyInvoice } from './invoiceCheck.js';
-import { paypalConfigured, getInvoice, createOrder, captureOrder, ensureWebhook, verifyWebhookSignature } from './paypal.js';
+import { paypalConfigured, createOrder, captureOrder, ensureWebhook, verifyWebhookSignature } from './paypal.js';
 import { processWebhook, confirmationFor, recentEvents } from './webhook.js';
 import { aiStatus } from './ai.js';
 import { aiExtract, paymentRedFlags, reviewPaymentRequest, verifyToken, signOrderTicket, verifyOrderTicket, startInrRateRefresh, useTokenOnce, releaseToken, rateLimit, runAttackDemo } from './paymentReview.js';
@@ -310,9 +309,8 @@ app.post('/api/paypal/webhook', rateLimit(120), async (req, res) => {
 });
 
 // The page asks whether PayPal's own webhook confirmed a payment this server captured.
-app.get('/api/paypal/webhook-events', rateLimit(60), (_req, res) => res.json({ registered: webhookState.registered, events: recentEvents() }));
+app.get('/api/paypal/webhook-events', rateLimit(60), (_req, res) => res.json({ registered: webhookState.registered, events: recentEvents().map(({ at, type, result, note }) => ({ at, type: /^PAYMENT\.[A-Z_.]+$/.test(type) ? type : 'OTHER_EVENT', result, note })) }));
 
-app.get('/api/paypal/webhook-events', rateLimit(60), (req, res) => res.json({ registered: webhookState.registered, events: recentEvents() }));
 
 // ---- Agent mode: PayPal Agent Toolkit tools behind the ScamShield check ----
 let toolkitCache = null;
@@ -323,7 +321,7 @@ async function paypalToolkitTools() {
     clientId: process.env.PAYPAL_CLIENT_ID,
     clientSecret: process.env.PAYPAL_CLIENT_SECRET,
     configuration: {
-      actions: { orders: { create: true, get: true }, invoices: { list: true, get: true }, transactions: { list: true } },
+      actions: { orders: { create: true } },
       context: { sandbox: true }
     }
   });
@@ -359,7 +357,12 @@ app.post('/api/agent/run', rateLimit(6), async (req, res) => {
       try {
         const out = await runAgent({ prompt: prompt.trim(), tools, model: googleModel(name) });
         return res.json({ answer: out.answer, steps: events, orders, model: name });
-      } catch (err) { lastErr = err; events.length = 0; orders.length = 0; }
+      } catch (err) {
+        lastErr = err;
+        // Do not rerun a model after a tool already created an order. Return the buyer step.
+        if (orders.length) return res.json({ answer: 'A sandbox order was prepared before the AI stopped. Review it below; no payment was captured.', steps: events, orders, model: name });
+        events.length = 0;
+      }
     }
     throw lastErr || new Error('agent failed');
   } catch (err) {
@@ -368,24 +371,12 @@ app.post('/api/agent/run', rateLimit(6), async (req, res) => {
   }
 });
 
-app.post('/api/invoices/verify', rateLimit(20), async (req, res) => {
-  const { text, invoiceId } = req.body || {};
-  if (typeof text !== 'string' || text.length > 2000 || (invoiceId != null && (typeof invoiceId !== 'string' || invoiceId.length > 60))) {
-    return res.status(400).json({ error: 'Send the pasted invoice text (up to 2000 characters) and optionally the PayPal invoice ID.' });
-  }
-  if (!paypalConfigured()) return res.status(503).json({ error: 'PayPal sandbox is not set up on this server.' });
-  return res.json(await verifyInvoice({ text, invoiceId }, { getInvoice }));
+// Merchant invoice lookup is not available to anonymous demo visitors.
+app.post('/api/invoices/verify', rateLimit(20), (_req, res) => {
+  return res.status(403).json({ error: 'Merchant invoice records are private. Use the message checker for pasted text.' });
 });
 
 app.get('/api/paypal/webhook-status', (req, res) => res.json({ registered: webhookState.registered, error: webhookState.error }));
-
-app.get('/api/paypal/webhook-events', (req, res) => {
-  res.json({
-    registered: webhookState.registered,
-    error: webhookState.error,
-    events: recentEvents()
-  });
-});
 
 app.post('/api/payments/verify-token', rateLimit(60), (req, res) => {
   const token = req.body?.token;

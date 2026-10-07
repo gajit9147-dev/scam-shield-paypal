@@ -32,34 +32,35 @@ export default function CybercrimeDraft({ result, sourceText, language = 'en' })
       : '- Suspicious payment / credential harvesting pattern detected';
 
     return `=======================================================
-INCIDENT REPORT - NATIONAL CYBER CRIME REPORTING PORTAL
+PERSONAL REPORT DRAFT - REVIEW AND COMPLETE BEFORE SUBMITTING
 Helpline: 1930 | Portal: https://cybercrime.gov.in
 =======================================================
-1. Incident Timestamp: ${time} IST
-2. Fraud Classification: ${category}
-3. Suspect Identifiers:
+1. Draft created: ${time} IST
+   Incident date/time: [enter when the incident happened]
+2. Automated risk category (not a confirmed crime): ${category}
+3. Identifiers mentioned in the message (unverified):
    - Suspect UPI / Payee: ${payee || 'Not specified in message'}
    - Suspect Contact Number: ${phone || 'Not specified'}
-   - Phishing URL / Domain: ${link || 'None'}
-   - Financial Demand: ${amount ? `${amount} ${currency}` : 'Direct credential / OTP theft'}
+   - URL / Domain in message: ${link || 'None'}
+   - Financial Demand: ${amount ? `${amount} ${currency}` : 'Not established from the available review'}
 
 4. Exact Message / Communication Received:
 "${(sourceText || '').trim()}"
 
-5. Automated Forensic Evidence (ScamShield Analysis):
-   - Risk Evaluation: ${verdict.label || verdict.riskLevel || 'HIGH_RISK'} (Risk Score: ${review.riskScore ?? 85}/100)
+5. Automated warning signals (not forensic proof):
+   - Risk Evaluation: ${verdict.riskLevel || verdict.label || 'Not available'} (Risk signals: ${review.riskScore ?? 'not available'}/100, not a probability)
    - Specific Flags:
 ${signals}
 
 6. Action Taken by Payer:
-   - Transaction aborted on ScamShield Zero-Trust Gateway.
-   - Reporting to 1930 helpline & cybercrime.gov.in for domain takedown / suspect VPA freezing.
+   - Actions actually taken: [enter your own actions; nothing has been reported by this app]
+   - Money lost / transaction ID: [enter amount and ID, or state no payment was made]
+   - Report submitted / bank contacted: [complete yourself]
 =======================================================`;
   }, [verdict, review, payee, phone, link, amount, currency, sourceText]);
 
-  const copyDraft = () => {
-    navigator.clipboard?.writeText(draftText);
-    setCopied(true);
+  const copyDraft = async () => {
+    try { await navigator.clipboard.writeText(draftText); setCopied(true); } catch { setCopied(false); return; }
     setTimeout(() => setCopied(false), 2500);
   };
 
@@ -109,7 +110,7 @@ ${signals}
                 National Cyber Crime Portal (1930) Complaint Draft
               </h4>
               <p style={{ margin: 0, fontSize: 12, color: 'rgba(255, 255, 255, 0.6)' }}>
-                Official format for reporting online financial fraud to Indian authorities.
+                Personal draft, not an official form or a filed report. Edit and verify every fact before submitting.
               </p>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -188,7 +189,7 @@ ${signals}
                 border: '1px solid rgba(52, 211, 153, 0.3)'
               }}
             >
-              <span>📞 Helpline: 1930 (Free Call)</span>
+              <span>📞 Helpline: 1930</span>
             </a>
           </div>
         </div>
