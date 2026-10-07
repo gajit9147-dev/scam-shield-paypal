@@ -285,6 +285,7 @@ export default function PayGuard() {
   const [shot, setShot] = useState(null);
   const [attacks, setAttacks] = useState(null);
   const [scanIdx, setScanIdx] = useState(0);
+  const [wakeLeft, setWakeLeft] = useState(30);
   const [hook, setHook] = useState('');
   useEffect(() => {
     if (!paid?.orderId) { setHook(''); return undefined; }
@@ -303,6 +304,13 @@ export default function PayGuard() {
     return () => { stop = true; };
   }, [paid]);
   const [checkedText, setCheckedText] = useState('');
+  useEffect(() => {
+    if (!busy) { setWakeLeft(30); return undefined; }
+    const started = Date.now();
+    setWakeLeft(30);
+    const c = setInterval(() => setWakeLeft(Math.max(0, 30 - Math.floor((Date.now() - started) / 1000))), 250);
+    return () => clearInterval(c);
+  }, [busy]);
   useEffect(() => {
     if (!busy) { setScanIdx(0); return undefined; }
     const t = setInterval(() => setScanIdx((i) => (i + 1) % SCAN_STEPS.length), 1200);
@@ -589,7 +597,7 @@ export default function PayGuard() {
                 </div>
               </div>
             )}
-            {busy && <p className="pg-hint" style={{ marginTop: 14 }}>{SCAN_STEPS[scanIdx]} After idle time the free server may need up to 30 seconds to wake up.</p>}
+            {busy && <p className="pg-hint" style={{ marginTop: 14 }}>{SCAN_STEPS[scanIdx]} {wakeLeft > 0 ? `If the free server is asleep, it needs up to ${wakeLeft}s to wake up.` : 'Still waking the free server. Almost there...'}</p>}
             {error && <div className="pg-error">{error}</div>}
           </div>
 
