@@ -107,7 +107,7 @@ npm --prefix server run eval:upi
 npm --prefix server run eval:public
 ```
 
-The October 7, 2026 server regression run passed **87/87 tests**. Coverage includes token parsing/signatures/expiry, replay protection, order tickets, scam rules, guarded Agent tools and webhook behavior. The current UI was also checked at 1280px, 390px and 320px, including navigation, themes, languages, camera cleanup, uploaded QR decoding and stale-result invalidation. A fake camera stream is not proof that every physical phone camera works.
+The October 7, 2026 server regression run passed **87/87 tests**; after the later safety changes below the server suite passes **94/94**. Coverage includes token parsing/signatures/expiry, replay protection, order tickets, scam rules, guarded Agent tools and webhook behavior. The current UI was also checked at 1280px, 390px and 320px, including navigation, themes, languages, camera cleanup, uploaded QR decoding and stale-result invalidation. A fake camera stream is not proof that every physical phone camera works.
 
 Evaluation reports are separate from payment review scores:
 
@@ -136,6 +136,14 @@ server/eval/                    Frozen evaluation sets and runners
 docs/                          Architecture, evaluation reports and screenshots
 render.yaml                    Render deployment configuration
 ```
+
+## Payment safety additions (Oct 7, 2026)
+
+- Text that tries to give instructions to an AI agent (for example "ignore previous instructions" or "skip the check") is flagged as a red flag, so the request is blocked before any order is created. This is a pattern list, not a guarantee against every phrasing.
+- Each PayPal order is captured once. A repeated capture returns the stored result without calling PayPal again, and the capture request carries a PayPal-Request-Id.
+- If a capture call fails or times out, the order is read back from PayPal before anything is reported. A payment that went through is shown as paid; one that did not stays unpaid; if the readback also fails the state is reported as unknown.
+- `GET /api/payments/audit` lists recent gate decisions (stage, decision, risk, reasons, amount, order id). It never stores request text, tokens or names, and it is cleared when the server restarts.
+- Sandbox only. These are unit-tested with fake PayPal responses; the new read-back path has not been exercised against a live PayPal timeout.
 
 ## Security and privacy limits
 
