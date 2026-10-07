@@ -9,7 +9,7 @@ import { detectLocalSignals } from './rules.js';
 import { combineEvidence } from './fusion.js';
 import { aiReview, aiReviewImage, aiChat, loadEnvFile } from './ai.js';
 import { buildGuardedTools, runAgent, pickModels, googleModel } from './agent.js';
-import { paypalConfigured, createOrder, captureOrder, ensureWebhook, verifyWebhookSignature } from './paypal.js';
+import { paypalConfigured, createOrder, captureOrder, getOrder, ensureWebhook, verifyWebhookSignature } from './paypal.js';
 import { processWebhook, confirmationFor, recentEvents } from './webhook.js';
 import { aiStatus } from './ai.js';
 import { aiExtract, paymentRedFlags, reviewPaymentRequest, verifyToken, signOrderTicket, verifyOrderTicket, startInrRateRefresh, useTokenOnce, releaseToken, rateLimit, runAttackDemo } from './paymentReview.js';
@@ -234,9 +234,12 @@ app.post('/api/payments/review', rateLimit(30), async (req, res) => {
     return res.status(400).json({ error: 'Paste a payment request of 1 to 1000 characters.' });
   }
   const out = await reviewRequestText(text.trim());
+  auditRecord({ stage: 'review', decision: out.review?.canPay ? 'eligible_for_review' : 'blocked', risk: out.verdict?.riskLevel, reasons: (out.review?.blocked ? (out.verdict?.signals || []).map((x) => x.type).filter(Boolean) : []), amount: out.review?.checkout?.amount, currency: out.review?.checkout?.currency });
   return res.json(out);
 });
 
+import { captureOnce } from './reconcile.js';
+import { record as auditRecord, recent as auditRecent } from './audit.js';
 const expectedOrders = new Map();
 const paidOrders = new Map();
 const webhookState = { registered: false, error: '' };
@@ -258,6 +261,7 @@ app.post('/api/paypal/create-order', rateLimit(20), async (req, res) => {
       description: `${claim.purpose ? `Reviewed payment: ${claim.purpose}` : 'Reviewed payment'}${claim.payee ? ` (payee named in request: ${String(claim.payee).slice(0, 60)}, not verified)` : ''}`.slice(0, 120),
       requestId: claim.jti || randomUUID()
     });
+    auditRecord({ stage: 'create_order', decision: 'order_created', orderId: order.id, amount: claim.amount, currency: claim.currency });
     cleanOldOrders();
     expectedOrders.set(order.id, { amount: claim.amount, currency: claim.currency, at: Date.now() });
     return res.json({ id: order.id, orderTicket: signOrderTicket({ orderId: order.id, amount: claim.amount, currency: claim.currency }) });
@@ -279,30 +283,21 @@ app.post('/api/paypal/capture-order', rateLimit(20), async (req, res) => {
   }
   const expected = verifyOrderTicket(req.body?.orderTicket, orderId) || expectedOrders.get(orderId);
   if (!expected) return res.status(403).json({ error: 'This order was not created by a reviewed request.' });
-  try {
-    const data = await captureOrder(orderId);
-    const unit = data?.purchase_units?.[0]?.payments?.captures?.[0];
-    const paidOk = unit?.amount && Number(unit.amount.value) === Number(expected.amount) && unit.amount.currency_code === expected.currency;
-    if (data.status !== 'COMPLETED' || !paidOk) {
-      return res.status(409).json({ error: 'The payment could not be verified against the reviewed request.' });
-    }
+  const out = await captureOnce({ orderId, expected, capture: captureOrder, getOrder, done: paidOrders });
+  if (out.kind === 'captured' || out.kind === 'reconciled' || out.kind === 'already_paid') {
     expectedOrders.delete(orderId);
-    paidOrders.set(orderId, { amount: expected.amount, currency: expected.currency });
-    if (paidOrders.size > 500) paidOrders.delete(paidOrders.keys().next().value);
-    return res.json({
-      status: data.status,
-      orderId,
-      paidAt: new Date().toISOString(),
-      captureId: unit?.id || null,
-      amount: unit?.amount || null,
-      payerName: data?.payer?.name?.given_name || null
-    });
-  } catch (err) {
-    return res.status(502).json({ error: err.message || 'Could not capture the PayPal payment.' });
+    auditRecord({ stage: 'capture', decision: out.kind, orderId, amount: expected.amount, currency: expected.currency, outcome: 'COMPLETED' });
+    const r = out.result;
+    return res.json({ status: r.status, orderId, paidAt: new Date().toISOString(), captureId: r.captureId, amount: r.amount, payerName: r.payerName, ...(out.kind === 'reconciled' ? { reconciled: true } : {}), ...(out.kind === 'already_paid' ? { alreadyPaid: true } : {}) });
   }
+  auditRecord({ stage: 'capture', decision: out.kind, orderId, outcome: out.status || 'none' });
+  if (out.kind === 'unknown') return res.status(502).json({ error: 'The payment state could not be confirmed. Check PayPal before paying again.' });
+  if (out.kind === 'not_paid') return res.status(502).json({ error: out.error?.message || 'Could not capture the PayPal payment. PayPal shows it as not paid.' });
+  return res.status(409).json({ error: 'The payment could not be verified against the reviewed request.' });
 });
 
-// PayPal calls this on its own when a capture finishes. The signature is checked with PayPal before anything is recorded.
+app.get('/api/payments/audit', rateLimit(30), (_req, res) => res.json({ note: 'Decisions only. No request text, tokens or names are kept. Cleared on restart.', events: auditRecent() }));
+
 app.post('/api/paypal/webhook', rateLimit(120), async (req, res) => {
   const out = await processWebhook({ headers: req.headers, event: req.body }, verifyWebhookSignature);
   res.status(out.status).json(out.body);

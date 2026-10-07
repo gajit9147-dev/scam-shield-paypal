@@ -60,8 +60,13 @@ export function createOrder({ amount, currency, description, requestId }) {
   }, requestId);
 }
 
+// The request id makes PayPal treat a repeated capture of the same order as the same request.
 export function captureOrder(orderId) {
-  return paypalFetch(`/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`, null);
+  return paypalFetch(`/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`, null, `capture-${orderId}`);
+}
+
+export function getOrder(orderId) {
+  return paypalFetch(`/v2/checkout/orders/${encodeURIComponent(orderId)}`, null, null, 'GET');
 }
 
 // Webhook support: PayPal tells the server about a finished capture on its own,

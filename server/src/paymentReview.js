@@ -157,6 +157,7 @@ const RED_FLAGS = [
   ['unexpected_wallet_credit', /\b(receive|credited|bonus)\b[^.]{0,40}\b(rs\.?\s?[\d,o]+|\u20b9\s?[\d,]+)\b[^.]{0,40}\b(wallet|account)\b[\s\S]{0,80}(https?:\/\/|\b[a-z0-9]+\.(in|im|co|ly)\/)/i, 'Says money is credited or waiting, with a link to claim it'],
   ['wallet_kyc_lock', /\b(wallet|upi|bhim|paytm|phonepe)\b[^.]{0,60}\bkyc\b[^.]{0,80}\b(locked|blocked|suspended|freeze|frozen)\b|\bkyc\b[^.]{0,40}\bpending\b[^.]{0,80}\b(locked|blocked|suspended)\b/i, 'KYC pending threat to lock a wallet or UPI account'],
   ['loan_ready_link', /\bloan\b[^.]{0,60}\b(approved|ready|processed|application)\b[^.]{0,80}\b(direct transfer|click|link)\b[\s\S]{0,60}https?:\/\//i, 'Loan offer pushing a link for a direct transfer'],
+  ['instruction_injection', /\b(ignore|disregard|forget)\b[^.]{0,30}\b(previous|prior|above|all|earlier|your)\b[^.]{0,30}\b(instructions?|rules?|checks?|prompt)\b|\bsystem prompt\b|\byou are now\b|\b(do not|don't|never)\b[^.]{0,30}\b(ask|wait|require)\b[^.]{0,30}\b(confirm|confirmation|approval|permission)\b|\b(skip|bypass)\b[^.]{0,20}\b(the\s)?(scam\s)?(check|review|approval|verification)\b|\bagent instructions?\b|\bauto[- ]?approve\b/i, 'Contains instructions aimed at an AI agent, which is how prompt injection works'],
   ['outside_app', /\b(pay|transfer|send)\b[^.]{0,30}\boutside\b[^.]{0,15}\b(app|platform|site)\b/i, 'Asks to pay outside the app or platform'],
 ];
 // Checks only what can be checked without a bank or PayPal lookup: whether the payee named in the request is well formed
