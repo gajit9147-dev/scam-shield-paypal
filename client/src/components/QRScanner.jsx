@@ -93,16 +93,30 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
     animFrameRef.current = requestAnimationFrame(tick);
   }, [stopCamera]);
 
-  // Start camera
+  // Start camera with graceful fallbacks
   const startCamera = async () => {
     setCameraError('');
     setScannedResult(null);
+
+    if (!navigator?.mediaDevices?.getUserMedia) {
+      setCameraError('Camera access requires HTTPS or localhost in your browser. Switched to image upload mode.');
+      setMethod('upload');
+      return;
+    }
+
     try {
       stopCamera();
-      const constraints = {
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      let stream = null;
+      // 1. Try mobile rear/environment camera first
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } }
+        });
+      } catch {
+        // 2. Fallback to default webcam / PC camera
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
+
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -112,11 +126,15 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
         animFrameRef.current = requestAnimationFrame(tick);
       }
     } catch (err) {
-      setCameraError(
-        err.name === 'NotAllowedError'
-          ? 'Camera permission denied. Please allow camera access in your browser or upload an image instead.'
-          : 'Unable to access camera on this device. You can upload a QR image below.'
-      );
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setCameraError('Camera permission was blocked. Please allow camera access in browser address bar settings, or upload a QR image below.');
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        setCameraError('No webcam or camera device was found on this computer. You can upload a QR image/screenshot directly.');
+        setMethod('upload');
+      } else {
+        setCameraError('Camera could not be accessed (' + (err.message || 'not found') + '). You can upload a QR screenshot or photo below.');
+        setMethod('upload');
+      }
       setCameraActive(false);
     }
   };
@@ -421,10 +439,56 @@ export default function QRScanner({ onScan, onAnalyzeText }) {
         </div>
       )}
 
-      {/* Error Message */}
+      {/* Smart Fallback Action Banner when Camera is unavailable */}
       {cameraError && (
-        <div className="pg-error" style={{ marginTop: 14 }}>
-          {cameraError}
+        <div
+          style={{
+            marginTop: 16,
+            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(15, 23, 42, 0.6))',
+            border: '1px solid rgba(239, 68, 68, 0.35)',
+            borderRadius: 18,
+            padding: '18px 20px',
+            color: '#fff'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <span style={{ fontSize: 22 }}>📷</span>
+            <span style={{ fontWeight: 700, fontSize: 14, color: '#fca5a5' }}>
+              Camera Not Available on this Desktop Browser
+            </span>
+          </div>
+          <p style={{ margin: '0 0 14px', fontSize: 13, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.5 }}>
+            {cameraError}
+          </p>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setMethod('upload');
+                setTimeout(() => fileInputRef.current?.click(), 100);
+              }}
+              className="pg-btn"
+              style={{ padding: '10px 22px', fontSize: 13 }}
+            >
+              📁 Choose QR Screenshot / Image from Computer &rarr;
+            </button>
+            <button
+              type="button"
+              onClick={() => loadSample(SAMPLE_QRS[0])}
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                color: '#fff',
+                borderRadius: 999,
+                padding: '10px 18px',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              ⚡ Test Sample Scam QR Instantly
+            </button>
+          </div>
         </div>
       )}
 
