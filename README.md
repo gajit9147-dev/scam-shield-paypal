@@ -4,6 +4,8 @@ Check a payment request before you pay. ScamShield combines scam rules, a local 
 
 Positioning: ScamShield is a **pre-payment intent firewall**, not a merchant verification service. It checks what the request says and gates checkout on that review; it does not verify who the payee is.
 
+Core idea: **intent-bound payment authorization**. The reviewed request (amount, currency, review id, expiry) is signed into a single-use token, and the server refuses to create or capture a PayPal order that does not match what was reviewed. Checkout is enabled by the review, not by a button on the page.
+
 Scope: **Core** = check before you pay. **Proof** = the server-side payment gate. **Evidence** = the security demonstrations page. **Extensions** = QR, screenshot, multilingual and the experimental agent mode.
 
 - [Live site](https://scam-shield-paypal.onrender.com/) (`/pay` opens the same app)
@@ -22,7 +24,7 @@ Live demo: https://scam-shield-paypal.onrender.com/pay
    Expected: BLOCKED, Risk Signal Score 100/100, reasons listed, PayPal checkout stays locked.
 2. Cleared example and payment. Paste:
    `Invoice 88 from Blue Cafe Vadodara: please pay $12.50 for catering order 88. Thanks!`
-   Expected: CLEARED (Risk Signal Score low, "uncertain", not "safe"). Open PayPal sandbox checkout and log in with the sandbox buyer below. After payment the receipt shows the order and capture status from PayPal's response, then a "PayPal webhook confirmed" line.
+   Expected: CHECKOUT ENABLED (Risk Signal Score low, "uncertain", not "safe"). Open PayPal sandbox checkout and log in with the sandbox buyer below. After payment the receipt shows the order and capture status from PayPal's response, then a "PayPal webhook confirmed" line.
    Sandbox buyer email: sb-ciyxy53147650@personal.example.com
    Sandbox buyer password: d7)3:q@J (PayPal sandbox test account, no real money)
 3. "Attack the shield" (below the result): runs 4 simulated bypass attempts against the server-side gate (no PayPal call). All 4 should show REJECTED.

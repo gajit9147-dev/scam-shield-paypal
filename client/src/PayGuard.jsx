@@ -59,7 +59,7 @@ function downloadReport(result, shownText) {
   const body = [
     'ScamShield evidence report',
     `Time: ${new Date().toISOString()}`,
-    `Decision: ${r.blocked ? 'BLOCKED' : r.canPay ? 'CLEARED for PayPal sandbox' : 'NOT PAYABLE'}`,
+    `Decision: ${r.blocked ? 'BLOCKED' : r.canPay ? 'CHECKOUT ENABLED for PayPal sandbox (seller not verified)' : 'NOT PAYABLE'}`,
     `Risk signals: ${r.riskScore}/100 (not a probability)`,
     `Category: ${v.categoryLabel || v.category || 'n/a'}`,
     `Amount: ${r.request?.amount ?? 'not found'} ${r.request?.currency || ''}`,
@@ -498,7 +498,7 @@ export default function PayGuard() {
                           color: isBlocked ? '#f87171' : isCleared ? '#34d399' : '#fbbf24',
                           border: `1px solid ${isBlocked ? 'rgba(239, 68, 68, 0.3)' : isCleared ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`
                         }}>
-                          {isBlocked ? 'BLOCKED (risk decision, not proof)' : isCleared ? 'CLEARED' : 'UNCERTAIN'} • {score === null ? 'Risk Signal Score unavailable' : `Risk Signal Score ${score}/100`}
+                          {isBlocked ? 'BLOCKED (risk decision, not proof)' : isCleared ? 'CHECKOUT ENABLED' : 'UNCERTAIN'} • {score === null ? 'Risk Signal Score unavailable' : `Risk Signal Score ${score}/100`}
                         </span>
                       </div>
                       <p style={{ margin: 0, fontSize: 15, fontWeight: 500, lineHeight: 1.5 }}>
@@ -622,15 +622,15 @@ export default function PayGuard() {
             <div className={`rounded-2xl border px-4 py-3 ${review_.blocked ? 'border-rose-300/40 bg-rose-500/15' : review_.degraded ? 'border-amber-300/50 bg-amber-400/15' : 'border-emerald-300/30 bg-emerald-400/10'}`}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
                 <p className={`text-2xl font-semibold tracking-tight ${review_.blocked ? 'text-rose-100' : review_.degraded ? 'text-amber-100' : 'text-emerald-100'}`}>
-                  {review_.blocked ? 'BLOCKED: suspicious payment request' : review_.canPay ? 'CLEARED: PayPal Sandbox unlocked' : review_.degraded ? 'NOT CLEARED: AI review unavailable' : 'NOT PAYABLE: checkout could not be prepared'}
+                  {review_.blocked ? 'BLOCKED: suspicious payment request' : review_.canPay ? 'CHECKOUT ENABLED: PayPal Sandbox unlocked' : review_.degraded ? 'CHECKOUT LOCKED: AI review unavailable' : 'NOT PAYABLE: checkout could not be prepared'}
                 </p>
                 <AudioAlert verdict={verdict} review={review_} language={language} />
               </div>
-              <p className="text-xs text-white/60">{review_.blocked ? 'The server will not open checkout for this request.' : review_.degraded ? 'Only the rules ran. Checkout stays locked until the AI review answers. Check again in a minute.' : 'It passed the automated checks. That does not prove the seller is genuine.'}</p>
+              <p className="text-xs text-white/60">{review_.blocked ? 'The server will not open checkout for this request.' : review_.degraded ? 'Only the rules ran. Checkout stays locked until the AI review answers. Check again in a minute.' : 'No strong scam signal found in the request. Seller identity is NOT verified.'}</p>
               <p className="mt-1 text-sm text-white/85">
                 {review_.request?.amount ? `${review_.request.amount} ${review_.request.currency || ''}` : 'Amount not found'}
                 {review_.request?.payee ? ` to ${review_.request.payee}` : ''}
-                {` | risk ${review_.riskScore}/100`}
+                {` | Risk Signal Score ${review_.riskScore}/100`}
               </p>
             </div>
             <details className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm">
@@ -667,6 +667,22 @@ export default function PayGuard() {
                                     {review_.advice && <p className="text-sm text-white/75">{review_.advice}</p>}
 
             {review_.blocked && <p className="text-sm font-medium text-rose-200">Checkout is locked. Do not pay this request.</p>}
+            {review_.blocked && (
+              <div className="rounded-xl border border-rose-300/30 bg-rose-500/10 p-3 text-sm text-rose-100/90 space-y-1">
+                <p className="font-semibold">Next steps</p>
+                <p>1. Do not pay or share any code. Verify the request out of band: call the person or company on a number you already trust, not the one in this message.</p>
+                <p>2. Never pay a fee to unlock, claim or release money, a prize, a refund or an account.</p>
+                <p>3. If money already moved, tell your bank or PayPal right away and report the sender.</p>
+              </div>
+            )}
+            {review_.canPay && review_.request?.payee && (
+              <div className="rounded-xl border border-amber-300/30 bg-amber-400/10 p-3 text-sm text-amber-100/90 space-y-1">
+                <p className="font-semibold">Payee identity: not matched</p>
+                <p>The request says you pay: <b>{review_.request.payee}</b></p>
+                <p>Sandbox checkout pays: <b>this app's own test merchant</b>, not that payee.</p>
+                <p className="text-xs text-amber-100/70">ScamShield checks what the request says. It does not verify who receives the money. In a real deployment, a payee that does not match must stop the payment.</p>
+              </div>
+            )}
             {!review_.blocked && review_.checkoutProblem && <p className="text-sm text-amber-200">{review_.checkoutProblem}</p>}
 
             {review_.canPay && !paid && (
@@ -681,7 +697,7 @@ export default function PayGuard() {
               <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-100 space-y-1">
                 <p className="font-semibold">Sandbox payment {paid.status}. {paid.amount ? `${paid.amount.value} ${paid.amount.currency_code}. ` : ''}Receipt id: {paid.captureId}</p>
                 <p className="text-xs text-emerald-100/80">From PayPal's response: order {paid.status}{paid.captureStatus ? `, capture ${paid.captureStatus}` : ''}. Order id {paid.orderId}.</p>
-                <p className="text-xs text-emerald-100/80">Payment completed and the amount matched the review. Risk Signal Score {review_.riskScore}/100, {verdict.label || verdict.riskLevel}. Order {paid.orderId}. {paid.paidAt ? new Date(paid.paidAt).toLocaleString() : ''}. No real money moved.</p>
+                <p className="text-xs text-emerald-100/80">Payment completed. ScamShield authorized this exact reviewed amount, and the amount matched the review. Risk Signal Score {review_.riskScore}/100, {verdict.label || verdict.riskLevel}. Order {paid.orderId}. {paid.paidAt ? new Date(paid.paidAt).toLocaleString() : ''}. No real money moved.</p>
                 <p className="text-xs text-emerald-100/80">{hook === 'confirmed' ? 'PayPal webhook confirmed this capture (signature verified by PayPal).' : hook === 'waiting' ? 'Waiting for PayPal webhook confirmation...' : hook === 'none' ? 'PayPal webhook confirmation not received yet.' : ''}</p>
               </div>
             )}
