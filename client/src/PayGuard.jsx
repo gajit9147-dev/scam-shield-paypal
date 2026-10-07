@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import { whyRisky } from './whyRisky.js';
 import AgentPanel from './AgentPanel.jsx';
+import ThemeToggle from './components/ThemeToggle.jsx';
+import { getDictionary, translateCategory, translateEvidence, translateRecommendation } from './locales/index.js';
 
 const SAMPLES = [
   ['Normal invoice', 'Invoice 88 from Blue Cafe Vadodara: please pay $12.50 for catering order 88. Thanks!'],
@@ -129,22 +131,22 @@ function AiPanel({ verdict, review }) {
   );
 }
 
-function WhyBlocked({ verdict }) {
-  const [lang, setLang] = useState('en');
+function WhyBlocked({ verdict, language }) {
+  const lang = language === 'en' ? 'en' : 'hi';
   const signals = (Array.isArray(verdict.signals) ? verdict.signals : []).filter(x => x.evidence).slice(0, 6);
   return (
     <div className="rounded-2xl border border-rose-300/30 bg-rose-500/10 p-4">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-rose-200">Why this was blocked</p>
-      {verdict.categoryLabel && <p className="mb-2 text-sm font-medium">{verdict.categoryLabel}</p>}
+      {verdict.categoryLabel && <p className="mb-2 text-sm font-medium">{translateCategory(verdict.category, language, verdict.categoryLabel)}</p>}
       <div className="mb-3 rounded-xl bg-black/20 p-3">
         <div className="mb-1 flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wide text-white/60">In simple words</span>
-          <button type="button" onClick={() => setLang(lang === 'en' ? 'hi' : 'en')} className="rounded-full border border-white/25 px-2.5 py-0.5 text-xs text-white/80 hover:bg-white/10">{lang === 'en' ? 'Hinglish' : 'English'}</button>
+
         </div>
-        <p className="text-sm text-white/90">{whyRisky(verdict.category, lang)}</p>
+        <p className="text-sm text-white/90">{language === 'hi' ? translateRecommendation(verdict.safeAction, verdict.category, language).join(' ') : whyRisky(verdict.category, lang)}</p>
       </div>
       <ul className="list-disc space-y-1 pl-5 text-sm text-rose-100/90">
-        {signals.map((x, i) => (<li key={i}>{x.evidence} <span className="text-white/40">({x.source === 'gemini' ? 'AI' : 'rule'})</span></li>))}
+        {signals.map((x, i) => (<li key={i}>{translateEvidence(x.evidence, language)} <span className="text-white/40">({x.source === 'gemini' ? 'AI' : 'rule'})</span></li>))}
       </ul>
       {verdict.safeAction && <p className="mt-2 text-sm text-white/75">{verdict.safeAction}</p>}
     </div>
@@ -186,6 +188,24 @@ function AiFeedbackMarquee() {
 }
 
 export default function PayGuard() {
+  const [language, setLanguage] = useState('en');
+  const [theme, setTheme] = useState(() => localStorage.getItem('ss_theme_v2') || 'light');
+  const [view, setView] = useState('checker');
+  const [history, setHistory] = useState(() => { try { return JSON.parse(localStorage.getItem('upi_shield_history') || '[]'); } catch { return []; } });
+  const t = getDictionary(language);
+  useEffect(() => { document.documentElement.classList.toggle('dark', theme === 'dark'); localStorage.setItem('ss_theme_v2', theme); }, [theme]);
+  function showView(next) { setView(next); }
+  function remember(out, sourceText, type) {
+    const item = { id: Date.now(), timestamp: new Date().toLocaleString(), type, sourceText, result: { verdict: out.verdict, review: { blocked: out.review.blocked, canPay: out.review.canPay, riskScore: out.review.riskScore } } };
+    setHistory(prev => { const next = [item, ...prev].slice(0, 20); try { localStorage.setItem('upi_shield_history', JSON.stringify(next)); } catch {} return next; });
+  }
+  function restore(item) {
+    setView('checker'); setMode('Message'); setPaid(null); setError('');
+    setText(item.sourceText || ''); setCheckedText(item.sourceText || ''); setShot(null);
+    // Stored results never restore a checkout authorization. Recheck for a fresh token.
+    setResult(null);
+    if (item.type === 'image' && !item.sourceText) setError('Upload the screenshot again for a fresh check.');
+  }
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -235,7 +255,8 @@ export default function PayGuard() {
     setBusy(true); setError(''); setResult(null); setPaid(null);
     try {
       setCheckedText(text);
-      setResult(await postJson('/api/payments/review', { text }));
+      const out = await postJson('/api/payments/review', { text });
+      setResult(out); remember(out, text, 'text');
     } catch (e) {
       setError(e.message);
     } finally {
@@ -264,7 +285,7 @@ export default function PayGuard() {
     setBusy(true); setError(''); setResult(null); setPaid(null); setCheckedText('');
     try {
       const out = await postJson('/api/payments/review-image', { image: shot.image, mimeType: shot.mimeType });
-      setResult(out);
+      setResult(out); remember(out, out.transcript || '', 'image');
       if (out.transcript) setText(out.transcript);
     } catch (e) {
       setError(e.message);
@@ -307,13 +328,19 @@ export default function PayGuard() {
   };
 
   return (
-    <div className="pg">
+    <div className={`pg ${theme === 'dark' ? 'pg-night' : ''}`}>
       <nav className="pg-nav">
         <a href="#top" className="pg-logo"><span className="pg-mark" />SCAMSHIELD</a>
-        <div className="pg-links"><a href="#checker">Checker</a><a href="#how">How it works</a><a href="#evidence">Evidence</a></div>
-        <a href="#checker" className="pg-btn-o">Try the demo</a>
+        <div className="pg-nav-tools">
+          <button className={`pg-nav-link ${view === 'checker' ? 'active' : ''}`} onClick={() => showView('checker')}>{t.navCheckMessage}</button>
+          <button className={`pg-nav-link ${view === 'history' ? 'active' : ''}`} onClick={() => showView('history')}>{t.navHistory}</button>
+          <button className={`pg-nav-link ${view === 'examples' ? 'active' : ''}`} onClick={() => showView('examples')}>{t.navScamExamples}</button>
+          <button className={`pg-nav-link ${view === 'tips' ? 'active' : ''}`} onClick={() => showView('tips')}>{t.navSafetyTips}</button>
+          <select aria-label="Language" value={language} onChange={e => setLanguage(e.target.value)}><option value="en">English</option><option value="hi">हिंदी</option><option value="hinglish">Hinglish</option></select>
+          <ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'light' ? 'dark' : 'light')} />
+        </div>
       </nav>
-      <header id="top" className="pg-hero">
+      {view === 'checker' && <header id="top" className="pg-hero">
         <div className="pg-prism" aria-hidden />
         <div className="pg-eyebrow">AI scam check for payments</div>
         <h1>Check before<span className="pg-serif">you pay.</span></h1>
@@ -324,8 +351,19 @@ export default function PayGuard() {
           <div><b>1.3s</b><span>median check time</span></div>
           <div><b>40</b><span>labeled test requests</span></div>
         </div>
-      </header>
+      </header>}
       <div className="pg-wrap">
+        {view !== 'checker' && <section className="pg-sec pg-library">
+          <h2>{view === 'history' ? t.navHistory : view === 'examples' ? t.navScamExamples : t.navSafetyTips}</h2>
+          {view === 'history' && <>
+            <p className="pg-lead">Recent checks stay on this browser only. Up to 20 are kept. Screenshots and checkout tokens are not saved.</p>
+            {history.length ? <><button className="pg-btn-o" onClick={() => { if (window.confirm('Clear all history on this browser?')) { setHistory([]); localStorage.removeItem('upi_shield_history'); } }}>Clear history</button>
+            <div className="pg-library-grid">{history.map(item => <article className="pg-card" key={item.id}><small>{item.timestamp}</small><p>{item.sourceText || 'Screenshot check'}</p><p className="pg-hint">{item.result?.review?.blocked ? 'Blocked' : item.result?.review?.canPay ? 'Cleared at the time of the check' : item.verdict?.riskLevel || 'Past check'} | Risk {item.result?.review?.riskScore ?? item.verdict?.riskScore ?? 'not recorded'}</p><button className="pg-btn-o" onClick={() => restore(item)}>Recheck request</button></article>)}</div></> : <p className="pg-hint">No checks saved on this browser yet.</p>}
+          </>}
+          {view === 'examples' && <><p className="pg-lead">Fictional requests to try. Selecting one fills the checker; it does not run a check or payment.</p><div className="pg-library-grid">{[[t.exampleKyc,t.exampleTextKyc],[t.exampleRefund,t.exampleTextRefund],[t.exampleLottery,t.exampleTextLottery],[t.exampleBankAlert,t.exampleTextBankAlert],[t.exampleSuspiciousLink,t.exampleTextSuspiciousLink],...SAMPLES].map(([label, sample],i) => <article className="pg-card" key={i}><h3>{label}</h3><p>{sample}</p><button className="pg-btn-o" onClick={() => { setMode('Message'); setText(sample); setResult(null); setView('checker'); }}>Use example</button></article>)}</div></>}
+          {view === 'tips' && <><div className="pg-library-grid">{[1,2,3,4].map(i => <article className="pg-card" key={i}><h3>{t[`tip${i}Title`]}</h3><p>{t[`tip${i}Desc`]}</p></article>)}</div><p className="pg-lead">Already lost money? Contact your bank immediately. In India, report at <a href="https://cybercrime.gov.in" target="_blank" rel="noreferrer">cybercrime.gov.in</a> or call 1930.</p></>}
+        </section>}
+        <div hidden={view !== 'checker'}>
         <section id="checker" className="pg-sec">
           <h2>Live <span className="pg-serif">checker</span></h2>
           <p className="pg-lead">Pick what you received, paste it, get a verdict. No real money moves: checkout is a PayPal sandbox.</p>
@@ -342,7 +380,7 @@ export default function PayGuard() {
                   onChange={(e) => setText(e.target.value)}
                   maxLength={1000}
                   rows={5}
-                  placeholder={MODES[mode]}
+                  placeholder={language === 'en' ? MODES[mode] : t.inputPlaceholder}
                   className="pg-box"
                 />
                 <div className="pg-chips">
@@ -351,8 +389,8 @@ export default function PayGuard() {
                   ))}
                 </div>
                 <div className="pg-row">
-                  <span className="pg-hint">{!text.trim() && !busy ? 'Paste text or pick a fictional example above. ' : ''}Nothing is stored. Results are guidance, not a guarantee.</span>
-                  <button onClick={review} disabled={busy || !text.trim()} className="pg-btn">{busy && !shot ? 'Checking...' : 'Check now \u2192'}</button>
+                  <span className="pg-hint">{!text.trim() && !busy ? 'Paste text or pick a fictional example above. ' : ''}Recent checks are saved on this browser. Clear them in History. Results are guidance, not a guarantee.</span>
+                  <button onClick={review} disabled={busy || !text.trim()} className="pg-btn">{busy && !shot ? t.analyzingButton : `${t.analyzeButton} →`}</button>
                 </div>
               </>
             ) : (
@@ -416,7 +454,8 @@ export default function PayGuard() {
               </div>
             </details>
             {result.transcript && <p className="text-xs text-white/50 break-words">Read from screenshot: {result.transcript.length > 220 ? `${result.transcript.slice(0, 220)}...` : result.transcript}</p>}
-            <p className="text-sm">{verdict.summary || verdict.reason}</p>
+            <p className="text-sm">{language === 'en' ? (verdict.summary || verdict.reason) : translateCategory(verdict.category, language, verdict.categoryLabel)}</p>
+            {language !== 'en' && <p className="text-sm">{translateRecommendation(verdict.safeAction, verdict.category, language).join(' ')}</p>}
             <p className="text-xs text-white/60">{confidenceLine(review_, verdict)}</p>
             {(result.transcript || checkedText) && (
               <div className="rounded-xl border border-white/10 bg-white/5 p-3 space-y-1">
@@ -425,7 +464,7 @@ export default function PayGuard() {
               </div>
             )}
             <AiPanel verdict={verdict} review={review_} />
-            {review_.blocked && <WhyBlocked verdict={verdict} />}
+            {review_.blocked && <WhyBlocked verdict={verdict} language={language} />}
                                     {review_.advice && <p className="text-sm text-white/75">{review_.advice}</p>}
 
             {review_.blocked && <p className="text-sm font-medium text-rose-200">Checkout is locked. Do not pay this request.</p>}
@@ -478,6 +517,7 @@ export default function PayGuard() {
             </div>
           </div>
         </section>
+        </div>
         <section id="how" className="pg-sec">
           <h2>How it <span className="pg-serif">works</span></h2>
           <p className="pg-lead">Rules plus AI review, then a payment guard.</p>

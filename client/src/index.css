@@ -374,3 +374,24 @@ html:not(.dark) .glass-bubble:nth-child(n+2){display:none}
 .pg-gstats b{font-size:28px;letter-spacing:-.02em}
 .pg-gstats span{font-size:13px;color:var(--mut);line-height:1.4}
 @media(max-width:700px){.pg-gstats{grid-template-columns:1fr}.pg-gstats a{padding:12px 16px}}
+
+/* Unified main page navigation and local library */
+.pg-nav-tools{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.pg-nav-link{border:0;background:none;color:var(--ink);padding:9px 12px;border-radius:999px;font-size:13px;white-space:nowrap}
+.pg-nav-link.active{background:var(--ink);color:#fff}
+.pg-nav-tools select{border:1px solid var(--line);border-radius:999px;padding:9px 12px;background:var(--bg);color:var(--ink);font:inherit;font-size:13px}
+.pg-library{padding-bottom:35px;min-height:450px}
+.pg-library-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:22px 0}
+.pg-library-grid .pg-card{padding:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px;overflow-wrap:anywhere}
+.pg-library-grid p{line-height:1.6;margin:0}.pg-library-grid h3{font-size:20px;margin:0}
+.pg-library-grid .pg-btn-o{margin-top:auto;padding:10px 18px;font-size:14px}
+.pg-night{--bg:#101116;--ink:#f3f3f7;--mut:#b0b2c1;--line:#343640;background:var(--bg);color:var(--ink)}
+.pg-night .pg-nav{background:#1a1b23;box-shadow:none}
+.pg-night .pg-hero{background:radial-gradient(900px 500px at 50% 30%,#27283b,#151622 45%,#101116 100%)}
+.pg-night .pg-prism{opacity:.32}
+.pg-night .pg-panel,.pg-night .pg-card,.pg-night .pg-gstats a{background:#1a1b23}
+.pg-night .pg-box,.pg-night .pg-in,.pg-night .pg-tab,.pg-night .pg-chip,.pg-night .pg-ag-card,.pg-night .pg-ag-out{background:#20212b;color:var(--ink)}
+.pg-night .pg-tab.on,.pg-night .pg-btn{background:#f3f3f7;color:#161720!important}
+.pg-night .pg-nav-link.active{color:#161720}.pg-night .pg-btn-o{color:var(--ink)}
+.pg-night .pg-ag-steps li,.pg-night .pg-ag-hooks li{background:#2a2b37}
+@media(max-width:950px){.pg-nav{border-radius:28px;align-items:flex-start;gap:12px;flex-wrap:wrap}.pg-nav-tools{width:100%;justify-content:flex-start;gap:5px}.pg-nav-link{padding:8px 10px}.pg-nav-tools select{margin-left:auto}.pg-library-grid{grid-template-columns:1fr}}
