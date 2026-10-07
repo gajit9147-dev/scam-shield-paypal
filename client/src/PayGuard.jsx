@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { whyRisky } from './whyRisky.js';
+import AgentPanel from './AgentPanel.jsx';
 
 const SAMPLES = [
   ['Normal invoice', 'Invoice 88 from Blue Cafe Vadodara: please pay $12.50 for catering order 88. Thanks!'],
@@ -301,6 +302,7 @@ export default function PayGuard() {
     Email: 'Paste the email text or the payment request in it...',
     Phone: 'Type what the caller or the SMS asked you to pay...',
     Screenshot: '',
+    Agent: '',
     UPI: 'Paste the UPI ID, collect request or payment message...'
   };
 
@@ -333,7 +335,7 @@ export default function PayGuard() {
                 <button key={m} role="tab" aria-selected={mode === m} onClick={() => setMode(m)} className={`pg-tab ${mode === m ? 'on' : ''}`}>{m}</button>
               ))}
             </div>
-            {mode !== 'Screenshot' ? (
+            {mode === 'Agent' ? <AgentPanel /> : mode !== 'Screenshot' ? (
               <>
                 <textarea
                   value={text}
@@ -467,6 +469,14 @@ export default function PayGuard() {
         </div>
           </div>
         <p className="text-sm text-[#6b7080] mt-5">Why this matters in India: banks reported 2,93,239 digital payment frauds worth Rs 2,060.75 crore in FY 2023-24 (RBI data given to Lok Sabha, Aug 2026). <a href="https://sansad.in/getFile/lsapps/loksabhaquestions/annex/188/AU3487_CUPVNR.pdf" target="_blank" rel="noreferrer" className="underline" >Source</a>. Only frauds banks reported, so the real number is higher.</p>
+          <div className="pg-global">
+            <p className="pg-hint" style={{ margin: '0 0 10px' }}>The same problem worldwide. Figures are as reported by each source, and reports undercount real losses.</p>
+            <div className="pg-gstats">
+              <a href="https://gasa.org/knowledge-base/reports/global-state-of-scams-2025" target="_blank" rel="noreferrer"><b>7 in 10</b><span>adults met a scam in the last 12 months (46,000 adults, 42 markets, GASA 2025)</span></a>
+              <a href="https://www.ftc.gov/system/files/ftc_gov/pdf/ftc-testimony-jec-hearing-on-the-rising-scam-economy.pdf" target="_blank" rel="noreferrer"><b>$15.9B</b><span>fraud losses reported to the US FTC in 2025, up from over $12B in 2024</span></a>
+              <a href="https://www.fbi.gov/news/press-releases/cryptocurrency-and-ai-scams-bilk-americans-of-billions" target="_blank" rel="noreferrer"><b>~$21B</b><span>cyber-enabled crime losses reported to the FBI in 2025</span></a>
+            </div>
+          </div>
         </section>
         <section id="how" className="pg-sec">
           <h2>How it <span className="pg-serif">works</span></h2>

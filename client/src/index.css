@@ -348,3 +348,29 @@ html:not(.dark) .glass-bubble:nth-child(n+2){display:none}
 .dark .ss-bn-item.is-active .ss-bn-pill { background: rgba(124,92,255,.35); }
 .ss-bn-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px; }
 @media (max-width: 1023px) { .ss-footer { padding-bottom: 96px; } }
+
+.pg-ag-out{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 22px}
+.pg-ag-steps{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px}
+.pg-ag-steps li{display:flex;gap:10px;flex-wrap:wrap;font-size:14px;padding:8px 12px;border-radius:12px;background:#f3f3f7}
+.pg-ag-steps li b{text-transform:capitalize}
+.pg-ag-steps li.blocked,.pg-ag-steps li.refused{background:#fdeceb;color:#8a1f17}
+.pg-ag-steps li.order_created{background:#e9f7ef;color:#1b5e3a}
+.pg-ag-answer{margin:0;font-size:16px;line-height:1.6}
+.pg-ag-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+.pg-ag-card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 20px;display:grid;gap:10px;align-content:start}
+.pg-ag-card h3{margin:0;font-size:17px}
+.pg-sm{min-height:70px;font-size:15px;padding:14px}
+.pg-in{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;background:#fff;color:var(--ink);font-family:inherit}
+.pg-ag-res{margin:0;font-size:14px;padding:10px 12px;border-radius:12px;background:#f3f3f7}
+.pg-ag-res.verified{background:#e9f7ef}.pg-ag-res.mismatch{background:#fdeceb}
+.pg-ag-hooks{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:13px}
+.pg-ag-hooks li{display:flex;justify-content:space-between;gap:8px;background:#f3f3f7;border-radius:10px;padding:7px 10px}
+.pg-ag-card .pg-btn-o{padding:10px 18px;font-size:14px;justify-self:start}
+@media(max-width:700px){.pg-ag-grid{grid-template-columns:1fr}}
+
+.pg-global{margin-top:18px}
+.pg-gstats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pg-gstats a{display:grid;gap:4px;background:#f8f8fb;border:1px solid var(--line);border-radius:18px;padding:14px 18px;text-decoration:none;color:var(--ink)}
+.pg-gstats b{font-size:28px;letter-spacing:-.02em}
+.pg-gstats span{font-size:13px;color:var(--mut);line-height:1.4}
+@media(max-width:700px){.pg-gstats{grid-template-columns:1fr}.pg-gstats a{padding:12px 16px}}
