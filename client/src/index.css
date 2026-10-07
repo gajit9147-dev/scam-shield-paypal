@@ -234,7 +234,7 @@ html.dark .glass-bubble,
 .pg a{color:inherit;text-decoration:none}
 .pg button{font-family:inherit;cursor:pointer}
 .pg-serif{font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-style:italic;font-weight:400}
-.pg-nav{display:flex;align-items:center;justify-content:space-between;padding:20px;max-width:1440px;margin:auto;position:relative;z-index:3}
+.pg-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;max-width:1400px;margin:14px auto 0;position:relative;z-index:3;width:calc(100% - 32px);border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.92);box-shadow:0 8px 28px rgba(40,45,70,.06)}
 .pg-logo{display:flex;align-items:center;gap:12px;font-size:14px;letter-spacing:.12em;font-weight:600}
 .pg-mark{width:40px;height:34px;background:var(--or);clip-path:polygon(50% 0,100% 100%,0 100%)}
 .pg-links{display:flex;gap:30px;font-size:17px}
@@ -242,7 +242,7 @@ html.dark .glass-bubble,
 .pg-btn{display:inline-flex;gap:10px;align-items:center;background:var(--ink);color:#fff!important;border-radius:99px;padding:18px 32px;font-size:18px;font-weight:600;border:0}
 .pg-btn:disabled{opacity:.45;cursor:not-allowed}
 .pg-hero{position:relative;text-align:center;padding:50px 20px 90px;background:radial-gradient(900px 500px at 50% 30%,#e9ecff 0,#f6f8ff 45%,#fff 100%);overflow:hidden}
-.pg-prism{position:absolute;left:50%;top:70px;width:420px;height:420px;transform:translateX(-50%);border-radius:48% 52% 55% 45%/50% 45% 55% 50%;background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(170,180,255,.35) 40%,rgba(255,150,110,.35));border:2px solid rgba(255,255,255,.9);box-shadow:inset 0 0 60px rgba(255,255,255,.9),0 30px 80px rgba(120,130,255,.25);backdrop-filter:blur(6px)}
+.pg-prism{position:absolute;left:50%;top:70px;width:420px;height:420px;transform:translateX(-50%);border-radius:50%;aspect-ratio:1;background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(170,180,255,.35) 40%,rgba(255,150,110,.35));border:2px solid rgba(255,255,255,.9);box-shadow:inset 0 0 60px rgba(255,255,255,.9),0 30px 80px rgba(120,130,255,.25);backdrop-filter:blur(6px)}
 .pg-hero>*{position:relative}.pg-hero>.pg-prism{position:absolute}
 .pg-eyebrow{font-size:19px}
 .pg-hero h1{font-size:80px;line-height:1.05;font-weight:400;letter-spacing:-.02em;margin:22px auto;max-width:900px}
