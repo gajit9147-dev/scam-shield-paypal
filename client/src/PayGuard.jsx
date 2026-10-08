@@ -409,6 +409,7 @@ export default function PayGuard() {
   const verdict = result?.verdict;
 
   const [mode, setMode] = useState('Message');
+  const [showMore, setShowMore] = useState(false);
   const MODES = {
     Message: 'Paste the SMS, WhatsApp, or chat message you received...',
     'QR Scanner': '',
@@ -554,9 +555,10 @@ export default function PayGuard() {
           <p className="pg-lead">Pick what you received, paste it, get a verdict. No real money moves: checkout is a PayPal sandbox.</p>
           <div className="pg-panel">
             <div className="pg-tabs" role="tablist">
-              {Object.keys(MODES).map((m) => (
+              {Object.keys(MODES).filter((m) => ['Message', 'Screenshot', 'Link'].includes(m) || showMore || mode === m).map((m) => (
                 <button key={m} role="tab" aria-selected={mode === m} onClick={() => setMode(m)} className={`pg-tab ${mode === m ? 'on' : ''}`}>{m}</button>
               ))}
+              <button type="button" className="pg-tab" aria-expanded={showMore} onClick={() => setShowMore(v => !v)}>{showMore ? 'Less' : 'More'}</button>
             </div>
             {mode === 'Agent' ? <AgentPanel /> : mode === 'QR Scanner' ? (
               <QRScanner
@@ -677,7 +679,7 @@ export default function PayGuard() {
             )}
             {review_.canPay && review_.request?.payee && (
               <div className="rounded-xl border border-amber-300/30 bg-amber-400/10 p-3 text-sm text-amber-100/90 space-y-1">
-                <p className="font-semibold">Payee identity: not matched</p>
+                <p className="font-semibold">Payee identity: not matched <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 500, padding: '2px 8px', borderRadius: 999, border: '1px solid rgba(252,211,77,0.5)' }}>Sandbox limitation: mock receiver</span></p>
                 <p>The request says you pay: <b>{review_.request.payee}</b></p>
                 <p>Sandbox checkout pays: <b>this app's own test merchant</b>, not that payee.</p>
                 <p className="text-xs text-amber-100/70">ScamShield checks what the request says. It does not verify who receives the money. In a real deployment, a payee that does not match must stop the payment.</p>

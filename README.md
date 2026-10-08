@@ -145,6 +145,10 @@ Evaluation reports are separate from payment review scores:
 
 Do not present a sample's Risk Signal Score, a four-attack demo or a small dataset benchmark as a guarantee of protection.
 
+## Where it would plug in
+
+Today the demo is a page where you paste a request. The reusable part is the server-side gate: a review produces a single-use signed token bound to amount and currency, and the PayPal order endpoints refuse anything that does not match it. A platform that creates payment links (a marketplace, a freelance board, an invoicing tool) could run the review on its server before it creates the PayPal order. That integration is not built here; this repo shows the gate and the review, not a plugin.
+
 ## Project structure
 
 ```text
