@@ -65,8 +65,8 @@ const SYSTEM = [
   'Answer briefly in English, even when the request is in another language, and only with what the tools returned.'
 ].join(' ');
 
-export async function runAgent({ prompt, tools, model, generate = generateText, maxSteps = 1 }) {
-  const result = await generate({ model, system: SYSTEM, prompt, tools, maxSteps, maxTokens: 700, abortSignal: AbortSignal.timeout(25000) });
+export async function runAgent({ prompt, tools, model, generate = generateText, maxSteps = 1, timeoutMs = 15000 }) {
+  const result = await generate({ model, system: SYSTEM, prompt, tools, maxSteps, maxTokens: 700, abortSignal: AbortSignal.timeout(timeoutMs) });
   return { answer: String(result.text || ((result.steps || []).some(s => s.toolResults?.length) ? 'See the payment check result below. No payment was captured by the agent.' : 'The agent returned no answer. No payment was captured.')).slice(0, 2000), steps: (result.steps || []).length };
 }
 
@@ -74,7 +74,7 @@ export function pickModels(env = process.env) {
   // Gemini 3 models need thought signatures passed back between tool calls, which this SDK version cannot do.
   // Stop after one tool step so no unsupported tool-result thought-signature replay is needed.
   // Try 2.5 models first, then the general list.
-  return [...new Set([env.AGENT_MODEL, 'gemini-2.5-flash', 'gemini-2.5-flash-lite', ...MODEL_FALLBACKS].filter(Boolean))].slice(0, 4);
+  return [...new Set([env.AGENT_MODEL, 'gemini-2.5-flash', 'gemini-2.5-flash-lite', ...MODEL_FALLBACKS].filter(Boolean))].slice(0, 3);
 }
 
 export function googleModel(name, env = process.env) {

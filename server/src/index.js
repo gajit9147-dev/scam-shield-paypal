@@ -335,6 +335,7 @@ app.post('/api/agent/run', rateLimit(6), async (req, res) => {
   if (!process.env.GEMINI_API_KEY) return res.status(503).json({ error: 'The agent needs the AI key, which is not set on this server.' });
   const events = [];
   const orders = [];
+  const attempts = [];
   try {
     const toolkitTools = await paypalToolkitTools();
     const tools = buildGuardedTools({
@@ -350,12 +351,18 @@ app.post('/api/agent/run', rateLimit(6), async (req, res) => {
       }
     });
     let lastErr;
+    const deadline = Date.now() + 50000; // stay under the host's ~100s proxy limit
     for (const name of pickModels()) {
+      const left = deadline - Date.now();
+      if (left < 5000) break;
+      const t0 = Date.now();
       try {
-        const out = await runAgent({ prompt: prompt.trim(), tools, model: googleModel(name) });
+        const out = await runAgent({ prompt: prompt.trim(), tools, model: googleModel(name), timeoutMs: Math.min(18000, left) });
         return res.json({ answer: out.answer, steps: events, orders, model: name });
       } catch (err) {
         lastErr = err;
+        attempts.push({ model: name, ms: Date.now() - t0, code: err.status || err.statusCode || err.name || 'error' });
+        console.log(`agent model ${name} failed after ${Date.now() - t0}ms: ${String(err.message || err).slice(0, 160)}`);
         // Do not rerun a model after a tool already created an order. Return the buyer step.
         if (orders.length) return res.json({ answer: 'A sandbox order was prepared before the AI stopped. Review it below; no payment was captured.', steps: events, orders, model: name });
         events.length = 0;
@@ -364,7 +371,7 @@ app.post('/api/agent/run', rateLimit(6), async (req, res) => {
     throw lastErr || new Error('agent failed');
   } catch (err) {
     console.log(`agent run failed: ${String(err.message || err).slice(0, 200)}`);
-    return res.status(502).json({ error: 'The agent could not finish. Try again in a minute.', code: err.status || err.statusCode || err.name || 'error', reason: String(err.message || '').replace(/key=[^&\s]+/g, 'key=hidden').slice(0, 220) });
+    return res.status(502).json({ error: 'The agent could not finish. Try again in a minute.', code: err.status || err.statusCode || err.name || 'error', reason: String(err.message || '').replace(/key=[^&\s]+/g, 'key=hidden').slice(0, 220), attempts });
   }
 });
 
