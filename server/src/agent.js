@@ -73,8 +73,8 @@ export async function runAgent({ prompt, tools, model, generate = generateText, 
 export function pickModels(env = process.env) {
   // Gemini 3 models need thought signatures passed back between tool calls, which this SDK version cannot do.
   // Stop after one tool step so no unsupported tool-result thought-signature replay is needed.
-  // Try 2.5 models first, then the general list.
-  return [...new Set([env.AGENT_MODEL, 'gemini-2.5-flash', 'gemini-2.5-flash-lite', ...MODEL_FALLBACKS].filter(Boolean))].slice(0, 3);
+  // Live check (Oct 2026): gemini-2.5-* return 404 for this key; the -latest aliases answer. Try those first.
+  return [...new Set([env.AGENT_MODEL, 'gemini-flash-lite-latest', 'gemini-flash-latest', 'gemini-3.8-flash', ...MODEL_FALLBACKS].filter(Boolean))].slice(0, 3);
 }
 
 export function googleModel(name, env = process.env) {
