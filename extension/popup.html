@@ -1,0 +1,8 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>body{font:13px/1.45 system-ui,sans-serif;width:300px;margin:12px}button{font:inherit;padding:7px 12px;border-radius:8px;border:1px solid #0f766e;background:#0f766e;color:#fff;cursor:pointer;width:100%}p{margin:8px 0}.m{color:#555;font-size:12px}</style>
+<b>ScamShield payment check</b> <span class="m">prototype</span>
+<p>Select the payment request text on the page, then press the button. With nothing selected, the first 1000 characters of the page text are checked.</p>
+<button id="go">Check this payment request</button>
+<p class="m">The chosen text is sent to the ScamShield server when you press the button. Nothing is sent before that. The result is a risk signal. It never says a request is safe and does not verify the seller.</p>
+<script src="popup.js"></script>

@@ -27,6 +27,8 @@ const port = Number(process.env.PORT) || 3001;
 const corsOptions = (req) => ({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
+    // Browser extension prototype: the review endpoint only, and only for extension pages. Other routes keep the normal allowlist.
+    if (/^chrome-extension:\/\/[a-p]{32}$/.test(origin) && req.path === '/api/payments/review') return callback(null, true);
     if (/^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[01])\.\d+\.\d+)(?::\d+)?$/.test(origin)
       || origin === process.env.CLIENT_ORIGIN
       || origin === process.env.RENDER_EXTERNAL_URL) {

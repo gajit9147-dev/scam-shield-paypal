@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo store (ScamShield extension test page)</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:720px;margin:32px auto;padding:0 16px;color:#111}
+.card{border:1px solid #ccc;border-radius:12px;padding:16px;margin:16px 0}.pay{background:#0070ba;color:#fff;border:0;border-radius:8px;padding:10px 18px;font-size:16px;cursor:not-allowed;opacity:.85}
+.note{background:#fff7e6;border:1px solid #f0c36d;border-radius:8px;padding:10px;font-size:14px}</style></head>
+<body>
+<h1>Demo store</h1>
+<p class="note">Test page for the ScamShield browser extension prototype. Nothing here takes money. The Pay buttons do nothing. Select a request below, then use the extension (right-click, "Check with ScamShield", or the toolbar button).</p>
+<div class="card" id="clean"><h2>Order from Blue Cafe Vadodara</h2>
+<p>Invoice 88 from Blue Cafe Vadodara: please pay $12.50 for catering order 88. Thanks!</p>
+<button class="pay" type="button" disabled>Pay $12.50 (disabled demo)</button></div>
+<div class="card" id="scam"><h2>Message in your inbox</h2>
+<p>URGENT! Your PayPal account is limited. Pay $25 verification fee to support-help@gmail.com within 10 minutes or your account will be blocked.</p>
+<button class="pay" type="button" disabled>Pay $25 (disabled demo)</button></div>
+</body></html>
