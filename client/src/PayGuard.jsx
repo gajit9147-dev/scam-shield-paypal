@@ -763,6 +763,49 @@ export default function PayGuard() {
             <div className="pg-card"><div className="n">03</div><h3>Pay safely</h3><p>PayPal sandbox checkout opens only if the request is cleared.</p></div>
           </div>
         </section>
+        <section id="extension" className="pg-sec pg-ext">
+          <div className="pg-ext-hero">
+            <div className="pg-ext-copy">
+              <span className="pg-badge">Browser extension - prototype</span>
+              <h2>Check it <span className="pg-serif">where you see it.</span></h2>
+              <p className="pg-lead">Select a payment request on any page. ScamShield shows the result on top of that page, before you pay. You start every check yourself.</p>
+              <div className="pg-ext-cta">
+                <a className="pg-btn" href="/extension.zip" download="scamshield-extension.zip">Download extension (ZIP)</a>
+                <span className="pg-ext-meta">Chrome, Edge, Brave on desktop<br />Free, about 10 KB, no account</span>
+              </div>
+            </div>
+            <div className="pg-ext-demo" aria-label="Preview of the result card the extension draws on a page">
+              <div className="pg-ext-page">
+                <div className="pg-ext-bar"><i /><i /><i /><span>ScamShield Extension</span></div>
+                <p className="pg-ext-sel">URGENT! Your PayPal account is limited. Pay $25 verification fee to support-help@gmail.com within 10 minutes...</p>
+                <div className="pg-ext-card">
+                  <b className="pg-ext-tag">BLOCKED</b>
+                  <strong>Strong scam signals. Do not pay.</strong>
+                  <span>Risk Signal Score: 100/100 <em>(a warning signal, not a probability)</em></span>
+                  <small>Seller identity is NOT verified. This check cannot prove a request is genuine or fake.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <h3 className="pg-ext-h">How the extension works</h3>
+          <div className="pg-ext-flow">
+            <div><b>1</b><strong>Select</strong><p>You select the payment request text on any page.</p></div>
+            <div><b>2</b><strong>Ask</strong><p>Right-click and choose <i>Check with ScamShield</i>, or press the toolbar button.</p></div>
+            <div><b>3</b><strong>Review</strong><p>Only that text is sent to the ScamShield server. The same rules and Gemini review as the app run on it.</p></div>
+            <div><b>4</b><strong>Result</strong><p>A card appears on the page: BLOCKED or CHECKOUT ENABLED, the Risk Signal Score and the reason.</p></div>
+          </div>
+          <h3 className="pg-ext-h">Install it in 2 minutes</h3>
+          <div className="pg-ext-steps">
+            <div className="pg-card"><div className="n">01</div><h3>Download</h3><p>Get the ZIP and unzip it. You get one folder, <b>scamshield-extension</b>.</p></div>
+            <div className="pg-card"><div className="n">02</div><h3>Developer mode</h3><p>Open <b>chrome://extensions</b> and switch on <b>Developer mode</b>.</p></div>
+            <div className="pg-card"><div className="n">03</div><h3>Load unpacked</h3><p>Click <b>Load unpacked</b> and pick the <b>scamshield-extension</b> folder.</p></div>
+            <div className="pg-card"><div className="n">04</div><h3>Try it</h3><p>Open the <a href="/demo-store.html" style={{ textDecoration: 'underline' }}>demo store</a>, select a request, right-click, <b>Check with ScamShield</b>.</p></div>
+          </div>
+          <div className="pg-ext-facts">
+            <div><b>What it does</b><p>Sends only the text you selected (or the first 1000 characters of the page) when you ask. Shows BLOCKED or CHECKOUT ENABLED with a Risk Signal Score and the reason.</p></div>
+            <div><b>What it does not do</b><p>It never runs on its own, never says a request is safe, does not verify the seller, and does not pay anything. Not on the Chrome Web Store yet.</p></div>
+          </div>
+        </section>
       </div>
       <footer id="evidence" className="pg-footer">
         <div className="pg-big">Check before <span className="pg-serif">you pay.</span></div>

@@ -21,3 +21,21 @@ test('extension origin is allowed on the review route only; other origins stay d
     assert.equal((await post(base, '/api/payments/review', 'chrome-extension://short')).status, 403);
   });
 });
+
+test('extension.zip is a valid zip with the manifest inside', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const { writeFileSync, mkdtempSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  await withServer(8767, async (base) => {
+    const r = await fetch(base + '/extension.zip');
+    assert.equal(r.status, 200);
+    assert.equal(r.headers.get('content-type'), 'application/zip');
+    const f = join(mkdtempSync(join(tmpdir(), 'ext-')), 'e.zip');
+    writeFileSync(f, Buffer.from(await r.arrayBuffer()));
+    const list = execFileSync('unzip', ['-l', f]).toString();
+    assert.match(list, /scamshield-extension\/manifest\.json/);
+    assert.match(list, /scamshield-extension\/background\.js/);
+    execFileSync('unzip', ['-tq', f]);
+  });
+});

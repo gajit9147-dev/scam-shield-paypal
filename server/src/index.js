@@ -146,6 +146,19 @@ app.post('/api/payments/review-image', rateLimit(15), express.json({ limit: '6mb
 
 app.use(express.json({ limit: '128kb' }));
 
+// One-click download of the browser extension, built from the extension/ folder.
+import { buildZip } from './extensionZip.js';
+const extensionDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'extension');
+app.get('/extension.zip', rateLimit(30), (_req, res) => {
+  try {
+    const zip = buildZip(extensionDir);
+    res.set({ 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="scamshield-extension.zip"', 'Cache-Control': 'no-store' });
+    return res.send(zip);
+  } catch {
+    return res.status(404).json({ error: 'The extension files are not on this server.' });
+  }
+});
+
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
 app.post('/api/check', rateLimit(30), async (req, res) => {
