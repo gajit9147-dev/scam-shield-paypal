@@ -9,7 +9,7 @@ Core idea: **intent-bound payment authorization**. The reviewed request (amount,
 Scope: **Core** = check before you pay. **Proof** = the server-side payment gate. **Evidence** = the security demonstrations page. **Extensions** = QR, screenshot, multilingual and the experimental agent mode.
 
 - [Live site](https://scam-shield-paypal.onrender.com/) (`/pay` opens the same app)
-- [Demo video](https://youtu.be/DjWAjSGvNkQ)
+- [Demo video](https://youtu.be/2HSRVaYXA7I)
 - [Devpost entry](https://devpost.com/software/scamshield-kuvz8o)
 
 No real money moves. Sandbox payments go to the configured test merchant, not to an email address or UPI ID pasted into the checker. The free Render service can take time to wake up.
@@ -150,7 +150,7 @@ Do not present a sample's Risk Signal Score, a four-attack demo or a small datas
 Today the demo is a page where you paste a request. The reusable part is the server-side gate: a review produces a single-use signed token bound to amount and currency, and the PayPal order endpoints refuse anything that does not match it. A platform that creates payment links (a marketplace, a freelance board, an invoicing tool) could run the review on its server before it creates the PayPal order. That integration is not built here; this repo shows the gate and the review, not a plugin.
 
 ## Browser extension (prototype)
-A user-triggered Chrome extension (Manifest V3) in `extension/` runs the same review on the text you select on a page and shows the result on the page. It is a prototype: it does not run automatically on checkout pages, it does not verify sellers, and it is installed unpacked (not on the Web Store). See `extension/README.md`. Test page: `/demo-store.html`.
+A user-triggered Chrome extension (Manifest V3) in `extension/` runs the same review on the text you select on a page and shows the result on the page. It is a prototype: it does not run automatically on checkout pages, it does not verify sellers, and it is installed unpacked (not on the Web Store). Download: https://scam-shield-paypal.onrender.com/extension.zip. See `extension/README.md`. Test page: `/demo-store.html`.
 
 ## Project structure
 
