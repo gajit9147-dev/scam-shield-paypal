@@ -90,3 +90,12 @@ test('agent stops after one tool step so Gemini thought signatures are not repla
   assert.ok(got.abortSignal instanceof AbortSignal);
   assert.match(r.answer, /No payment was captured/);
 });
+
+test('summarizeToolResults gives a plain answer for created, blocked and error results', async () => {
+  const { summarizeToolResults } = await import('./agent.js');
+  const mk = (o) => [{ toolResults: [{ result: JSON.stringify(o) }] }];
+  assert.match(summarizeToolResults(mk({ created: true, amount: '12.50', currency: 'USD' })), /prepared a sandbox order for 12.50 USD.*Nothing is paid yet/);
+  assert.match(summarizeToolResults(mk({ created: false, blocked: true, reason: 'Blocked by ScamShield: scam.' })), /No order was created and no payment was made/);
+  assert.match(summarizeToolResults(mk({ created: false, error: 'PayPal did not return an order.' })), /No payment was made/);
+  assert.equal(summarizeToolResults([{ toolResults: [{ result: 'checked' }] }]), '');
+});

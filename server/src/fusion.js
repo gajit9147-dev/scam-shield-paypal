@@ -367,7 +367,7 @@ export function combineEvidence({
     summary = 'Uncertain: No strong scam pattern detected. However, this does not certify the message is safe.';
     summaryHi = 'पक्का नहीं: धोखाधड़ी का कोई स्पष्ट पैटर्न नहीं मिला। हालांकि, इससे संदेश सुरक्षित साबित नहीं होता।';
     reason = isSpamFlagged
-      ? 'The general SMS spam model flagged this text, but general spam does not prove a financial fraud scam.'
+      ? 'A general spam filter flagged the wording of this text. That alone is not evidence of a payment scam, and no strong scam signal was found in the payment details.'
       : 'No strong scam pattern detected. Text alone cannot establish that a payment message is legitimate.';
   }
 

@@ -65,9 +65,24 @@ const SYSTEM = [
   'Answer briefly in English, even when the request is in another language, and only with what the tools returned.'
 ].join(' ');
 
+// The model often stops after the tool call without writing text. Build a plain answer from what the tool returned.
+export function summarizeToolResults(steps = []) {
+  for (const s of steps || []) {
+    for (const tr of s.toolResults || []) {
+      const r = parseJson(tr.result);
+      if (!r) continue;
+      if (r.created) return `ScamShield checked the request and prepared a sandbox order for ${r.amount} ${r.currency}. Nothing is paid yet: you approve it in PayPal below. The payee is not verified; the sandbox pays the demo merchant.`;
+      if (r.blocked) return `${r.reason || 'Blocked by ScamShield.'} No order was created and no payment was made.`;
+      if (r.error) return `${r.error} No payment was made.`;
+    }
+  }
+  return '';
+}
+
 export async function runAgent({ prompt, tools, model, generate = generateText, maxSteps = 1, timeoutMs = 15000 }) {
   const result = await generate({ model, system: SYSTEM, prompt, tools, maxSteps, maxTokens: 700, abortSignal: AbortSignal.timeout(timeoutMs) });
-  return { answer: String(result.text || ((result.steps || []).some(s => s.toolResults?.length) ? 'See the payment check result below. No payment was captured by the agent.' : 'The agent returned no answer. No payment was captured.')).slice(0, 2000), steps: (result.steps || []).length };
+  const summary = summarizeToolResults(result.steps);
+  return { answer: String(result.text || summary || ((result.steps || []).some(s => s.toolResults?.length) ? 'See the payment check result below. No payment was captured by the agent.' : 'The agent returned no answer. No payment was captured.')).slice(0, 2000), steps: (result.steps || []).length };
 }
 
 export function pickModels(env = process.env) {
