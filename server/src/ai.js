@@ -40,7 +40,7 @@ export function extractJson(raw) {
 }
 
 // Models retire fast; try the configured/default model, then known fallbacks.
-export const MODEL_FALLBACKS = ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
+export const MODEL_FALLBACKS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
 
 export const aiStatus = { lastStatus: null, lastModel: null, lastAt: null };
 
