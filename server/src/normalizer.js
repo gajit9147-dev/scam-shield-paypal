@@ -153,8 +153,8 @@ export function extractEntities(text) {
     upiIds.push(match[0]);
   }
 
-  // Monetary amounts (Rs., INR, ₹)
-  const amountRegex = /(?:rs\.?|inr|₹)\s*[\d,]+(?:\.\d{1,2})?/gi;
+  // Monetary amounts (Rs., INR, ₹, $, USD, €, £)
+  const amountRegex = /(?:rs\.?|inr|usd|eur|gbp|[₹$€£])\s*\d[\d,]*(?:\.\d{1,2})?/gi;
   while ((match = amountRegex.exec(text)) !== null) {
     amounts.push(match[0]);
   }
