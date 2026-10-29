@@ -40,18 +40,47 @@ export function extractJson(raw) {
 }
 
 // Models retire fast; try the configured/default model, then known fallbacks.
-export const MODEL_FALLBACKS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
+export const MODEL_FALLBACKS = ['gemini-3.5-flash-lite', 'gemini-3.8-flash'];
 
 export const aiStatus = { lastStatus: null, lastModel: null, lastAt: null };
 
-// One short retry on a busy or failing answer (429, 5xx, network error). The free Gemini tier rejects bursts for a moment, and a real safe request should not be locked only because of that.
-export async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS, retryDelayMs = 1500) {
-  const first = await callModelOnce(model, key, parts, timeoutMs);
-  if (first && !first.isQuotaError && first.text) return first;
-  if (first && first.noRetry) return first;
-  await new Promise((ok) => setTimeout(ok, retryDelayMs));
-  const second = await callModelOnce(model, key, parts, timeoutMs);
-  return second || first;
+// Share a small request queue across text, extraction and image calls. A review
+// starts two AI tasks, so per-request retries alone can overwhelm free RPM limits.
+let providerQueue = Promise.resolve();
+let nextProviderCallAt = 0;
+let providerBlockedUntil = 0;
+const MIN_CALL_GAP_MS = 4500; // at most 14 starts/minute for this process
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+export function retryDelayMs(headers, now = Date.now()) {
+  const raw = headers?.get?.('retry-after');
+  if (!raw) return null;
+  const seconds = Number(raw);
+  const delay = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(raw) - now;
+  return Number.isFinite(delay) ? Math.max(0, delay) : null;
+}
+
+async function queuedModelCall(model, key, parts, timeoutMs) {
+  const task = providerQueue.then(async () => {
+    if (Date.now() < providerBlockedUntil) return { isQuotaError: true, noRetry: true };
+    await sleep(Math.max(0, nextProviderCallAt - Date.now()));
+    if (Date.now() < providerBlockedUntil) return { isQuotaError: true, noRetry: true };
+    nextProviderCallAt = Date.now() + MIN_CALL_GAP_MS;
+    return callModelOnce(model, key, parts, timeoutMs);
+  });
+  providerQueue = task.catch(() => null);
+  return task;
+}
+
+// Bounded retry for a transient error only. Retry-After is a minimum, never a
+// reason to hammer the provider. Longer cooldowns fail closed immediately.
+export async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS, retryBaseMs = 1500) {
+  const first = await queuedModelCall(model, key, parts, timeoutMs);
+  if (first?.text || first?.noRetry || first?.isQuotaError) return first;
+  const delay = first?.retryAfterMs ?? retryBaseMs + Math.floor(Math.random() * 500);
+  if (delay > 8000) return { noRetry: true, text: null };
+  await sleep(delay);
+  return await queuedModelCall(model, key, parts, timeoutMs) || first;
 }
 
 async function callModelOnce(model, key, parts, timeoutMs) {
@@ -64,15 +93,17 @@ async function callModelOnce(model, key, parts, timeoutMs) {
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
       body: JSON.stringify({
         contents: [{ role: 'user', parts }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 1024, responseMimeType: 'application/json' }
+        generationConfig: { maxOutputTokens: 1024, responseMimeType: 'application/json' }
       })
     });
     aiStatus.lastStatus = response.status; aiStatus.lastModel = model; aiStatus.lastAt = new Date().toISOString();
     if (!response.ok) {
       if (response.status === 429) {
-        return { isQuotaError: true };
+        providerBlockedUntil = Math.max(providerBlockedUntil, Date.now() + Math.max(60000, retryDelayMs(response.headers) || 0));
+        return { isQuotaError: true, noRetry: true };
       }
-      return response.status >= 500 ? null : { noRetry: true, text: null };
+      if (response.status >= 500) return { text: null, retryAfterMs: retryDelayMs(response.headers) };
+      return { noRetry: true, text: null };
     }
     const payload = await response.json();
     return { text: payload?.candidates?.[0]?.content?.parts?.[0]?.text || null };
@@ -310,4 +341,4 @@ export async function aiChat({ message, context, language = 'en', detectionResul
   const parsed = extractJson(raw);
   const reply = parsed && typeof parsed.reply === 'string' ? parsed.reply.trim().slice(0, 1200) : '';
   return reply || fallbackReply();
-}
+      }
