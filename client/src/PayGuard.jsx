@@ -711,7 +711,7 @@ export default function PayGuard() {
             </div>
             <details className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm" style={{ marginTop: 12 }}>
               <summary className="cursor-pointer text-white/80 font-medium">
-                🛡️ {language === 'hi' ? 'क्रिप्टोग्राफिक टोकन और वेबहुक विश्लेषक' : 'Inspect Cryptographic Token & Webhook'} {review_.token ? '· Token Active' : ''}
+                🛡️ {language === 'hi' ? 'क्रिप्टोग्राफिक टोकन और वेबहुक विश्लेषक' : 'Inspect Cryptographic Token & Webhook'} {review_.token ? '· Review token issued' : ''}
               </summary>
               <div className="mt-3">
                 <SecurityInspector
