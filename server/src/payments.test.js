@@ -118,3 +118,19 @@ test('AI outage never unlocks a benign request', async () => {
   assert.equal(r.token, null);
   assert.equal(r.degraded, true);
 });
+
+
+test('AI provenance describes scam review even when extraction is unavailable', async () => {
+  const r = await reviewPaymentRequest('Invoice 88: $12.50', { riskLevel: 'UNCERTAIN' }, Promise.resolve(null), true);
+  assert.equal(r.aiUsed, true);
+  assert.equal(r.degraded, false);
+  assert.equal(r.canPay, true);
+});
+
+test('successful extraction never claims scam review ran or unlocks checkout', async () => {
+  const r = await reviewPaymentRequest('Invoice 88: $12.50', { riskLevel: 'UNCERTAIN' }, Promise.resolve({ amount: 12.5, currency: 'USD' }), false);
+  assert.equal(r.aiUsed, false);
+  assert.equal(r.degraded, true);
+  assert.equal(r.canPay, false);
+  assert.equal(r.token, null);
+});
