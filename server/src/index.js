@@ -255,7 +255,7 @@ app.post('/api/payments/review', rateLimit(30), async (req, res) => {
 });
 
 import { adjustForOtpDelivery } from './paymentReview.js';
-import { captureOnce } from './reconcile.js';
+import { captureOnce, captureAuthorization } from './reconcile.js';
 import { record as auditRecord, recent as auditRecent } from './audit.js';
 const expectedOrders = new Map();
 const paidOrders = new Map();
@@ -298,7 +298,7 @@ app.post('/api/paypal/capture-order', rateLimit(20), async (req, res) => {
   if (typeof orderId !== 'string' || !/^[A-Za-z0-9-]{8,40}$/.test(orderId)) {
     return res.status(400).json({ error: 'Missing order id.' });
   }
-  const expected = verifyOrderTicket(req.body?.orderTicket, orderId) || expectedOrders.get(orderId);
+  const expected = captureAuthorization(verifyOrderTicket(req.body?.orderTicket, orderId), expectedOrders.get(orderId));
   if (!expected) return res.status(403).json({ error: 'This order was not created by a reviewed request.' });
   const out = await captureOnce({ orderId, expected, capture: captureOrder, getOrder, done: paidOrders });
   if (out.kind === 'captured' || out.kind === 'reconciled' || out.kind === 'already_paid') {
