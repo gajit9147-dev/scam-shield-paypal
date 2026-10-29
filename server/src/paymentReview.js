@@ -272,7 +272,8 @@ export async function reviewPaymentRequest(text, verdict, aiPromise, reviewAiAns
     pressure,
     missing,
     advice: ai?.advice || '',
-    aiUsed: Boolean(ai),
+    // UI AI-vs-rules provenance must describe the scam review, not extraction.
+    aiUsed: Boolean(reviewAiAnswered),
     // Honest wording: passing this review never means the seller is trustworthy.
     caution: 'This review cannot prove the seller is genuine. Pay only people you know, and only through the sandbox here.'
   };
