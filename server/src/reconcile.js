@@ -1,3 +1,11 @@
+// A valid signed ticket or a still-current in-memory order may authorize capture.
+// A stale map entry must never extend the ticket's one-hour capture window.
+export function captureAuthorization(ticket, cached, now = Date.now()) {
+  if (ticket) return ticket;
+  if (!cached || !Number.isFinite(cached.at) || cached.at > now || now - cached.at >= 60 * 60 * 1000) return null;
+  return cached;
+}
+
 // Capture a PayPal order at most once and never trust a timeout.
 // If the same order is captured twice, the stored result is returned and PayPal is not called again.
 // If the capture call fails, the order is read back from PayPal first: a payment that did go through is reported as it is,
