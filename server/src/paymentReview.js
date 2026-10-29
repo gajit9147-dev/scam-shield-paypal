@@ -89,7 +89,7 @@ export async function aiExtract(text) {
   ].join('\n');
   for (const model of [...new Set([process.env.GEMINI_MODEL, ...MODEL_FALLBACKS].filter(Boolean))]) {
     const res = await callModel(model, key, [{ text: prompt }]);
-    if (res?.isQuotaError) continue;
+    if (res?.isQuotaError) break;
     if (res?.text) {
       const p = extractJson(res.text);
       if (!p) return null;
@@ -104,6 +104,7 @@ export async function aiExtract(text) {
         advice: typeof p.advice === 'string' ? p.advice.slice(0, 260) : ''
       };
     }
+    if (res?.noRetry) break;
   }
   return null;
 }
