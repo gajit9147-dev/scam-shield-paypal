@@ -23,9 +23,9 @@ export function loadEnvFile() {
   }
 }
 
-const TIMEOUT_MS = 8000;
+export const TIMEOUT_MS = 30000;
 // Reading an image takes longer than reading text.
-const IMAGE_TIMEOUT_MS = 15000;
+const IMAGE_TIMEOUT_MS = 30000;
 
 export function extractJson(raw) {
   const cleaned = raw.replace(/```json|```/gi, '').trim();
@@ -39,10 +39,27 @@ export function extractJson(raw) {
   }
 }
 
-// Models retire fast; try the configured/default model, then known fallbacks.
+// Use the configured model or first supported default; never cycle after failure.
 export const MODEL_FALLBACKS = ['gemini-3.5-flash-lite', 'gemini-3.8-flash'];
 
 export const aiStatus = { lastStatus: null, lastModel: null, lastAt: null };
+const recentAttempts = [];
+// For local tests only. Not returned by any public endpoint.
+export function diagnosticAttempts() { return recentAttempts.map(attempt => ({ ...attempt })); }
+
+// Server-side diagnostics contain operational metadata only, never keys or request/response text.
+function recordAttempt(model, status, startedAt, outcome) {
+  const attempt = { model, status, at: new Date().toISOString(), durationMs: Date.now() - startedAt, outcome };
+  aiStatus.lastStatus = status; aiStatus.lastModel = model; aiStatus.lastAt = attempt.at;
+  recentAttempts.push(attempt);
+  if (recentAttempts.length > 8) recentAttempts.shift();
+  console.info('Gemini attempt', JSON.stringify(attempt));
+}
+
+export const QUEUE_BUDGET_MS = 65000;
+export function remainingCallTimeout(deadline, now, timeoutMs) {
+  return Math.max(0, Math.min(timeoutMs, deadline - now));
+}
 
 // Share a small request queue across text, extraction and image calls. A review
 // starts two AI tasks, so per-request retries alone can overwhelm free RPM limits.
@@ -61,29 +78,33 @@ export function retryDelayMs(headers, now = Date.now()) {
 }
 
 async function queuedModelCall(model, key, parts, timeoutMs) {
+  const deadline = Date.now() + QUEUE_BUDGET_MS;
   const task = providerQueue.then(async () => {
     if (Date.now() < providerBlockedUntil) return { isQuotaError: true, noRetry: true };
     await sleep(Math.max(0, nextProviderCallAt - Date.now()));
     if (Date.now() < providerBlockedUntil) return { isQuotaError: true, noRetry: true };
+    const remaining = remainingCallTimeout(deadline, Date.now(), timeoutMs);
+    if (!remaining) return { noRetry: true, text: null };
     nextProviderCallAt = Date.now() + MIN_CALL_GAP_MS;
-    return callModelOnce(model, key, parts, timeoutMs);
+    return callModelOnce(model, key, parts, remaining);
   });
   providerQueue = task.catch(() => null);
-  return task;
+  // Bound caller latency even when other users already filled the shared queue.
+  let deadlineTimer;
+  const expired = new Promise(resolve => {
+    deadlineTimer = setTimeout(() => resolve({ noRetry: true, text: null }), QUEUE_BUDGET_MS);
+  });
+  return Promise.race([task, expired]).finally(() => clearTimeout(deadlineTimer));
 }
 
-// Bounded retry for a transient error only. Retry-After is a minimum, never a
-// reason to hammer the provider. Longer cooldowns fail closed immediately.
-export async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS, retryBaseMs = 1500) {
-  const first = await queuedModelCall(model, key, parts, timeoutMs);
-  if (first?.text || first?.noRetry || first?.isQuotaError) return first;
-  const delay = first?.retryAfterMs ?? retryBaseMs + Math.floor(Math.random() * 500);
-  if (delay > 8000) return { noRetry: true, text: null };
-  await sleep(delay);
-  return await queuedModelCall(model, key, parts, timeoutMs) || first;
+// One attempt per task. Longer calls must not multiply into retries and fallback
+// storms. A later user review can try again after temporary provider demand eases.
+export async function callModel(model, key, parts, timeoutMs = TIMEOUT_MS) {
+  return await queuedModelCall(model, key, parts, timeoutMs);
 }
 
 async function callModelOnce(model, key, parts, timeoutMs) {
+  const startedAt = Date.now();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -96,19 +117,19 @@ async function callModelOnce(model, key, parts, timeoutMs) {
         generationConfig: { maxOutputTokens: 1024, responseMimeType: 'application/json' }
       })
     });
-    aiStatus.lastStatus = response.status; aiStatus.lastModel = model; aiStatus.lastAt = new Date().toISOString();
+    recordAttempt(model, response.status, startedAt, response.ok ? 'ok' : response.status === 429 ? 'rate_limited' : response.status >= 500 ? 'provider_unavailable' : 'request_rejected');
     if (!response.ok) {
       if (response.status === 429) {
         providerBlockedUntil = Math.max(providerBlockedUntil, Date.now() + Math.max(60000, retryDelayMs(response.headers) || 0));
         return { isQuotaError: true, noRetry: true };
       }
-      if (response.status >= 500) return { text: null, retryAfterMs: retryDelayMs(response.headers) };
       return { noRetry: true, text: null };
     }
     const payload = await response.json();
-    return { text: payload?.candidates?.[0]?.content?.parts?.[0]?.text || null };
-  } catch {
-    return null;
+    return { noRetry: true, text: payload?.candidates?.[0]?.content?.parts?.[0]?.text || null };
+  } catch (error) {
+    recordAttempt(model, null, startedAt, error?.name === 'AbortError' ? 'timeout' : 'network_or_payload_error');
+    return { noRetry: true, text: null };
   } finally {
     clearTimeout(timer);
   }
@@ -133,11 +154,12 @@ export async function aiReview(text) {
   let raw = null;
   for (const model of models) {
     const res = await callModel(model, key, [{ text: prompt }]);
-    if (res?.isQuotaError) continue;
+    if (res?.isQuotaError) break;
     if (res?.text) {
       raw = res.text;
       break;
     }
+    if (res?.noRetry) break;
   }
   if (!raw) return null;
   const parsed = extractJson(raw);
@@ -185,11 +207,12 @@ export async function aiReviewImage({ data, mimeType }) {
   let raw = null;
   for (const model of models) {
     const res = await callModel(model, key, parts, IMAGE_TIMEOUT_MS);
-    if (res?.isQuotaError) continue;
+    if (res?.isQuotaError) break;
     if (res?.text) {
       raw = res.text;
       break;
     }
+    if (res?.noRetry) break;
   }
   if (!raw) return null;
   const parsed = extractJson(raw);
@@ -331,14 +354,15 @@ export async function aiChat({ message, context, language = 'en', detectionResul
   let raw = null;
   for (const model of models) {
     const res = await callModel(model, key, [{ text: prompt }]);
-    if (res?.isQuotaError) continue;
+    if (res?.isQuotaError) break;
     if (res?.text) {
       raw = res.text;
       break;
     }
+    if (res?.noRetry) break;
   }
   if (!raw) return fallbackReply();
   const parsed = extractJson(raw);
   const reply = parsed && typeof parsed.reply === 'string' ? parsed.reply.trim().slice(0, 1200) : '';
   return reply || fallbackReply();
-      }
+}
